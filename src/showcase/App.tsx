@@ -17,6 +17,9 @@ import {
   DropdownMenu,
   EmptyState,
   FormField,
+  type GridColumn,
+  type GridPreset,
+  GridView,
   LoadingIndicator,
   NavMenu,
   notify,
@@ -47,6 +50,68 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+interface Fastener {
+  id: string;
+  model: string;
+  description: string;
+  material: 'Wood' | 'Steel' | 'Concrete';
+  capacity: number;
+  qty: number | null;
+  status: 'OK' | 'Check' | 'Fails';
+  image: string;
+}
+
+const fasteners: Fastener[] = [
+  { id: 'f1', model: 'SDWS22400', description: 'Timber screw, 0.22 x 4"', material: 'Wood', capacity: 1450, qty: 4, status: 'OK', image: '/images/sample-drawing.svg' },
+  { id: 'f2', model: 'SDWC15600', description: 'Truss screw, 0.15 x 6"', material: 'Wood', capacity: 980, qty: 6, status: 'Check', image: '/images/sample-drawing.svg' },
+  { id: 'f3', model: 'SD9112', description: 'Connector screw #9 x 1.5"', material: 'Steel', capacity: 610, qty: 10, status: 'OK', image: '/images/sample-drawing.svg' },
+  { id: 'f4', model: 'Titen HD THD50400', description: 'Heavy-duty concrete anchor', material: 'Concrete', capacity: 3120, qty: 2, status: 'OK', image: '/images/sample-drawing.svg' },
+  { id: 'f5', model: 'SDS25300', description: 'Strong-Drive SDS screw', material: 'Wood', capacity: 1210, qty: null, status: 'Fails', image: '/images/sample-drawing.svg' },
+  { id: 'f6', model: 'Bu lông bê tông M12', description: 'Neo bê tông cốt thép', material: 'Concrete', capacity: 2480, qty: 8, status: 'OK', image: '/images/sample-drawing.svg' },
+];
+
+const fastenerColumns: GridColumn<Fastener>[] = [
+  {
+    id: 'model',
+    header: 'Model',
+    value: 'model',
+    type: 'image',
+    width: 220,
+    image: { src: (r) => r.image, subtext: (r) => r.description },
+  },
+  { id: 'material', header: 'Material', value: 'material', filter: 'select', width: 140 },
+  { id: 'capacity', header: 'Capacity', value: 'capacity', type: 'number', format: (v) => (v == null ? '' : `${(v as number).toLocaleString('en-US')} lbs`), width: 140 },
+  { id: 'qty', header: 'Qty', value: 'qty', type: 'number', width: 110 },
+  { id: 'status', header: 'Status', value: 'status', filter: 'select', width: 120 },
+  {
+    id: 'datasheet',
+    header: 'Datasheet',
+    value: (r) => `${r.model}.pdf`,
+    type: 'link',
+    link: { href: (r) => `https://example.com/datasheets/${encodeURIComponent(r.model)}.pdf`, external: true },
+    sortable: false,
+    filter: false,
+    width: 200,
+  },
+  {
+    id: 'details',
+    header: 'Details',
+    value: () => 'View',
+    type: 'link',
+    link: { onClick: (r) => notify.info(`Details for ${r.model}`) },
+    sortable: false,
+    filter: false,
+    searchable: false,
+    width: 130,
+  },
+];
+
+const fastenerPresets: GridPreset[] = [
+  { id: 'high', label: 'Capacity ≥ 1,000 lbs', filters: { capacity: { min: 1000 } } },
+  { id: 'wood', label: 'Wood only', filters: { material: ['Wood'] } },
+  { id: 'attention', label: 'Needs attention', filters: { status: ['Check', 'Fails'] } },
+];
+
 /** Demo brand presets: the whole kit follows PlatformThemeProvider `colors`. */
 const brandPresets = [
   { value: 'fd', label: 'FD orange (default)', colors: undefined },
@@ -76,6 +141,7 @@ export function App() {
   const [count, setCount] = useState<number | null>(3);
   const [calculating, setCalculating] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [selectedFastener, setSelectedFastener] = useState<string | null>('f1');
   const [country, setCountry] = useState<string | number | boolean | null>('USA');
   const [card, setCard] = useState<string | null>('single');
   const [loading, setLoading] = useState(false);
@@ -124,6 +190,29 @@ export function App() {
         <WorkspaceDemo key={page} split={page} />
       ) : (
       <main className="mx-auto grid max-w-6xl items-start gap-4 p-4 md:grid-cols-2">
+        <div className="md:col-span-2">
+          <Section title="Grid view">
+            <GridView
+              aria-label="Fastener results"
+              rows={fasteners}
+              columns={fastenerColumns}
+              getRowId={(r) => r.id}
+              presets={fastenerPresets}
+              search={{ placeholder: 'Search model, material, status…' }}
+              rowHighlight={(r) => (r.status === 'Fails' ? 'danger' : r.status === 'Check' ? 'warning' : undefined)}
+              selectedRowId={selectedFastener}
+              onRowClick={(r) => setSelectedFastener(r.id)}
+              initialState={{ pinned: { start: ['model'], end: ['details'] } }}
+              maxHeight={360}
+              toolbar={
+                <Button size="small" onClick={() => notify.success('Exported CSV')}>
+                  Export
+                </Button>
+              }
+            />
+          </Section>
+        </div>
+
         <Section title="Buttons">
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="primary">Calculate</Button>

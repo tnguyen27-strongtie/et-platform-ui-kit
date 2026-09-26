@@ -34,6 +34,7 @@ Trạng thái: `tsc` strict pass, library build pass, 15 unit test (logic số) 
 | Tailwind CSS, `@tailwindcss/vite` | 4.3 |
 | `react-resizable-panels` | 4.x (bố cục 3 section) |
 | `react-toastify` | 11 |
+| `@tanstack/react-table` | 9.2 (logic của GridView, không kèm giao diện) |
 | `clsx`, `tailwind-merge` | 2.1, 3.7 |
 | TypeScript / Vite | 6.0 / 8.3 |
 
@@ -286,6 +287,76 @@ Các hàm `parseNumber`, `roundTo`, `stepNumber`, `isInRange`, `formatNumber` c�
 | `Box`, `Stack`, `Typography`, `Divider`, `Link`, `Chip` | — | Re-export từ MUI, đã có style theo theme |
 | `TopNav`, `NavMenu` | `.nav-item`, `.nav-dropdown-item` | Thanh cao 54px, gạch chân cam 4px khi hover/mở |
 
+### GridView
+
+Bảng dữ liệu cho kết quả tính toán, tương tự ag-grid nhưng dùng giao diện và theme của kit. Phần state (sort, filter, thứ tự cột, cố định cột) do `@tanstack/react-table` v9 xử lý; markup, style và hành vi bàn phím là của kit.
+
+```tsx
+const columns: GridColumn<Fastener>[] = [
+  { id: 'model', header: 'Model', value: 'model', type: 'image', width: 220,
+    image: { src: (r) => r.imageUrl, subtext: (r) => r.description } },
+  { id: 'material', header: 'Material', value: 'material', filter: 'select' },
+  { id: 'capacity', header: 'Capacity', value: 'capacity', type: 'number',
+    format: (v) => `${(v as number).toLocaleString('en-US')} lbs` },
+  { id: 'sheet', header: 'Datasheet', value: (r) => `${r.model}.pdf`, type: 'link',
+    link: { href: (r) => r.datasheetUrl, external: true }, filter: false, sortable: false },
+  { id: 'details', header: 'Details', value: () => 'View', type: 'link',
+    link: { onClick: (r) => openDetails(r) }, filter: false, sortable: false, searchable: false },
+];
+
+<GridView
+  aria-label="Fastener results"
+  rows={fasteners}
+  columns={columns}
+  getRowId={(r) => r.id}
+  search={{ placeholder: 'Search model, material…', columns: ['model', 'material'] }}
+  presets={[
+    { id: 'high', label: 'Capacity ≥ 1,000 lbs', filters: { capacity: { min: 1000 } } },
+    { id: 'wood', label: 'Wood only', filters: { material: ['Wood'] } },
+  ]}
+  rowHighlight={(r) => (r.status === 'Fails' ? 'danger' : r.status === 'Check' ? 'warning' : undefined)}
+  selectedRowId={selectedId}
+  onRowClick={(r) => setSelectedId(r.id)}
+  initialState={savedLayout ?? { pinned: { start: ['model'], end: ['details'] } }}
+  onStateChange={saveLayout}          // lưu vào localStorage/settings nếu muốn
+  maxHeight={400}
+  toolbar={<Button size="small">Export</Button>}
+/>
+```
+
+**Cấu hình cột (`GridColumn`)**
+
+| Thuộc tính | Ý nghĩa |
+| --- | --- |
+| `id`, `header` | Id ổn định (dùng trong state, preset) và tên cột |
+| `value` | Tên field hoặc hàm trả giá trị. Giá trị này dùng để sort, filter, search. Chuỗi rỗng, `null`, `NaN` được coi là rỗng: hiện `—` và luôn nằm cuối khi sort |
+| `type` | `text` (mặc định), `number` (căn phải, chữ số đều, filter khoảng, dấu phân cách nghìn), `image` (ảnh + chữ, cần `image`), `link` (cần `link`) |
+| `cell` | Tự render nội dung bất kỳ. Sort, filter, search vẫn dựa trên `value` |
+| `format`, `precision` | Chữ hiển thị (vd. thêm đơn vị); master search tìm trên chữ này |
+| `image` | `{ src, alt?, subtext? }`: ảnh lazy load, dòng phụ màu xám |
+| `link` | `{ href, external? }`: thẻ `<a>` thật (mở tab mới an toàn khi `external`); hoặc `{ onClick }`: nút trông như link cho hành động trong app |
+| `width`, `align` | Rộng cố định (mặc định 160, số 120) để cột cố định thẳng hàng |
+| `sortable`, `filter`, `filterOptions`, `searchable`, `hideable` | Bật/tắt từng tính năng. `filter`: `text` / `number` / `select` / `false`. `select` tự lấy các giá trị khác nhau trong dữ liệu nếu không có `filterOptions` |
+
+**Hành vi**
+
+| Tính năng | Chuẩn áp dụng |
+| --- | --- |
+| Sort | Bấm tiêu đề: tăng → giảm → bỏ sort (mọi cột, kể cả số, bắt đầu từ tăng dần). Shift+click để sort thêm cột (có số thứ tự). `aria-sort` trên tiêu đề. Giá trị rỗng luôn cuối |
+| Filter theo cột | Hàng filter dưới tiêu đề: chữ (chứa, không phân biệt hoa thường/dấu), khoảng số (bao gồm hai đầu), chọn nhiều giá trị. Có số dòng "x of y rows" và nút Clear filters |
+| Ẩn/hiện hàng filter | Nút **Filters** (`aria-pressed`). Khi ẩn, filter đang có vẫn áp dụng; nút hiện số filter đang bật, và "x of y rows" + Clear filters vẫn hiện. Hiện lại thì giá trị còn nguyên. Mặc định hiện; `initialState={{ filtersVisible: false }}` để ẩn lúc đầu. `columnFilters={false}` tắt hẳn filter theo cột |
+| Master search | Mọi từ phải xuất hiện, ở bất kỳ cột nào ("wood 1,450"). Không phân biệt hoa thường và dấu tiếng Việt ("be tong" tìm được "Bê tông"). `search.columns` giới hạn cột được tìm. Escape để xóa |
+| Preset | Chip bấm một lần để áp bộ filter + search định sẵn; bấm lại để bỏ. Sửa filter bằng tay thì chip tự bỏ chọn |
+| Đổi vị trí cột | Kéo thả tiêu đề (tay cầm hiện khi rê chuột), hoặc menu cột → Move left/right cho bàn phím. Chỉ đổi trong cùng vùng (trái cố định / giữa / phải cố định) |
+| Cố định cột | Menu cột → Freeze left / Freeze right / Unfreeze. Cột cố định đứng yên khi cuộn ngang, có đường phân cách |
+| Ẩn/hiện cột | Menu cột → Hide column; nút Columns để bật lại. Không ẩn được cột cuối cùng. Reset layout đưa về ban đầu |
+| Highlight | `rowHighlight` tô `success`/`warning`/`danger`/`info`; `selectedRowId` tô dòng đang chọn + vạch màu brand, `aria-current` |
+| Click dòng | `onRowClick`: dòng focus được, Enter/Space để chọn. Bấm link/nút trong dòng không kích hoạt click dòng |
+| Cuộn | Tiêu đề và hàng filter dính trên cùng; vùng cuộn focus được bằng bàn phím. Grid luôn rộng theo khung chứa, bảng rộng thì cuộn bên trong (không làm tràn trang) |
+| Lưu layout | `onStateChange` trả `{ sort, filters, search, columnOrder, pinned, hidden, filtersVisible }`; truyền lại qua `initialState` |
+
+Giới hạn: render mọi dòng (không virtualization), phù hợp tới vài nghìn dòng. Chưa có kéo đổi độ rộng cột, nhóm dòng, sửa trực tiếp trong ô.
+
 ## Quy tắc hành vi
 
 Kit đã áp dụng sẵn các quy tắc dưới đây. Component mới cũng phải theo đúng các quy tắc này.
@@ -334,6 +405,7 @@ Mỗi component có một fixture trong `tests/e2e/harness/fixtures.tsx` (mở b
 | ImageViewer | Nút zoom trong giới hạn; nút zoom vẫn chạy khi đang zoom; bấm nhanh không reset; cuộn chuột, double-click và `ref.reset()` |
 | SectionLayout | 3 khung có thanh kéo; kéo Input nhỏ quá thì thu thành thanh dọc và mở lại được; mobile: mỗi lần một khung, Input giữ dữ liệu |
 | Density | Đổi class trên `<body>` và cỡ chữ 14 ↔ 16px |
+| GridView | Kiểu cell (số, rỗng, ảnh, link ngoài an toàn); highlight; sort tăng/giảm/bỏ, rỗng luôn cuối, sort nhiều cột, bàn phím, menu; filter chữ/khoảng số/chọn nhiều, "không có kết quả"; ẩn/hiện hàng filter (filter vẫn áp dụng, badge đếm, giữ giá trị); master search nhiều từ, bỏ dấu, giới hạn cột, Escape; preset bật/tắt; cố định trái/phải và đứng yên khi cuộn; đổi vị trí bằng menu và kéo thả; ẩn/hiện, reset layout; tiêu đề dính; chọn dòng bằng click/Enter; link trong dòng không kích hoạt dòng |
 
 Thêm component mới thì thêm fixture, thêm tên vào `fixtureNames` trong `tests/e2e/helpers.ts`, và viết spec cho các hành vi của nó.
 

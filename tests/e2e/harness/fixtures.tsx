@@ -21,6 +21,9 @@ import {
   ErrorBoundary,
   ExpandCollapseAllButton,
   FormField,
+  type GridColumn,
+  GridView,
+  type GridViewState,
   IconButton,
   ImageViewer,
   type ImageViewerHandle,
@@ -621,6 +624,67 @@ function DensityFixture() {
   );
 }
 
+// ---------- GridView ----------
+interface Part {
+  id: string;
+  model: string;
+  description: string;
+  material: 'Wood' | 'Steel' | 'Concrete';
+  capacity: number;
+  qty: number | null;
+  status: 'OK' | 'Check' | 'Fails';
+}
+
+const parts: Part[] = [
+  { id: 'p1', model: 'SDWS22400', description: 'Timber screw', material: 'Wood', capacity: 1450, qty: 4, status: 'OK' },
+  { id: 'p2', model: 'SDWC15600', description: 'Truss screw', material: 'Wood', capacity: 980, qty: 6, status: 'Check' },
+  { id: 'p3', model: 'SD9112', description: 'Connector screw', material: 'Steel', capacity: 610, qty: 10, status: 'OK' },
+  { id: 'p4', model: 'THD50400', description: 'Concrete anchor', material: 'Concrete', capacity: 3120, qty: null, status: 'OK' },
+  { id: 'p5', model: 'SDS25300', description: 'Strong-Drive screw', material: 'Wood', capacity: 1210, qty: 2, status: 'Fails' },
+  { id: 'p6', model: 'M12', description: 'Bu lông bê tông', material: 'Concrete', capacity: 2480, qty: 8, status: 'OK' },
+];
+
+function GridFixture() {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [opened, setOpened] = useState<string[]>([]);
+  const [state, setState] = useState<GridViewState | null>(null);
+  const columns: GridColumn<Part>[] = [
+    { id: 'model', header: 'Model', value: 'model', type: 'image', width: 180, image: { src: () => '/images/sample-drawing.svg', alt: (r) => `${r.model} photo`, subtext: (r) => r.description } },
+    { id: 'material', header: 'Material', value: 'material', filter: 'select', width: 150 },
+    { id: 'capacity', header: 'Capacity', value: 'capacity', type: 'number', format: (v) => (v == null ? '' : `${(v as number).toLocaleString('en-US')} lbs`), width: 150 },
+    { id: 'qty', header: 'Qty', value: 'qty', type: 'number', width: 130 },
+    { id: 'status', header: 'Status', value: 'status', filter: 'select', width: 130, cell: (r) => <strong data-testid={`status-${r.id}`}>{r.status}</strong> },
+    { id: 'sheet', header: 'Datasheet', value: (r) => `${r.model}.pdf`, type: 'link', link: { href: (r) => `https://example.com/${r.model}.pdf`, external: true }, filter: false, sortable: false, width: 170 },
+    { id: 'open', header: 'Open', value: () => 'Open', type: 'link', link: { onClick: (r) => setOpened((o) => [...o, r.id]) }, filter: false, sortable: false, searchable: false, hideable: false, width: 110 },
+  ];
+  return (
+    <>
+      <div style={{ width: 640 }}>
+        <GridView
+          aria-label="Parts"
+          rows={parts}
+          columns={columns}
+          getRowId={(r) => r.id}
+          search={{ placeholder: 'Search parts', columns: ['model', 'material', 'capacity', 'sheet'] }}
+          presets={[
+            { id: 'wood', label: 'Wood only', filters: { material: ['Wood'] } },
+            { id: 'big', label: 'Big anchors', filters: { capacity: { min: 2000 } }, search: 'concrete' },
+          ]}
+          rowHighlight={(r) => (r.status === 'Fails' ? 'danger' : r.status === 'Check' ? 'warning' : undefined)}
+          selectedRowId={selected}
+          onRowClick={(r) => setSelected(r.id)}
+          onStateChange={setState}
+          initialState={{ pinned: { start: ['model'], end: [] } }}
+          maxHeight={260}
+        />
+      </div>
+      <Out id="selected" value={selected} />
+      <Out id="opened" value={opened} />
+      <Out id="state" value={state} />
+    </>
+  );
+}
+
 export const fixtures: Record<string, ComponentType> = {
   button: ButtonFixture,
   'text-input': TextInputFixture,
@@ -641,4 +705,5 @@ export const fixtures: Record<string, ComponentType> = {
   'image-viewer': ImageViewerFixture,
   layout: LayoutFixture,
   density: DensityFixture,
+  grid: GridFixture,
 };

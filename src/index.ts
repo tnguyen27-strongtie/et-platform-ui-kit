@@ -79,6 +79,29 @@ export { default as Stack } from '@mui/material/Stack';
 export { default as Tooltip } from '@mui/material/Tooltip';
 export { default as Typography } from '@mui/material/Typography';
 
+// Data grid
+export { GridImageCell, GridLinkCell, type GridImageCellProps, type GridLinkCellProps } from './components/grid/GridCells';
+export {
+  isEmptyFilter,
+  matchesNumberRange,
+  matchesSearch,
+  matchesSelect,
+  matchesText,
+  normalizeText,
+  type GridFilterValue,
+  type NumberRange,
+} from './components/grid/gridFilters';
+export {
+  GridView,
+  type GridCellValue,
+  type GridColumn,
+  type GridFilterType,
+  type GridHighlight,
+  type GridPreset,
+  type GridViewProps,
+  type GridViewState,
+} from './components/grid/GridView';
+
 // Workspace (three-section calculator layout)
 export { ImageViewer, type ImageViewerHandle, type ImageViewerProps } from './components/workspace/ImageViewer';
 export { Section, type SectionProps, type SectionTab } from './components/workspace/Section';

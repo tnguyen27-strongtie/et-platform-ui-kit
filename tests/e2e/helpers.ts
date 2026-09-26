@@ -21,6 +21,7 @@ export const fixtureNames = [
   'image-viewer',
   'layout',
   'density',
+  'grid',
 ] as const;
 
 export type FixtureName = (typeof fixtureNames)[number];

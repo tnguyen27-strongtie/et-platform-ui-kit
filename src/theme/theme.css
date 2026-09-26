@@ -112,3 +112,151 @@
     }
   }
 }
+
+/*
+ * GridView. Row colour lives in --row-bg so frozen (sticky) cells, which need an opaque
+ * background, always match their row's hover / highlight / selected state.
+ */
+@layer components {
+  .grid-view {
+    color: var(--color-text);
+  }
+  .grid-th,
+  .grid-th-filter {
+    background: var(--color-surface-subtle);
+    border-bottom: 1px solid var(--color-border-input);
+    padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+    text-align: start;
+    vertical-align: middle;
+    font-weight: 700;
+    height: 2.5rem;
+  }
+  .grid-th-filter {
+    padding: 0 0.5rem 0.375rem;
+    height: auto;
+    font-weight: 400;
+  }
+  .grid-row {
+    --row-bg: var(--color-surface);
+  }
+  .grid-row:hover {
+    --row-bg: var(--color-surface-hover);
+  }
+  .grid-row[data-highlight='success'] {
+    --row-bg: color-mix(in srgb, var(--color-success) 16%, var(--color-surface));
+  }
+  .grid-row[data-highlight='warning'] {
+    --row-bg: color-mix(in srgb, var(--color-warning) 18%, var(--color-surface));
+  }
+  .grid-row[data-highlight='danger'] {
+    --row-bg: color-mix(in srgb, var(--color-danger) 14%, var(--color-surface));
+  }
+  .grid-row[data-highlight='info'] {
+    --row-bg: color-mix(in srgb, var(--color-info) 14%, var(--color-surface));
+  }
+  .grid-row[data-selected] {
+    --row-bg: var(--color-brand-selected);
+  }
+  .grid-row[data-selected] > td:first-child {
+    box-shadow: inset 3px 0 0 var(--color-brand);
+  }
+  .grid-row-clickable {
+    cursor: pointer;
+  }
+  .grid-row-clickable:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: -2px;
+  }
+  .grid-td {
+    background: var(--row-bg);
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.375rem 0.5rem;
+    height: 2.25rem;
+    vertical-align: middle;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Divider after the last left-frozen column / before the first right-frozen column. */
+  .grid-td.grid-pin-edge-start {
+    background: linear-gradient(to left, var(--color-border-strong) 2px, var(--row-bg) 2px);
+  }
+  .grid-td.grid-pin-edge-end {
+    background: linear-gradient(to right, var(--color-border-strong) 2px, var(--row-bg) 2px);
+  }
+  :is(.grid-th, .grid-th-filter).grid-pin-edge-start {
+    background: linear-gradient(to left, var(--color-border-strong) 2px, var(--color-surface-subtle) 2px);
+  }
+  :is(.grid-th, .grid-th-filter).grid-pin-edge-end {
+    background: linear-gradient(to right, var(--color-border-strong) 2px, var(--color-surface-subtle) 2px);
+  }
+  .grid-drop-before {
+    box-shadow: inset 3px 0 0 var(--color-brand);
+  }
+  .grid-drop-after {
+    box-shadow: inset -3px 0 0 var(--color-brand);
+  }
+  .grid-sort {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 0;
+    padding: 0.125rem 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    text-align: start;
+    cursor: pointer;
+  }
+  .grid-sort:hover {
+    color: var(--color-brand);
+  }
+  .grid-sort:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  .grid-sort-index {
+    font-size: 0.625rem;
+    color: var(--color-brand);
+  }
+  .grid-drag {
+    opacity: 0;
+    transition: opacity 150ms;
+  }
+  .grid-th:hover .grid-drag {
+    opacity: 1;
+  }
+  .grid-filter .MuiOutlinedInput-root {
+    height: 1.75rem;
+    font-size: 0.75rem;
+  }
+  .grid-filter .MuiOutlinedInput-input {
+    min-width: 0;
+  }
+  .grid-badge {
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding: 0 0.25rem;
+    border-radius: 9999px;
+    background: var(--color-brand);
+    color: var(--color-text-on-brand);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1.125rem;
+    text-align: center;
+  }
+  .grid-filler {
+    padding: 0;
+  }
+  .grid-th-filter.grid-filler,
+  .grid-th.grid-filler {
+    padding: 0;
+  }
+  .grid-empty {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+  }
+}
