@@ -61,7 +61,7 @@ Các lệnh khác:
 ```bash
 pnpm typecheck        # tsc strict
 pnpm test             # unit test logic số (node --test, không cần thư viện)
-pnpm test:e2e         # Playwright: hành vi, bàn phím, axe, đổi theme (tự chạy dev server)
+pnpm test:e2e         # Playwright: hành vi từng component, bàn phím, axe, đổi theme (tự chạy dev server)
 pnpm build            # build library ra dist/ (JS ESM + .d.ts + CSS)
 pnpm build:showcase   # build trang showcase ra dist-showcase/
 pnpm pack             # tạo tarball @platform/ui-x.y.z.tgz (tự chạy build)
@@ -91,7 +91,11 @@ scripts/
 └── copy-assets.sh                 # font + logo từ repo Blueprint
 tests/
 ├── unit/                          # node --test
-└── e2e/                           # Playwright + axe
+└── e2e/
+    ├── harness/                   # trang test: mỗi component một fixture (#select, #dialog…)
+    ├── components/                # spec theo nhóm: forms, buttons, navigation, overlays, display, smoke
+    ├── showcase.spec.ts           # trang showcase: đổi theme, NumberInput, dialog xác nhận
+    └── helpers.ts
 vite.lib.config.ts, tsconfig.lib.json  # library build
 public/
 ├── fonts/                         # font có license, nằm trong .gitignore
@@ -270,13 +274,13 @@ Các hàm `parseNumber`, `roundTo`, `stepNumber`, `isInRange`, `formatNumber` c�
 | Component | Tương ứng FD | Ghi chú |
 | --- | --- | --- |
 | `Tabs`, `Tab`, `TabPanel` | `Tabs.List/Trigger/Content` | Thanh tab xám, tab đang chọn màu cam. Truyền `id` cho `Tabs` và `tabsId` cho `TabPanel` để nối tab với panel |
-| `Accordion` | `Accordion` (Radix) | Header xám nhạt, mũi tên cam xoay 90° khi mở |
+| `Accordion` | `Accordion` (Radix) | Header xám nhạt, mũi tên cam xoay 90° khi mở. `headingLevel` (mặc định `h3`) |
 | `useAccordionGroup`, `ExpandCollapseAllButton` | nút "Collapse all" của Input | Giữ trạng thái chung cho nhiều Accordion: `<Accordion {...group.item('loads')} />`, nút đặt ở `Section actions` |
 | `Alert` | `Alert.Error/Warning/Success/Info` | `severity`, `title`, nội dung 12px |
 | `DataTable` + `.Head/.Body/.Footer/.Row/.Cell` | `Table.*` | Ô 12px, header đậm cao 48px; kết hợp `@tanstack/react-table` để sort, filter |
 | `LoadingIndicator` | `LoadingIndicator` | Vòng cam nhấp nháy "Updating Results", phủ cả khung |
 | `Spinner` | — | Vòng xoay nhỏ inline, theo màu chữ |
-| `Card` | — | Khung trắng có viền, `title`, `actions`, `footer` |
+| `Card` | — | Header nền xám, tiêu đề bold (`title`, `subtitle`, `actions`), `footer`. `padding`: `sm` (8px, mặc định), `md` (12px), `none` (đặt bảng sát viền, tự bỏ viền đôi) |
 | `EmptyState` | — | Khung trống: "No results yet" + nút hành động |
 | `ErrorBoundary` | — | Lỗi render trong một khung không làm trắng cả app. `resetKeys`, `fallback`, `onError` |
 | `Box`, `Stack`, `Typography`, `Divider`, `Link`, `Chip` | — | Re-export từ MUI, đã có style theo theme |
@@ -299,6 +303,39 @@ Kit đã áp dụng sẵn các quy tắc dưới đây. Component mới cũng ph
 | Dialog giữ focus bên trong | MUI trap focus, Escape để đóng, đóng xong trả focus về nút đã mở dialog |
 | Lỗi render cục bộ | Bọc mỗi section bằng `ErrorBoundary` |
 | Nút chỉ có icon có tên | `IconButton` bắt buộc `aria-label` ở mức type |
+| Thứ bậc chữ nhất quán | Tiêu đề (Card, Dialog, Accordion, EmptyState, Alert, đầu bảng, `Typography h1–h6`) = **bold**; label = medium; nội dung = regular. `h1`–`h6` theo thang gọn cho app công cụ (24 → 12px), không dùng thang mặc định 96px của MUI |
+| Khoảng cách theo nhịp 8px | Padding của Card, Dialog, Accordion, ô bảng đều 0.5rem; khoảng cách giữa các field 0.5–0.75rem |
+| Kích thước menu thống nhất | Menu hành động (DropdownMenu, NavMenu, MUI `Menu`) rộng 160–320px (`layout.menuMinWidth/MaxWidth`); nhãn dài xuống dòng, không bị cắt. Item cao tối thiểu 36px, 48px trên màn hình cảm ứng. Dropdown của Select rộng bằng ô Select |
+| Chữ và icon thẳng hàng | `fonts.css` ghi đè vertical metrics của Helvetica Neue LT Std, nên chữ nằm đúng giữa hộp dòng; mọi cặp icon + chữ căn `center` là thẳng hàng |
+
+### Test hành vi
+
+Mỗi component có một fixture trong `tests/e2e/harness/fixtures.tsx` (mở bằng `pnpm dev` rồi vào `/tests/e2e/harness/index.html#<tên>`). Fixture in ra giá trị mà callback nhận được (`<output data-testid>`), nên test kiểm tra được cả kiểu dữ liệu, ví dụ `2` khác `"2"`.
+
+| Nhóm | Những gì được kiểm tra |
+| --- | --- |
+| Tất cả fixture (`smoke`) | Không có lỗi console, không vi phạm axe (trừ `color-contrast`) |
+| Button | Click / Enter / Space; disabled và `loading` chặn click; không submit form nếu không phải `type="submit"`; Enter trong input submit form; viền focus chỉ hiện khi dùng bàn phím |
+| TextInput + FormField | `required`, mô tả và lỗi nối vào input; lỗi được đọc (`role="alert"`) và bỏ khi hết lỗi; textarea giữ xuống dòng; disabled |
+| NumberInput | Spinbutton có min/max/now; chỉ trả số hoặc `null`; không gọi `onChange` khi blur không đổi; theo giá trị app đặt; Shift+mũi tên ×10 có kẹp; `precision`; readOnly, disabled |
+| Select | Placeholder, label, mô tả; bàn phím mở/chọn/bỏ qua option disabled/trả focus; giữ kiểu số; Escape không đổi giá trị; chọn nhiều; dropdown rộng bằng ô |
+| Combobox | Lọc khi gõ; chọn bằng bàn phím; "không có kết quả"; option disabled; `searchText`; nút Clear về `null`; Escape |
+| Checkbox, Switch, Radio | Click label, Space; role `switch`; disabled; radio nhận tên từ FormField, mũi tên bỏ qua option disabled, giữ kiểu số/boolean |
+| OptionCardGroup | `aria-pressed`; bấm lại thẻ đang chọn không thành `null`; thẻ disabled; Space |
+| Tabs | Tab ↔ panel nối bằng id; mũi tên/Home/End bỏ qua tab disabled; `keepMounted` giữ state |
+| Accordion | Click/Enter/Space; header nằm trong heading, `aria-controls` trỏ tới đúng một region; controlled; expand/collapse all |
+| DropdownMenu, NavMenu | `aria-haspopup`/`aria-expanded`; bàn phím mở, bỏ qua item disabled, chọn, trả focus; Escape; rộng 160–320px, nhãn dài xuống dòng, item ≥ 36px (48px cảm ứng) |
+| Dialog | Tên từ tiêu đề; giữ focus bên trong; Escape trả focus; từng chế độ `dismissible` và `reason` |
+| ConfirmDialog | Focus nút Confirm; khi `loading` không đóng được và không xác nhận hai lần; Cancel |
+| HelpPopover, Tooltip | Mở/đóng, Escape trả focus; tooltip là mô tả (không đổi tên nút), hiện khi hover và focus bàn phím |
+| Toast | Mỗi loại được đọc; success tự đóng, error ở lại; hover dừng timer; nút đóng, dismiss all; tối đa 5 toast |
+| Alert, Card, DataTable, EmptyState, Spinner, LoadingIndicator | Role đúng (`alert`/`status`/`progressbar`); heading của Card; bảng có header, vùng cuộn focus được bằng bàn phím, header dính |
+| ErrorBoundary | Lỗi bị chặn trong khung, báo qua `onError`, thử lại vẫn lỗi nếu dữ liệu chưa sửa, `resetKeys` khôi phục |
+| ImageViewer | Nút zoom trong giới hạn; nút zoom vẫn chạy khi đang zoom; bấm nhanh không reset; cuộn chuột, double-click và `ref.reset()` |
+| SectionLayout | 3 khung có thanh kéo; kéo Input nhỏ quá thì thu thành thanh dọc và mở lại được; mobile: mỗi lần một khung, Input giữ dữ liệu |
+| Density | Đổi class trên `<body>` và cỡ chữ 14 ↔ 16px |
+
+Thêm component mới thì thêm fixture, thêm tên vào `fixtureNames` trong `tests/e2e/helpers.ts`, và viết spec cho các hành vi của nó.
 
 ## Bố cục 3 section
 
@@ -396,6 +433,7 @@ Mọi giá trị nằm trong `src/tokens/tokens.ts`, gồm cả thang màu đầ
 | Bo góc | `radius.sm` / `md` / `lg` / `xl` | 0.125 / 0.25 / 0.5 / 1rem |
 | Breakpoint | `sm` / `md` / `lg` / `xl` | 640 / 768 / 992 / 1280px |
 | Top nav / input / tab | `layout` | cao 54 / 40 / 48px |
+| Menu | `layout.menuMinWidth` / `menuMaxWidth` / `menuItemMinHeight` / `menuItemMinHeightTouch` | 160 / 320 / 36 / 48px |
 
 **Trong Tailwind**, token có cùng tên dạng kebab-case: `bg-brand`, `text-danger`, `border-border-input`, `bg-pumpkin-orange-10`, `shadow-popover`, `rounded-sm`, `z-(--z-top-nav)`.
 
@@ -444,6 +482,8 @@ Các điểm dưới đây khác FD có chủ ý: để sửa lỗi của FD ho�
 - **Focus dùng `:focus-visible`** thay vì `:focus`, để nút không giữ màu active sau khi click chuột. Mọi control có viền focus rõ ràng; FD dựa vào ripple nên checkbox/radio/switch/tab không hiện focus.
 - **Nút primary khi disabled** mờ đi thay vì chuyển sang nâu đậm (FD làm nút disabled trông nổi hơn nút đang bật).
 - **Alert cảnh báo** dùng chữ `warningText` (nâu) thay vì vàng, cho đủ tương phản.
+- **Căn chữ**: file font LT Std có ascent bằng đúng chiều cao chữ hoa, nên chữ bị đẩy lên khoảng 2px so với checkbox, radio, switch và icon trong nút. `fonts.css` dùng `ascent-override: 90.5%; descent-override: 21.2%; line-gap-override: 0%` (tỉ lệ của Helvetica/Arial) để sửa tận gốc.
+- **Tiêu đề in đậm**: tiêu đề Accordion và Dialog dùng bold (FD dùng medium), để tách rõ với label của field.
 - **Toast** dừng khi rê chuột; toast lỗi không tự đóng. FD tự đóng sau 5s kể cả khi đang đọc.
 - **Tooltip dùng `describeChild`**, để tooltip không ghi đè tên của nút với trình đọc màn hình.
 - **Icon**: `Blue-Icon-Font` và `material-icons` được thay bằng `@mui/icons-material`, nên hình checkbox và dấu check trên thẻ chọn hơi khác FD.

@@ -97,7 +97,13 @@ export const ImageViewer = forwardRef<ImageViewerHandle, ImageViewerProps>(funct
         }}
       />
       {showZoomButtons && (
-        <div className="absolute right-2 bottom-2 z-10 flex flex-col rounded-sm bg-white shadow-popover">
+        // Keep pointer and double-click events on the buttons: otherwise the pan handler captures the
+        // pointer (the click never reaches the button) and quick repeated clicks reset the view.
+        <div
+          className="absolute right-2 bottom-2 z-10 flex flex-col rounded-sm bg-white shadow-popover"
+          onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
           <IconButton aria-label="Zoom in" onClick={() => zoomAt(1.5)} disabled={view.scale >= maxScale}>
             <AddIcon fontSize="small" />
           </IconButton>

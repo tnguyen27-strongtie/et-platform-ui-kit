@@ -182,3 +182,13 @@ test.describe('Accordion group', () => {
     for (const h of await headers.all()) await expect(h).toHaveAttribute('aria-expanded', 'true');
   });
 });
+
+test.describe('Card', () => {
+  test('title is bold on a highlighted header and body padding is 8px by default', async ({ page }) => {
+    const card = page.locator('section', { has: page.getByRole('heading', { name: 'Fastener capacity' }) }).last();
+    const title = card.getByRole('heading', { name: 'Fastener capacity' });
+    await expect(title).toHaveCSS('font-weight', '700');
+    await expect(card.locator('header')).toHaveCSS('background-color', 'rgb(250, 250, 250)');
+    await expect(card.locator('header + div')).toHaveCSS('padding', '8px');
+  });
+});

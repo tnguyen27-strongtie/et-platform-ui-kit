@@ -46,7 +46,7 @@ export {
 } from './components/Choice';
 export { Combobox, type ComboboxProps } from './components/Combobox';
 export { ConfirmDialog, type ConfirmDialogProps } from './components/ConfirmDialog';
-export { DataTable } from './components/DataTable';
+export { DataTable, type DataTableProps } from './components/DataTable';
 export {
   Dialog,
   DialogBody,

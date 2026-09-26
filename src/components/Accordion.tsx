@@ -15,14 +15,20 @@ export interface AccordionProps {
   defaultExpanded?: boolean;
   expanded?: boolean;
   onChange?: (expanded: boolean) => void;
+  /** Heading level wrapping the header button, to fit the page outline. Default h3. */
+  headingLevel?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   className?: string;
 }
 
-/** FD section accordion: light gray header, orange chevron rotating 90deg when open. */
-export function Accordion({ title, children, defaultExpanded = true, expanded, onChange, className }: AccordionProps) {
+/**
+ * FD section accordion: light gray header, orange chevron rotating 90deg when open.
+ * The header is a button inside a heading (WAI-ARIA accordion pattern): Enter/Space toggle.
+ */
+export function Accordion({ title, children, defaultExpanded = true, expanded, onChange, headingLevel = 'h3', className }: AccordionProps) {
   const id = useId();
   return (
     <MuiAccordion
+      slots={{ heading: headingLevel }}
       defaultExpanded={defaultExpanded}
       expanded={expanded}
       onChange={(_, isExpanded) => onChange?.(isExpanded)}
@@ -31,7 +37,8 @@ export function Accordion({ title, children, defaultExpanded = true, expanded, o
       <AccordionSummary expandIcon={<KeyboardArrowRightIcon />} aria-controls={`${id}-content`} id={`${id}-header`}>
         {title}
       </AccordionSummary>
-      <AccordionDetails id={`${id}-content`}>{children}</AccordionDetails>
+      {/* MUI gives the collapse region the id named by aria-controls; do not repeat it here. */}
+      <AccordionDetails>{children}</AccordionDetails>
     </MuiAccordion>
   );
 }

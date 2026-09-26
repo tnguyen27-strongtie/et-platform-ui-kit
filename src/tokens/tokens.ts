@@ -212,6 +212,12 @@ export const layout = {
   dialogMaxWidth: 1536,
   inputHeight: 40,
   tabHeight: 48,
+  /** Action menus (DropdownMenu, NavMenu, MUI Menu): same width range everywhere. */
+  menuMinWidth: 160,
+  menuMaxWidth: 320,
+  /** Menu item height: mouse / touch (WCAG 2.5.8 target size on coarse pointers). */
+  menuItemMinHeight: 36,
+  menuItemMinHeightTouch: 48,
 } as const;
 
 export const zIndex = {

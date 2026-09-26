@@ -56,6 +56,9 @@ const brandFilled = {
   '& .MuiButton-loadingIndicator': { color: colors.textOnBrand },
 } as const;
 
+/** Class on the Select dropdown paper, which follows the field width instead of the menu limits. */
+const SELECT_MENU_CLASS = 'platform-select-menu';
+
 export interface PlatformThemeOptions {
   density?: Density;
   /** Role colors to override, e.g. { brand: '#1565c0' }. Brand shades are derived. */
@@ -107,9 +110,19 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
         fontWeightRegular: typography.weight.regular,
         fontWeightMedium: typography.weight.medium,
         fontWeightBold: typography.weight.bold,
+        // Compact heading scale for tool UIs (MUI's defaults start at 6rem). Titles are bold,
+        // labels medium, body regular, so headings stand out without per-app styling.
+        h1: { fontSize: '1.5rem', lineHeight: 1.25, fontWeight: typography.weight.bold },
+        h2: { fontSize: '1.25rem', lineHeight: 1.25, fontWeight: typography.weight.bold },
+        h3: { fontSize: '1.125rem', lineHeight: 1.3, fontWeight: typography.weight.bold },
+        h4: { fontSize: typography.size.base, lineHeight: 1.4, fontWeight: typography.weight.bold },
+        h5: { fontSize: typography.size.sm, lineHeight: 1.4, fontWeight: typography.weight.bold },
+        h6: { fontSize: typography.size.xs, lineHeight: 1.4, fontWeight: typography.weight.bold, textTransform: 'uppercase', letterSpacing: '0.04em' },
+        subtitle1: { fontSize: typography.size.sm, fontWeight: typography.weight.medium },
+        subtitle2: { fontSize: typography.size.xs, fontWeight: typography.weight.medium },
         body1: { fontSize: `${fontSize}px`, lineHeight: `${lineHeight}px` },
         body2: { fontSize: typography.size.sm },
-        caption: { fontSize: typography.size.xs },
+        caption: { fontSize: typography.size.xs, color: colors.textMuted },
         button: { textTransform: 'none', fontWeight: typography.weight.regular },
       },
       zIndex: {
@@ -333,7 +346,8 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           },
         },
         MuiSelect: {
-          defaultProps: { MenuProps: { slotProps: { paper: { elevation: 8 } } } },
+          // Marked so the action-menu width limits below do not apply: a select's list matches the field width.
+          defaultProps: { MenuProps: { slotProps: { paper: { elevation: 8, className: SELECT_MENU_CLASS } } } },
           styleOverrides: {
             select: {
               display: 'flex',
@@ -347,7 +361,12 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
         },
         MuiMenu: {
           styleOverrides: {
-            paper: { borderRadius: radius.sm, ...thinMenuScrollbar },
+            paper: {
+              borderRadius: radius.sm,
+              ...thinMenuScrollbar,
+              // Action menus share one width range; long labels wrap instead of stretching the menu.
+              [`&:not(.${SELECT_MENU_CLASS})`]: { minWidth: layout.menuMinWidth, maxWidth: layout.menuMaxWidth },
+            },
             list: { padding: 0, maxHeight: '24rem' },
           },
         },
@@ -356,7 +375,16 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
             root: {
               padding: '0.5rem',
               gap: '0.5rem',
-              minHeight: 'auto',
+              // Nested so it beats MUI's own `@media (min-width: sm) { min-height: auto }`, which
+              // emotion emits after plain declarations.
+              '&.MuiMenuItem-root': {
+                minHeight: layout.menuItemMinHeight,
+                '@media (pointer: coarse)': { minHeight: layout.menuItemMinHeightTouch },
+              },
+              // Wrap long labels rather than cut them off: the full action name must stay readable.
+              whiteSpace: 'normal',
+              overflowWrap: 'anywhere',
+              lineHeight: 1.3,
               fontSize: typography.size.sm,
               '&:hover, &.Mui-focusVisible': { backgroundColor: colors.brandSubtle, boxShadow: shadows.dropdownItem },
               '&.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible': {
@@ -549,7 +577,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           },
         },
         MuiDialogTitle: {
-          styleOverrides: { root: { padding: 0, fontSize: typography.size.base, fontWeight: typography.weight.medium } },
+          styleOverrides: { root: { padding: 0, fontSize: typography.size.base, fontWeight: typography.weight.bold } },
         },
         MuiDialogContent: {
           styleOverrides: { root: { padding: '0.5rem' } },
@@ -580,7 +608,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
             content: {
               margin: 0,
               fontSize: typography.size.sm,
-              fontWeight: typography.weight.medium,
+              fontWeight: typography.weight.bold,
               '&.Mui-expanded': { margin: 0 },
             },
             expandIconWrapper: {

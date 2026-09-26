@@ -38,12 +38,12 @@ import {
 } from '../index';
 import { WorkspaceDemo } from './WorkspaceDemo';
 
+/** Showcase panel, built from the kit's own Card so the demo shows its real spacing. */
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-3 rounded-sm bg-white p-4 shadow-popover">
-      <h2 className="text-base font-bold">{title}</h2>
-      {children}
-    </section>
+    <Card title={title} titleAs="h2" padding="md">
+      <div className="flex flex-col gap-3">{children}</div>
+    </Card>
   );
 }
 
@@ -123,7 +123,7 @@ export function App() {
       {page !== 'components' ? (
         <WorkspaceDemo key={page} split={page} />
       ) : (
-      <main className="mx-auto grid max-w-6xl gap-4 p-4 md:grid-cols-2">
+      <main className="mx-auto grid max-w-6xl items-start gap-4 p-4 md:grid-cols-2">
         <Section title="Buttons">
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="primary">Calculate</Button>
@@ -202,8 +202,27 @@ export function App() {
         </Section>
 
         <Section title="Card and empty state">
-          <Card title="Results" actions={<Button size="small" variant="text">Details</Button>} footer={<span className="text-sm font-bold">Total: 1,450 lbs</span>}>
-            <span className="text-sm">Card body content.</span>
+          <Card
+            title="Fastener capacity"
+            subtitle="per connection"
+            actions={
+              <Button size="small" variant="text">
+                Details
+              </Button>
+            }
+            footer={<span className="text-sm font-bold">Total: 1,450 lbs</span>}
+          >
+            Default padding (8px), same as dialogs and accordions.
+          </Card>
+          <Card title="Results table" padding="none">
+            <DataTable>
+              <DataTable.Body>
+                <DataTable.Row>
+                  <DataTable.Cell>SDWS22400</DataTable.Cell>
+                  <DataTable.Cell align="right">1,450 lbs</DataTable.Cell>
+                </DataTable.Row>
+              </DataTable.Body>
+            </DataTable>
           </Card>
           <EmptyState title="No results yet" action={<Button variant="primary">Calculate</Button>}>
             Fill in the inputs, then run the calculation.
