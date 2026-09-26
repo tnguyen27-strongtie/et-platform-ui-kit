@@ -14,8 +14,27 @@ export interface CheckboxProps extends Omit<MuiCheckboxProps, 'onChange'> {
   onChange?: (checked: boolean) => void;
 }
 
-export function Checkbox({ label, onChange, ...props }: CheckboxProps) {
-  const control = <MuiCheckbox onChange={(_, checked) => onChange?.(checked)} {...props} />;
+/**
+ * Checkbox with a boolean onChange. `indeterminate` sets the native input's indeterminate
+ * state (announced as "mixed") instead of MUI's aria-checked="mixed", which conflicts with a
+ * native checkbox that is not itself indeterminate.
+ */
+export function Checkbox({ label, onChange, indeterminate = false, slotProps, ...props }: CheckboxProps) {
+  const inputSlot = (slotProps?.input ?? {}) as Record<string, unknown> & { ref?: unknown };
+  const syncIndeterminate = (el: HTMLInputElement | null) => {
+    if (el) el.indeterminate = indeterminate;
+    const ref = inputSlot.ref;
+    if (typeof ref === 'function') ref(el);
+    else if (ref && typeof ref === 'object') (ref as { current: HTMLInputElement | null }).current = el;
+  };
+  const control = (
+    <MuiCheckbox
+      indeterminate={indeterminate}
+      onChange={(_, checked) => onChange?.(checked)}
+      slotProps={{ ...slotProps, input: { ...inputSlot, ref: syncIndeterminate, 'aria-checked': undefined } as never }}
+      {...props}
+    />
+  );
   if (!label) return control;
   return <FormControlLabel control={control} label={label} disabled={props.disabled} />;
 }

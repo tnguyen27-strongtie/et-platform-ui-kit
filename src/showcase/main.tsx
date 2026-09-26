@@ -1,4 +1,5 @@
 import '../theme/theme.css';
+import './showcase.css';
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

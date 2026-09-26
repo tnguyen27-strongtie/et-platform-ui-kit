@@ -47,13 +47,23 @@ scripts/copy-assets.sh ../et-blueprint  # chép font Helvetica Neue + logo từ 
 pnpm dev                                # showcase: http://localhost:5173
 ```
 
-Showcase có 3 trang, chuyển bằng menu **View** trên thanh nav:
+Showcase gồm thanh bên trái liệt kê component theo nhóm (trên mobile là ô "Go to page"), và mỗi nhóm là một trang:
 
 | Trang | URL | Nội dung |
 | --- | --- | --- |
-| Components | `/` | Mọi component ở mọi trạng thái (default, hover, disabled, error), bảng màu, công tắc đổi density |
-| Workspace (stacked) | `/#workspace` | Bố cục FD: Input bên trái, Illustration trên Output bên phải |
-| Workspace (side by side) | `/#workspace-columns` | Illustration và Output nằm cạnh nhau |
+| Overview | `/` | Danh sách mọi demo và các export mà demo đó trình bày, dùng để review |
+| Foundations | `/#/foundations` | Role color (theo brand đang chọn), thang màu, typography, radius, shadow, spacing, Box/Stack |
+| Actions | `/#/actions` | Button (mọi variant, kích thước, trạng thái), IconButton, CloseButton, DropdownMenu |
+| Forms | `/#/forms` | FormField (kèm `useFormField` cho control tự làm), TextInput, NumberInput, Select, Combobox, Checkbox/Switch, RadioGroup, OptionCardGroup |
+| Overlays | `/#/overlays` | Tooltip, InfoTip/HelpPopover, Dialog (vị trí, chế độ đóng), ConfirmDialog, Toast |
+| Navigation | `/#/navigation` | TopNav/NavMenu, Tabs, Accordion + expand/collapse all |
+| Data display | `/#/data` | Card, DataTable, GridView, GridImageCell/GridLinkCell, Chip/Link/Divider |
+| Feedback | `/#/feedback` | Alert, EmptyState, Spinner, LoadingIndicator, ErrorBoundary |
+| Workspace | `/#/workspace` | SectionLayout, Section, VisualizationStage + ImageViewer, DropOverlay |
+| Utilities | `/#/utilities` | Ô thử các hàm số, tìm kiếm và theme |
+| Workspace toàn màn hình | `/#workspace`, `/#workspace-columns` | Bố cục FD thật: xếp dọc / cạnh nhau |
+
+Link tới từng demo có dạng `/#/<trang>/<id>`, ví dụ `/#/data/grid-view`. Mỗi demo có mô tả ngắn về lúc nên dùng, các trạng thái, và đoạn code mẫu.
 
 Góc phải thanh nav của showcase có ô chọn màu brand để thử cấu hình theme.
 
@@ -87,6 +97,9 @@ src/
 ├── utils/number.ts                # parse/format/step số, dùng cho NumberInput và validate của app
 ├── index.ts                       # entry: export mọi thứ ở trên
 └── showcase/                      # trang demo, KHÔNG copy sang dự án
+    ├── catalog.ts                 # danh sách trang/demo (nguồn cho thanh bên, Overview, test)
+    ├── layout.tsx                 # DemoPage, DemoSection, Code, điều hướng theo hash
+    └── pages/                     # mỗi nhóm một trang
 scripts/
 ├── build-tokens.ts                # tokens.ts → tokens.generated.css
 └── copy-assets.sh                 # font + logo từ repo Blueprint
@@ -95,7 +108,7 @@ tests/
 └── e2e/
     ├── harness/                   # trang test: mỗi component một fixture (#select, #dialog…)
     ├── components/                # spec theo nhóm: forms, buttons, navigation, overlays, display, smoke
-    ├── showcase.spec.ts           # trang showcase: đổi theme, NumberInput, dialog xác nhận
+    ├── showcase.spec.ts           # showcase: mọi export có demo, mọi trang render + axe, điều hướng, theme
     └── helpers.ts
 vite.lib.config.ts, tsconfig.lib.json  # library build
 public/
@@ -546,7 +559,7 @@ Không sửa tay `tokens.generated.css`, và không viết mã hex trong compone
 - Callback trả về giá trị đã chuẩn hóa (ví dụ `onChange(checked: boolean)`) thay vì event.
 - Control nhận dữ liệu thì gọi `useFormField()` để lấy `id`, `describedBy`, `invalid`, `labelId`.
 - Theo [Quy tắc hành vi](#quy-tắc-hành-vi); control có thể focus phải có style `.Mui-focusVisible` hoặc `:focus-visible`.
-- Export trong `src/index.ts` và thêm ví dụ vào `src/showcase`.
+- Export trong `src/index.ts`, rồi thêm demo: một `<DemoSection id=…>` trong trang phù hợp ở `src/showcase/pages/`, và một mục tương ứng trong `src/showcase/catalog.ts` (ghi các export mà demo trình bày). Test `showcase.spec.ts` báo lỗi nếu có export nào chưa có demo.
 - Thêm test vào `tests/e2e` (hoặc `tests/unit` nếu là logic thuần), rồi chạy `pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build`.
 
 **Thêm variant cho Button**: khai báo tên trong `augmentation.d.ts` (`ButtonPropsVariantOverrides`), rồi thêm style vào `MuiButton.variants` trong theme.

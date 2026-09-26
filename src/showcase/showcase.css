@@ -1,0 +1,20 @@
+/* Showcase-only styles (not shipped with the kit). */
+.sidebar-link {
+  display: block;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  text-decoration: none;
+}
+.sidebar-link:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-brand);
+}
+.sidebar-link[aria-current='page'] {
+  background: var(--color-brand-subtle);
+  color: var(--color-brand);
+}
+.sidebar-link:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: -2px;
+}
