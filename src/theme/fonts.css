@@ -1,0 +1,39 @@
+/*
+ * Brand fonts. Files are copied from the Blueprint repo by scripts/copy-assets.sh
+ * into public/fonts/. Helvetica Neue LT Std is a licensed font: confirm the licence
+ * covers the new product before shipping.
+ */
+@font-face {
+  font-family: 'HelveticaNeueLTStd';
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/HelveticaNeueLTStd-Lt.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'HelveticaNeueLTStd';
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/HelveticaNeueLTStd-Roman.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'HelveticaNeueLTStd';
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/HelveticaNeueLTStd-Md.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'HelveticaNeueLTStd';
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/HelveticaNeueLTStd-Bd.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'HelveticaNeueLTStd';
+  font-weight: 800;
+  font-display: swap;
+  src: url('/fonts/HelveticaNeueLTStd-Hv.otf') format('opentype');
+}

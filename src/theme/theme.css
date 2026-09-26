@@ -1,0 +1,103 @@
+/*
+ * Global stylesheet for apps built on the kit.
+ * Import once in the app entry: import '@platform/ui/theme.css';
+ *
+ * Layer order lets Tailwind utilities override MUI styles without !important
+ * (MUI emits into @layer mui because PlatformThemeProvider enables CSS layers).
+ */
+@layer theme, base, mui, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import './tokens.generated.css';
+@import './fonts.css';
+
+/* Blueprint density classes, applied by PlatformThemeProvider on <body>. */
+@custom-variant standard (.density-standard &);
+@custom-variant expanded (.density-expanded &);
+/* Style MUI SVG icons inside an element: icon:text-brand */
+@custom-variant icon (& .MuiSvgIcon-root);
+
+@utility flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@theme {
+  --animate-modal-show: modal-show 0.3s ease-out;
+  --animate-loading-border: loading-border 1.25s infinite ease-in-out;
+  --animate-loading-pulse: loading-pulse 1.25s infinite ease-in-out;
+  --animate-border-highlight: border-highlight 0.8s ease-in-out 3;
+  --animate-jump: jump 2s linear infinite;
+
+  @keyframes modal-show {
+    from { transform: translate(0, -25%); }
+    to { transform: translate(0, 0); }
+  }
+  @keyframes loading-border {
+    0%, 100% { border: 1px solid var(--color-pumpkin-orange-50); }
+    50% { border: 15px solid transparent; }
+  }
+  @keyframes loading-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes border-highlight {
+    0%, 100% { border-color: #000; box-shadow: 0 0 0 0 rgb(178 109 31 / 0); }
+    40%, 60% {
+      border-color: var(--color-pumpkin-orange-50);
+      box-shadow: 0 0 0 3px rgb(178 109 31 / 0.85), 0 0 12px rgb(178 109 31 / 0.7);
+    }
+  }
+  @keyframes jump {
+    0% { transform: translateY(0); }
+    10% { transform: translateY(-0.5rem); }
+    25% { transform: translateY(0); }
+    30% { transform: translateY(-0.25rem); }
+    40% { transform: translateY(0); }
+    50% { transform: translateY(-0.125rem); }
+    60% { transform: translateY(0); }
+  }
+}
+
+@layer base {
+  :root {
+    --viewport-height: 100vh;
+  }
+  @supports (height: 100dvh) {
+    :root {
+      --viewport-height: 100dvh;
+    }
+  }
+  .density-standard {
+    font-size: 14px;
+    line-height: 17.5px;
+  }
+  .density-expanded {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .grecaptcha-badge {
+    visibility: hidden;
+  }
+}
+
+/* react-toastify, as configured in FD */
+@layer components {
+  .Toastify .Toastify__toast-container {
+    width: 100%;
+    font-family: var(--font-sans);
+    @media (width >= 48rem) {
+      width: 40.625rem;
+    }
+  }
+}
