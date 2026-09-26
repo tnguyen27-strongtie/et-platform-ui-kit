@@ -60,6 +60,7 @@ export { EmptyState, type EmptyStateProps } from './components/EmptyState';
 export { ErrorBoundary, type ErrorBoundaryProps } from './components/ErrorBoundary';
 export { FormField, useFormField, type FormFieldContextValue, type FormFieldProps } from './components/FormField';
 export { HelpPopover, type HelpPopoverProps } from './components/HelpPopover';
+export { InfoTip, type InfoTipPlacement, type InfoTipProps } from './components/InfoTip';
 export { LoadingIndicator } from './components/LoadingIndicator';
 export { NumberInput, type NumberInputProps } from './components/NumberInput';
 export { OptionCardGroup, type OptionCard, type OptionCardGroupProps } from './components/OptionCardGroup';
@@ -68,6 +69,7 @@ export { Spinner, type SpinnerProps } from './components/Spinner';
 export { Tab, TabPanel, Tabs, type TabPanelProps, type TabsProps } from './components/Tabs';
 export { TextInput, type TextInputProps } from './components/TextInput';
 export { notify, ToastHost } from './components/Toast';
+export { Tooltip, type TooltipProps } from './components/Tooltip';
 export { NavMenu, TopNav, type NavMenuItem } from './components/TopNav';
 
 // MUI primitives re-exported so apps never import @mui directly (styled by the platform theme)
@@ -76,7 +78,6 @@ export { default as Chip } from '@mui/material/Chip';
 export { default as Divider } from '@mui/material/Divider';
 export { default as Link } from '@mui/material/Link';
 export { default as Stack } from '@mui/material/Stack';
-export { default as Tooltip } from '@mui/material/Tooltip';
 export { default as Typography } from '@mui/material/Typography';
 
 // Data grid

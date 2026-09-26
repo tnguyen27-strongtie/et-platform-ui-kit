@@ -17,6 +17,8 @@ import {
   DropdownMenu,
   EmptyState,
   FormField,
+  IconButton,
+  InfoTip,
   type GridColumn,
   type GridPreset,
   GridView,
@@ -266,6 +268,41 @@ export function App() {
             <span className="flex items-center gap-2 text-sm">
               <Spinner size={16} /> Inline spinner
             </span>
+          </div>
+        </Section>
+
+        <Section title="Tooltips">
+          <p className="m-0 text-xs text-text-muted">Hover: short text. Click: long explanation.</p>
+          <div className="flex flex-wrap items-center gap-4">
+            <Tooltip title="Reset view">
+              <IconButton aria-label="Reset view">
+                <span aria-hidden="true">⟲</span>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Fill in all required inputs first">
+              <Button variant="primary" disabled>
+                Export
+              </Button>
+            </Tooltip>
+            <span className="text-sm">
+              Capacity
+              <InfoTip title="How capacity is calculated">
+                <p>Capacity is the lowest of the fastener, main member and side member limits, adjusted for load duration and wet service.</p>
+                <ul>
+                  <li>Fastener: withdrawal and lateral design values</li>
+                  <li>Main and side member: bearing and net section</li>
+                </ul>
+                <p>
+                  See the <a href="https://example.com/guide">design guide</a> for the full method.
+                </p>
+              </InfoTip>
+            </span>
+            <InfoTip trigger="info" label="About load duration" placement="right">
+              Load duration factor C<sub>D</sub> adjusts wood strength for how long the load is applied.
+            </InfoTip>
+            <InfoTip trigger={<Button size="small" variant="text">Why is this failing?</Button>} title="Why it fails">
+              <p>The side member is thinner than the minimum penetration for this screw.</p>
+            </InfoTip>
           </div>
         </Section>
 

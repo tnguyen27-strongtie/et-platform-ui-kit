@@ -194,9 +194,26 @@ Style của hầu hết component nằm trong theme (`createPlatformTheme.ts`), 
 | `DropdownMenu` | — | Nút mở danh sách hành động; item có `icon`, `danger`, `divider` |
 | `Dialog`, `DialogHeader`, `DialogBody`, `DialogFooter` | `Modal` (Radix), `Dialog` (MUI) | `placement="top"` (mặc định) hoặc `"center"`. `dismissible`: `any` / `escape` / `none`. `onClose(reason)` |
 | `ConfirmDialog` | — | Xác nhận trước khi xóa/reset. `destructive` = nút đỏ và focus sẵn ở Cancel. `loading` = khóa dialog |
-| `Tooltip` | `Tooltip` (Radix) | MUI Tooltip, có mũi tên, mặc định ở trên |
-| `HelpPopover` | `Popper` (nút "?" màu cam) | Bấm để mở, có nút đóng |
+| `Tooltip` | `Tooltip` (Radix) | **Hover, chữ ngắn** (1–2 dòng, chỉ chữ): nhãn cho icon button, gợi ý một dòng. Mở sau 300ms (100ms giữa các nút cạnh nhau), khi focus bằng bàn phím, khi nhấn giữ trên màn hình cảm ứng. Rê chuột vào tooltip thì tooltip không biến mất, Escape để đóng. Chữ 12px, rộng tối đa 320px. Dùng được trên nút disabled |
+| `InfoTip` | `Popper` (nút "?" màu cam) | **Click, giải thích dài** (nhiều đoạn, danh sách, link). Mở bằng click/Enter/Space thành một dialog nhỏ; focus đi vào trong nên link bấm được; Escape, click ra ngoài hoặc nút X để đóng, focus trả về nút đã mở. `title` in đậm và đặt tên cho dialog. `trigger`: `'help'` (nút "?" FD, mặc định), `'info'` (icon "i") hoặc phần tử tùy chọn như `<Button variant="text">Why?</Button>`. `placement`, `maxWidth` (mặc định 360px); nội dung dài cuộn sau 384px |
+| `HelpPopover` | — | Alias của `InfoTip` với nút "?" (giữ cho code cũ và `FormField help`) |
 | `notify.success/info/warning/error/dismiss`, `ToastHost` | `toastSuccess`, `toastError` | react-toastify. Lỗi ở lại tới khi đóng tay, cảnh báo 8s, còn lại 5s; dừng khi rê chuột |
+
+Chọn loại tooltip:
+
+```tsx
+// Hover: ngắn, chỉ chữ
+<Tooltip title="Reset view">
+  <IconButton aria-label="Reset view"><RestartAltIcon /></IconButton>
+</Tooltip>
+
+// Click: giải thích dài, có cấu trúc
+<InfoTip title="How capacity is calculated">
+  <p>Capacity is the lowest of the fastener and member limits.</p>
+  <ul><li>Fastener: withdrawal and lateral</li><li>Members: bearing</li></ul>
+  <p>See the <a href="/guide">design guide</a>.</p>
+</InfoTip>
+```
 
 ```tsx
 <Dialog open={open} onClose={close}>
@@ -374,6 +391,7 @@ Kit đã áp dụng sẵn các quy tắc dưới đây. Component mới cũng ph
 | Dialog giữ focus bên trong | MUI trap focus, Escape để đóng, đóng xong trả focus về nút đã mở dialog |
 | Lỗi render cục bộ | Bọc mỗi section bằng `ErrorBoundary` |
 | Nút chỉ có icon có tên | `IconButton` bắt buộc `aria-label` ở mức type |
+| Tooltip đúng loại | Chữ ngắn → `Tooltip` (hover). Nội dung dài, có link hoặc danh sách → `InfoTip` (click). Không đặt link hay nội dung bấm được trong `Tooltip`, vì người dùng bàn phím và cảm ứng không với tới được |
 | Thứ bậc chữ nhất quán | Tiêu đề (Card, Dialog, Accordion, EmptyState, Alert, đầu bảng, `Typography h1–h6`) = **bold**; label = medium; nội dung = regular. `h1`–`h6` theo thang gọn cho app công cụ (24 → 12px), không dùng thang mặc định 96px của MUI |
 | Khoảng cách theo nhịp 8px | Padding của Card, Dialog, Accordion, ô bảng đều 0.5rem; khoảng cách giữa các field 0.5–0.75rem |
 | Kích thước menu thống nhất | Menu hành động (DropdownMenu, NavMenu, MUI `Menu`) rộng 160–320px (`layout.menuMinWidth/MaxWidth`); nhãn dài xuống dòng, không bị cắt. Item cao tối thiểu 36px, 48px trên màn hình cảm ứng. Dropdown của Select rộng bằng ô Select |
@@ -398,7 +416,8 @@ Mỗi component có một fixture trong `tests/e2e/harness/fixtures.tsx` (mở b
 | DropdownMenu, NavMenu | `aria-haspopup`/`aria-expanded`; bàn phím mở, bỏ qua item disabled, chọn, trả focus; Escape; rộng 160–320px, nhãn dài xuống dòng, item ≥ 36px (48px cảm ứng) |
 | Dialog | Tên từ tiêu đề; giữ focus bên trong; Escape trả focus; từng chế độ `dismissible` và `reason` |
 | ConfirmDialog | Focus nút Confirm; khi `loading` không đóng được và không xác nhận hai lần; Cancel |
-| HelpPopover, Tooltip | Mở/đóng, Escape trả focus; tooltip là mô tả (không đổi tên nút), hiện khi hover và focus bàn phím |
+| Tooltip | Hiện khi hover (có độ trễ, không nháy) và khi focus bàn phím; rê chuột vào tooltip không làm mất; Escape đóng; chỉ mô tả, không đổi tên nút; hiện trên nút disabled; chữ nhỏ, giới hạn độ rộng |
+| InfoTip, HelpPopover | Không mở khi hover; click/Enter mở dialog có tên; focus vào trong, Tab tới được link; Escape, click ra ngoài, nút X đóng và trả focus; trigger `info` và trigger tùy chọn; giới hạn rộng, cuộn khi dài |
 | Toast | Mỗi loại được đọc; success tự đóng, error ở lại; hover dừng timer; nút đóng, dismiss all; tối đa 5 toast |
 | Alert, Card, DataTable, EmptyState, Spinner, LoadingIndicator | Role đúng (`alert`/`status`/`progressbar`); heading của Card; bảng có header, vùng cuộn focus được bằng bàn phím, header dính |
 | ErrorBoundary | Lỗi bị chặn trong khung, báo qua `onError`, thử lại vẫn lỗi nếu dữ liệu chưa sửa, `resetKeys` khôi phục |

@@ -26,6 +26,7 @@ import {
   type GridViewState,
   IconButton,
   ImageViewer,
+  InfoTip,
   type ImageViewerHandle,
   LoadingIndicator,
   NavMenu,
@@ -484,6 +485,35 @@ function OverlayFixture() {
       <Tooltip title="Runs the calculation">
         <Button variant="primary">Calculate</Button>
       </Tooltip>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <Tooltip title="Settings">
+          <IconButton aria-label="Open settings">
+            <SettingsIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Fill in all inputs first">
+          <Button disabled>Export</Button>
+        </Tooltip>
+        <span>
+          Capacity
+          <InfoTip title="How capacity is calculated" label="About capacity">
+            <p>Capacity is the lowest of the fastener, main member and side member limits.</p>
+            <ul>
+              <li>Fastener: withdrawal and lateral design values</li>
+              <li>Members: bearing and net section</li>
+            </ul>
+            <p>
+              See the <a href="https://example.com/guide">design guide</a> for details.
+            </p>
+          </InfoTip>
+        </span>
+        <InfoTip trigger="info" label="About load duration" placement="right">
+          Load duration factor adjusts for how long the load is applied.
+        </InfoTip>
+        <InfoTip trigger={<Button variant="text">Why is this failing?</Button>} title="Why it fails">
+          <p>The side member is thinner than the minimum penetration.</p>
+        </InfoTip>
+      </div>
     </>
   );
 }

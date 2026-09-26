@@ -145,6 +145,126 @@ test.describe('Tooltip', () => {
   });
 });
 
+test.describe('Tooltip (hover, short text)', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'overlay');
+  });
+
+  test('waits briefly before opening so passing the pointer over does not flash it', async ({ page }) => {
+    await page.getByRole('button', { name: 'Open settings' }).hover();
+    await page.waitForTimeout(150);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(page.getByRole('tooltip')).toHaveText('Settings');
+  });
+
+  test('stays open while the pointer moves onto it (WCAG 1.4.13)', async ({ page }) => {
+    await page.getByRole('button', { name: 'Open settings' }).hover();
+    const tip = page.getByRole('tooltip');
+    await expect(tip).toBeVisible();
+    await tip.hover();
+    await page.waitForTimeout(300);
+    await expect(tip).toBeVisible();
+  });
+
+  test('Escape closes it without moving the pointer (WCAG 1.4.13)', async ({ page }) => {
+    await page.getByRole('button', { name: 'Open settings' }).hover();
+    await expect(page.getByRole('tooltip')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+  });
+
+  test('icon buttons keep their own name; the tooltip only describes them', async ({ page }) => {
+    const button = page.getByRole('button', { name: 'Open settings' });
+    await button.hover();
+    await expect(page.getByRole('tooltip')).toBeVisible();
+    await expect(button).toHaveAccessibleName('Open settings');
+    await expect(button).toHaveAccessibleDescription('Settings');
+  });
+
+  test('explains a disabled button on hover', async ({ page }) => {
+    const exportButton = page.getByRole('button', { name: 'Export' });
+    await expect(exportButton).toBeDisabled();
+    await exportButton.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Fill in all inputs first');
+  });
+
+  test('short-text style: small text, width capped', async ({ page }) => {
+    await page.getByRole('button', { name: 'Open settings' }).hover();
+    const tip = page.getByRole('tooltip').locator('.MuiTooltip-tooltip');
+    await expect(tip).toHaveCSS('font-size', '12px');
+    await expect(tip).toHaveCSS('max-width', '320px');
+  });
+});
+
+test.describe('InfoTip (click, long explanation)', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'overlay');
+  });
+
+  test('does not open on hover, opens on click as a dialog named by its title', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: 'About capacity' });
+    await trigger.hover();
+    await page.waitForTimeout(500);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(trigger).toHaveAttribute('aria-haspopup', 'dialog');
+
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: 'How capacity is calculated' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('listitem')).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'About capacity', includeHidden: true })).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  test('keyboard: Enter opens, focus moves inside so links are reachable, Escape returns focus', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: 'About capacity' });
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'How capacity is calculated' });
+    await expect(dialog).toBeVisible();
+    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    let reachedLink = false;
+    for (let i = 0; i < 4 && !reachedLink; i++) {
+      await page.keyboard.press('Tab');
+      reachedLink = await dialog.getByRole('link', { name: 'design guide' }).evaluate((el) => el === document.activeElement);
+    }
+    expect(reachedLink).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
+  test('a click outside or the close button closes it', async ({ page }) => {
+    await page.getByRole('button', { name: 'About capacity' }).click();
+    await page.mouse.click(5, 5);
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await page.getByRole('button', { name: 'About capacity' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
+  });
+
+  test('info icon trigger without a title is named by its label', async ({ page }) => {
+    await page.getByRole('button', { name: 'About load duration' }).click();
+    const dialog = page.getByRole('dialog', { name: 'About load duration' });
+    await expect(dialog).toContainText('Load duration factor adjusts');
+  });
+
+  test('custom trigger (text button) keeps its name and gets the popup state', async ({ page }) => {
+    const trigger = page.getByRole('button', { name: 'Why is this failing?' });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await trigger.click();
+    await expect(page.getByRole('dialog', { name: 'Why it fails' })).toBeVisible();
+  });
+
+  test('long content is width-limited and scrolls instead of covering the page', async ({ page }) => {
+    await page.getByRole('button', { name: 'About capacity' }).click();
+    const dialog = page.getByRole('dialog', { name: 'How capacity is calculated' });
+    const box = (await dialog.boundingBox())!;
+    expect(box.width).toBeLessThanOrEqual(360);
+    await expect(dialog).toHaveCSS('max-height', '384px');
+    await expect(dialog).toHaveCSS('overflow-y', 'auto');
+  });
+});
+
 test.describe('Toast', () => {
   test.beforeEach(async ({ page }) => {
     await openFixture(page, 'toast');

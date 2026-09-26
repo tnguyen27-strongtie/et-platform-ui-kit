@@ -531,15 +531,18 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
         // ---------- Overlays ----------
         MuiTooltip: {
           // describeChild keeps the child's own accessible name (tooltip becomes a description).
-          defaultProps: { arrow: true, placement: 'top', describeChild: true },
+          // Short-text hover tooltip. 300ms avoids flashing while the pointer passes over; once one is
+          // open, neighbours open after 100ms. Long explanations belong in InfoTip (click).
+          defaultProps: { arrow: true, placement: 'top', describeChild: true, enterDelay: 300, enterNextDelay: 100 },
           styleOverrides: {
             tooltip: {
               backgroundColor: colors.text,
               color: '#fff',
               padding: '0.5rem 0.375rem',
               borderRadius: radius.sm,
-              maxWidth: '24rem',
-              fontSize: typography.size.sm,
+              maxWidth: '20rem',
+              fontSize: typography.size.xs,
+              lineHeight: 1.4,
               fontWeight: typography.weight.regular,
               boxShadow: shadows.popover,
             },
