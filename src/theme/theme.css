@@ -9,8 +9,12 @@
 
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
+@import 'react-toastify/dist/ReactToastify.css' layer(components);
 @import './tokens.generated.css';
 @import './fonts.css';
+
+/* Scan the kit's own sources/bundle for Tailwind classes (src/ in the repo, dist/ when installed). */
+@source "../";
 
 /* Blueprint density classes, applied by PlatformThemeProvider on <body>. */
 @custom-variant standard (.density-standard &);
@@ -44,7 +48,7 @@
     to { transform: translate(0, 0); }
   }
   @keyframes loading-border {
-    0%, 100% { border: 1px solid var(--color-pumpkin-orange-50); }
+    0%, 100% { border: 1px solid var(--color-accent); }
     50% { border: 15px solid transparent; }
   }
   @keyframes loading-pulse {
@@ -52,10 +56,10 @@
     50% { opacity: 0; }
   }
   @keyframes border-highlight {
-    0%, 100% { border-color: #000; box-shadow: 0 0 0 0 rgb(178 109 31 / 0); }
+    0%, 100% { border-color: #000; box-shadow: 0 0 0 0 transparent; }
     40%, 60% {
-      border-color: var(--color-pumpkin-orange-50);
-      box-shadow: 0 0 0 3px rgb(178 109 31 / 0.85), 0 0 12px rgb(178 109 31 / 0.7);
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 85%, transparent), 0 0 12px color-mix(in srgb, var(--color-accent) 70%, transparent);
     }
   }
   @keyframes jump {
@@ -91,8 +95,15 @@
   }
 }
 
-/* react-toastify, as configured in FD */
+/* react-toastify, as configured in FD, colored from the role tokens */
 @layer components {
+  :root {
+    --toastify-color-success: var(--color-success);
+    --toastify-color-warning: var(--color-warning);
+    --toastify-color-error: var(--color-danger);
+    --toastify-color-info: var(--color-info);
+    --toastify-font-family: var(--font-sans);
+  }
   .Toastify .Toastify__toast-container {
     width: 100%;
     font-family: var(--font-sans);

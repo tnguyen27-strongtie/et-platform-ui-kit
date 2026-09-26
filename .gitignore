@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+
+# Licensed fonts: copy with scripts/copy-assets.sh, never commit
+public/fonts/
+
+# Playwright
+test-results/
+playwright-report/
+dist-showcase/

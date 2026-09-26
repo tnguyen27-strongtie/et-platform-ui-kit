@@ -2,18 +2,21 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import InfoIcon from '@mui/icons-material/Info';
 import WarningIcon from '@mui/icons-material/Warning';
-import { alpha, styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
 import { colors, radius, typography } from '../tokens/tokens';
 
 export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
 
+// color-mix, not alpha(): colors are CSS variables so they follow the app's color config.
+const tint = (c: string) => `color-mix(in srgb, ${c} 15%, transparent)`;
+
 const tone: Record<AlertSeverity, { fg: string; bg: string }> = {
   info: { fg: colors.text, bg: 'transparent' },
-  success: { fg: colors.success, bg: alpha(colors.success, 0.15) },
-  warning: { fg: colors.warning, bg: alpha(colors.warning, 0.15) },
-  error: { fg: colors.danger, bg: alpha(colors.danger, 0.15) },
+  success: { fg: colors.success, bg: tint(colors.success) },
+  warning: { fg: colors.warningText, bg: tint(colors.warning) },
+  error: { fg: colors.danger, bg: tint(colors.danger) },
 };
 
 const icons: Record<AlertSeverity, ReactNode> = {

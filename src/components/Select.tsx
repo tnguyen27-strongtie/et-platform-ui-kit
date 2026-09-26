@@ -7,6 +7,7 @@ import type React from 'react';
 import type { ReactNode } from 'react';
 
 import { colors } from '../tokens/tokens';
+import { useFormField } from './FormField';
 
 export interface SelectOption<V extends string | number = string> {
   value: V;
@@ -15,6 +16,8 @@ export interface SelectOption<V extends string | number = string> {
   image?: string;
   /** Italic note aligned right in the option. */
   note?: ReactNode;
+  /** Text used for search and screen readers when `label` is not a plain string. */
+  searchText?: string;
   disabled?: boolean;
 }
 
@@ -50,6 +53,8 @@ interface BaseProps<V extends string | number> {
   disabled?: boolean;
   error?: boolean;
   fullWidth?: boolean;
+  /** Accessible name when the select is not inside a FormField. */
+  'aria-label'?: string;
 }
 
 export interface SingleSelectProps<V extends string | number> extends BaseProps<V> {
@@ -71,16 +76,19 @@ export function Select<V extends string | number = string>(props: MultiSelectPro
 export function Select<V extends string | number = string>(props: SingleSelectProps<V>): React.JSX.Element;
 export function Select<V extends string | number = string>(props: SelectProps<V>) {
   const { id, name, options, placeholder, disabled, error, fullWidth = true } = props;
+  const field = useFormField();
   const labelOf = (v: V) => options.find((o) => o.value === v)?.label ?? String(v);
 
   return (
     <MuiSelect<V | V[] | ''>
-      id={id}
+      id={id ?? field?.id}
+      labelId={field?.labelId}
+      inputProps={{ 'aria-describedby': field?.describedBy, 'aria-label': props['aria-label'] }}
       name={name}
       value={props.value}
       multiple={props.multiple}
       disabled={disabled}
-      error={error}
+      error={error ?? field?.invalid}
       fullWidth={fullWidth}
       displayEmpty={!!placeholder}
       IconComponent={KeyboardArrowDownIcon}

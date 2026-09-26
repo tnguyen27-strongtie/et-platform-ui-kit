@@ -9,10 +9,20 @@ import { colors, layout } from '../tokens/tokens';
 import { cn } from '../utils/cn';
 import { CloseButton } from './Button';
 
+export type DialogCloseReason = 'backdropClick' | 'escapeKeyDown';
+
 export interface DialogProps extends Omit<MuiDialogProps, 'onClose'> {
-  onClose?: () => void;
+  /** Called on Escape or backdrop click (see `dismissible`). The close button calls DialogHeader's onClose. */
+  onClose?: (reason: DialogCloseReason) => void;
   /** 'top' slides in below the top nav (FD default); 'center' centers vertically. */
   placement?: 'top' | 'center';
+  /**
+   * How the user may dismiss the dialog without a button:
+   * - 'any' (default): Escape or click outside.
+   * - 'escape': Escape only; a stray click outside does not lose form input (Bootstrap backdrop="static").
+   * - 'none': only the dialog's own buttons close it (use while saving/calculating).
+   */
+  dismissible?: 'any' | 'escape' | 'none';
 }
 
 const StyledDialog = styled(MuiDialog, {
@@ -31,8 +41,19 @@ const StyledDialog = styled(MuiDialog, {
   },
 }));
 
-export function Dialog({ placement = 'top', onClose, ...props }: DialogProps) {
-  return <StyledDialog placement={placement} onClose={() => onClose?.()} {...props} />;
+/** Modal dialog: focus is trapped inside, restored to the trigger on close, and the page behind is inert. */
+export function Dialog({ placement = 'top', onClose, dismissible = 'any', ...props }: DialogProps) {
+  return (
+    <StyledDialog
+      placement={placement}
+      onClose={(_, reason) => {
+        if (dismissible === 'none') return;
+        if (dismissible === 'escape' && reason === 'backdropClick') return;
+        onClose?.(reason);
+      }}
+      {...props}
+    />
+  );
 }
 
 export interface DialogHeaderProps {

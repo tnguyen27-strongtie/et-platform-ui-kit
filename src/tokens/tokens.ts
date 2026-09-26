@@ -86,8 +86,11 @@ export const scales = {
 
 export type ColorScale = (typeof scales)[keyof typeof scales];
 
-/** Role-based colors. Components use these, never raw hex. */
-export const colors = {
+/**
+ * Default value of every role color. Apps change them at runtime through
+ * <PlatformThemeProvider colors={...}>; components read them via `colors` (CSS variables).
+ */
+export const defaultColors = {
   /** FD "new orange": primary buttons, checked radios/switches, selected tabs. */
   brand: '#a8671d',
   brandHover: scales.pumpkinOrange[40],
@@ -128,6 +131,26 @@ export const colors = {
   scrollbarThumbMenu: '#6b7280',
   overlay: 'rgba(0, 0, 0, 0.5)',
 } as const;
+
+export type ColorRole = keyof typeof defaultColors;
+/** Resolved color values (hex/rgba), e.g. for MUI palette computations. */
+export type ColorValues = Record<ColorRole, string>;
+/** App-level color config: any subset of role colors. */
+export type ColorConfig = Partial<ColorValues>;
+
+const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+
+/** CSS custom property name of a role color, e.g. brand -> --color-brand. */
+export const colorVar = (role: ColorRole) => `--color-${kebab(role)}`;
+
+/**
+ * Role-based colors as CSS variable references (`var(--color-brand)`).
+ * Components use these, never raw hex, so a theme config applies everywhere,
+ * including MUI styles, Tailwind classes (bg-brand) and inline styles.
+ */
+export const colors = Object.fromEntries(
+  Object.keys(defaultColors).map((role) => [role, `var(${colorVar(role as ColorRole)})`]),
+) as Record<ColorRole, string>;
 
 export const typography = {
   fontFamily: {
@@ -211,7 +234,7 @@ export const motion = {
 
 export const tokens = {
   scales,
-  colors,
+  colors: defaultColors,
   typography,
   radius,
   shadows,

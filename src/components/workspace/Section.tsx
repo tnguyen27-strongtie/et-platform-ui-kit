@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 
 import { cn } from '../../utils/cn';
 import { Tab, TabPanel, Tabs } from '../Tabs';
@@ -46,13 +46,14 @@ const tabsSx = { flex: 1, border: 0, backgroundColor: 'transparent' } as const;
  */
 export function Section<V extends string>(props: SectionProps<V>) {
   const { actions, className, bodyClassName } = props;
+  const tabsId = useId();
 
   if (props.tabs) {
     const { tabs, value, onChange } = props;
     return (
       <div className={cn('flex h-full min-h-0 flex-col bg-white', className)}>
         <div className={headerClass}>
-          <Tabs value={value} onChange={onChange} sx={tabsSx}>
+          <Tabs id={tabsId} value={value} onChange={onChange} sx={tabsSx}>
             {tabs.map((t) => (
               <Tab key={t.value} value={t.value} label={t.label} disabled={t.disabled} className={t.className} />
             ))}
@@ -60,7 +61,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
           {actions && <div className="flex items-center gap-1">{actions}</div>}
         </div>
         {tabs.map((t) => (
-          <TabPanel key={t.value} value={t.value} current={value} keepMounted={t.keepMounted} className={cn('min-h-0', bodyClassName)}>
+          <TabPanel key={t.value} tabsId={tabsId} value={t.value} current={value} keepMounted={t.keepMounted} className={cn('min-h-0', bodyClassName)}>
             {t.content}
           </TabPanel>
         ))}

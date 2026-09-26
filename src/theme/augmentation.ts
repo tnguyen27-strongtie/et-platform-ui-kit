@@ -1,3 +1,4 @@
+// Type-only module augmentation; imported by index.ts so it ships with the package types.
 import type { ColorScale, Tokens } from '../tokens/tokens';
 
 declare module '@mui/material/styles' {
@@ -36,8 +37,12 @@ declare module '@mui/material/Button' {
     tertiary: true;
     default: true;
     fab: true;
+    /** Destructive action (delete, reset). */
+    danger: true;
     // MUI built-ins that FD never uses are turned off to keep one vocabulary.
     contained: false;
     outlined: false;
   }
 }
+
+export {};

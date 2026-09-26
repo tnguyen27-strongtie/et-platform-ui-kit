@@ -2,6 +2,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import Autocomplete from '@mui/material/Autocomplete';
 import OutlinedInput from '@mui/material/OutlinedInput';
 
+import { useFormField } from './FormField';
 import type { SelectOption } from './Select';
 
 export interface ComboboxProps<V extends string | number> {
@@ -13,9 +14,15 @@ export interface ComboboxProps<V extends string | number> {
   disabled?: boolean;
   error?: boolean;
   noOptionsText?: string;
+  /** Accessible name when the combobox is not inside a FormField. */
+  'aria-label'?: string;
 }
 
-/** FD searchable Dropdown (MUI Autocomplete). Options' labels must be strings. */
+/** Plain text of an option, for filtering and the input value. */
+const optionText = (o: SelectOption<string | number>) =>
+  o.searchText ?? (typeof o.label === 'string' || typeof o.label === 'number' ? String(o.label) : String(o.value));
+
+/** FD searchable Dropdown (MUI Autocomplete). Give `searchText` to options whose label is not a string. */
 export function Combobox<V extends string | number = string>({
   id,
   options,
@@ -25,23 +32,27 @@ export function Combobox<V extends string | number = string>({
   disabled,
   error,
   noOptionsText = 'No options',
+  'aria-label': ariaLabel,
 }: ComboboxProps<V>) {
+  const field = useFormField();
   const selected = options.find((o) => o.value === value) ?? null;
 
   return (
     <Autocomplete
-      id={id}
+      id={id ?? field?.id}
       options={options}
       value={selected}
-      disabled={disabled}
+      disabled={disabled ?? field?.disabled}
       noOptionsText={noOptionsText}
       popupIcon={<KeyboardArrowDownIcon />}
-      getOptionLabel={(o) => String(o.label)}
+      getOptionLabel={optionText}
       getOptionDisabled={(o) => !!o.disabled}
       isOptionEqualToValue={(a, b) => a.value === b.value}
       onChange={(_, o) => onChange(o?.value ?? null)}
       renderInput={(params) => {
         const { slotProps, disabled: inputDisabled, fullWidth } = params;
+        // InputBase only picks up the input ref from `inputRef`/`inputProps.ref`, not slotProps.input.
+        const { ref: htmlInputRef, ...htmlInput } = slotProps.htmlInput;
         return (
           <OutlinedInput
             ref={slotProps.input.ref}
@@ -49,10 +60,15 @@ export function Combobox<V extends string | number = string>({
             startAdornment={slotProps.input.startAdornment}
             endAdornment={slotProps.input.endAdornment}
             onMouseDown={slotProps.input.onMouseDown}
-            slotProps={{ input: slotProps.htmlInput }}
+            inputRef={htmlInputRef}
+            inputProps={{
+              ...htmlInput,
+              'aria-describedby': field?.describedBy,
+              'aria-label': ariaLabel,
+            }}
             disabled={inputDisabled}
             fullWidth={fullWidth}
-            error={error}
+            error={error ?? field?.invalid}
             placeholder={placeholder}
           />
         );

@@ -2,7 +2,7 @@ import Popover from '@mui/material/Popover';
 import { styled } from '@mui/material/styles';
 import { type ReactNode, useId, useState } from 'react';
 
-import { colors, scales } from '../tokens/tokens';
+import { colors } from '../tokens/tokens';
 import { CloseButton } from './Button';
 
 const Trigger = styled('button')({
@@ -24,8 +24,9 @@ const Trigger = styled('button')({
   color: colors.textOnBrand,
   backgroundColor: colors.accent,
   transition: 'background-color 250ms',
-  '&:hover': { backgroundColor: scales.pumpkinOrange[30] },
+  '&:hover': { backgroundColor: colors.brandHover },
   '&:active': { backgroundColor: colors.brandActive },
+  '&:focus-visible': { outline: `2px solid ${colors.brand}`, outlineOffset: '2px' },
 });
 
 export interface HelpPopoverProps {
@@ -44,7 +45,9 @@ export function HelpPopover({ content, placement = 'top', label = 'More informat
       <Trigger
         type="button"
         aria-label={label}
-        aria-describedby={anchor ? id : undefined}
+        aria-haspopup="dialog"
+        aria-expanded={!!anchor}
+        aria-controls={anchor ? id : undefined}
         onClick={(e) => {
           e.preventDefault();
           setAnchor(e.currentTarget);

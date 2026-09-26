@@ -1,7 +1,7 @@
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { Group, Panel, type PanelSize, Separator, useDefaultLayout, usePanelRef } from 'react-resizable-panels';
 
 import { layout } from '../../tokens/tokens';
@@ -40,7 +40,7 @@ function ResizeHandle({ direction }: { direction: 'columns' | 'rows' }) {
   return (
     <Separator
       className={cn(
-        'shrink-0 bg-true-gray-30 transition-colors duration-250 hover:bg-true-gray-50 data-[separator=active]:bg-pumpkin-orange-50',
+        'shrink-0 bg-true-gray-30 transition-colors duration-250 hover:bg-true-gray-50 data-[separator=active]:bg-accent',
         direction === 'columns' ? 'w-[5px] cursor-col-resize' : 'h-[5px] cursor-row-resize',
       )}
     />
@@ -54,6 +54,7 @@ function CollapsedRail({ label, onExpand }: { label: ReactNode; onExpand: () => 
       type="button"
       onClick={onExpand}
       aria-label="Expand panel"
+      aria-expanded={false}
       className="flex h-full w-full cursor-pointer flex-col items-center gap-2 border-0 bg-true-gray-10 py-2 text-sm font-medium text-text hover:text-brand"
     >
       <KeyboardDoubleArrowRightIcon fontSize="small" />
@@ -122,11 +123,12 @@ function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileA
     { value: 'output', label: labels.output, content: output, keepMounted: true },
   ];
   const [current, setCurrent] = useState(tabs[0]?.value ?? 'input');
+  const tabsId = useId();
 
   return (
     <div className="flex size-full flex-col bg-white">
       <div className="flex shrink-0 items-center border-b-2 border-true-gray-20 bg-true-gray-10 pr-2">
-        <Tabs value={current} onChange={setCurrent} sx={{ flex: 1, border: 0, backgroundColor: 'transparent' }}>
+        <Tabs id={tabsId} value={current} onChange={setCurrent} sx={{ flex: 1, border: 0, backgroundColor: 'transparent' }}>
           {tabs.map((t) => (
             <Tab key={t.value} value={t.value} label={t.label} disabled={t.disabled} />
           ))}
@@ -134,7 +136,7 @@ function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileA
         {mobileActions}
       </div>
       {tabs.map((t) => (
-        <TabPanel key={t.value} value={t.value} current={current} keepMounted={t.keepMounted} className="min-h-0 [&>*]:h-full">
+        <TabPanel key={t.value} tabsId={tabsId} value={t.value} current={current} keepMounted={t.keepMounted} className="min-h-0 [&>*]:h-full">
           {t.content}
         </TabPanel>
       ))}

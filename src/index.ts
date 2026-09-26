@@ -1,17 +1,40 @@
+// MUI type augmentation (Button variants, palette scales, theme.tokens)
+import './theme/augmentation';
+
 // Tokens
 export * from './tokens/tokens';
 
 // Theme
+export { colorCssVars, resolveColors } from './theme/colors';
 export { createPlatformTheme, type PlatformTheme, type PlatformThemeOptions } from './theme/createPlatformTheme';
 export { PlatformThemeProvider, type PlatformThemeProviderProps } from './theme/PlatformThemeProvider';
 
 // Utils
 export { cn } from './utils/cn';
+export {
+  clamp,
+  decimalsOf,
+  formatNumber,
+  isInRange,
+  isPartialNumber,
+  type NumberRules,
+  parseNumber,
+  roundTo,
+  stepNumber,
+} from './utils/number';
 
 // Components
-export { Accordion, type AccordionProps } from './components/Accordion';
+export {
+  Accordion,
+  ExpandCollapseAllButton,
+  useAccordionGroup,
+  type AccordionGroup,
+  type AccordionProps,
+  type ExpandCollapseAllButtonProps,
+} from './components/Accordion';
 export { Alert, type AlertProps, type AlertSeverity } from './components/Alert';
 export { Button, CloseButton, IconButton, type ButtonProps, type IconButtonProps } from './components/Button';
+export { Card, type CardProps } from './components/Card';
 export {
   Checkbox,
   RadioGroup,
@@ -22,18 +45,39 @@ export {
   type SwitchProps,
 } from './components/Choice';
 export { Combobox, type ComboboxProps } from './components/Combobox';
+export { ConfirmDialog, type ConfirmDialogProps } from './components/ConfirmDialog';
 export { DataTable } from './components/DataTable';
-export { Dialog, DialogBody, DialogFooter, DialogHeader, type DialogProps } from './components/Dialog';
-export { FormField, type FormFieldProps } from './components/FormField';
+export {
+  Dialog,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
+  type DialogCloseReason,
+  type DialogProps,
+} from './components/Dialog';
+export { DropdownMenu, type DropdownMenuItem, type DropdownMenuProps } from './components/DropdownMenu';
+export { EmptyState, type EmptyStateProps } from './components/EmptyState';
+export { ErrorBoundary, type ErrorBoundaryProps } from './components/ErrorBoundary';
+export { FormField, useFormField, type FormFieldContextValue, type FormFieldProps } from './components/FormField';
 export { HelpPopover, type HelpPopoverProps } from './components/HelpPopover';
 export { LoadingIndicator } from './components/LoadingIndicator';
+export { NumberInput, type NumberInputProps } from './components/NumberInput';
 export { OptionCardGroup, type OptionCard, type OptionCardGroupProps } from './components/OptionCardGroup';
 export { Select, type SelectOption, type SelectProps } from './components/Select';
-export { Tab, TabPanel, Tabs } from './components/Tabs';
+export { Spinner, type SpinnerProps } from './components/Spinner';
+export { Tab, TabPanel, Tabs, type TabPanelProps, type TabsProps } from './components/Tabs';
 export { TextInput, type TextInputProps } from './components/TextInput';
 export { notify, ToastHost } from './components/Toast';
 export { NavMenu, TopNav, type NavMenuItem } from './components/TopNav';
+
+// MUI primitives re-exported so apps never import @mui directly (styled by the platform theme)
+export { default as Box } from '@mui/material/Box';
+export { default as Chip } from '@mui/material/Chip';
+export { default as Divider } from '@mui/material/Divider';
+export { default as Link } from '@mui/material/Link';
+export { default as Stack } from '@mui/material/Stack';
 export { default as Tooltip } from '@mui/material/Tooltip';
+export { default as Typography } from '@mui/material/Typography';
 
 // Workspace (three-section calculator layout)
 export { ImageViewer, type ImageViewerHandle, type ImageViewerProps } from './components/workspace/ImageViewer';

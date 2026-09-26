@@ -4,7 +4,9 @@ import FormHelperText from '@mui/material/FormHelperText';
 import MuiRadio from '@mui/material/Radio';
 import MuiRadioGroup from '@mui/material/RadioGroup';
 import MuiSwitch, { type SwitchProps as MuiSwitchProps } from '@mui/material/Switch';
-import type { ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
+
+import { useFormField } from './FormField';
 
 // ---------- Checkbox ----------
 export interface CheckboxProps extends Omit<MuiCheckboxProps, 'onChange'> {
@@ -31,11 +33,18 @@ export interface RadioGroupProps<V extends string | number | boolean> {
   options: RadioOption<V>[];
   onChange: (value: V) => void;
   direction?: 'row' | 'column';
+  /** Error shown under the group. Inside a FormField, pass the error to the FormField instead. */
   error?: ReactNode;
+  disabled?: boolean;
+  /** Accessible name. Inside a FormField the field label is used automatically. */
   'aria-labelledby'?: string;
+  'aria-label'?: string;
 }
 
-/** FD RadioGroup. Keeps the original value type (number/boolean) instead of MUI's string. */
+/**
+ * FD RadioGroup. Keeps the original value type (number/boolean) instead of MUI's string.
+ * Keyboard: Tab enters the group, arrow keys move and select (native radio behaviour).
+ */
 export function RadioGroup<V extends string | number | boolean>({
   name,
   value,
@@ -43,12 +52,24 @@ export function RadioGroup<V extends string | number | boolean>({
   onChange,
   direction = 'row',
   error,
-  ...aria
+  disabled,
+  'aria-labelledby': labelledBy,
+  'aria-label': ariaLabel,
 }: RadioGroupProps<V>) {
+  const field = useFormField();
+  const errorId = useId();
   const index = options.findIndex((o) => o.value === value);
+  const describedBy = [field?.describedBy, error ? errorId : undefined].filter(Boolean).join(' ') || undefined;
+  const groupDisabled = disabled ?? field?.disabled;
   return (
     <>
       <MuiRadioGroup
+        id={field?.id}
+        aria-labelledby={labelledBy ?? field?.labelId}
+        aria-label={ariaLabel}
+        aria-describedby={describedBy}
+        aria-invalid={error || field?.invalid ? true : undefined}
+        aria-required={field?.required || undefined}
         name={name}
         row={direction === 'row'}
         value={index >= 0 ? String(index) : ''}
@@ -57,13 +78,22 @@ export function RadioGroup<V extends string | number | boolean>({
           if (picked) onChange(picked.value);
         }}
         sx={{ gap: direction === 'row' ? 4 : 2 }}
-        {...aria}
       >
         {options.map((o, i) => (
-          <FormControlLabel key={String(o.value)} value={String(i)} control={<MuiRadio />} label={o.label} disabled={o.disabled} />
+          <FormControlLabel
+            key={String(o.value)}
+            value={String(i)}
+            control={<MuiRadio />}
+            label={o.label}
+            disabled={groupDisabled || o.disabled}
+          />
         ))}
       </MuiRadioGroup>
-      {error && <FormHelperText error>{error}</FormHelperText>}
+      {error && (
+        <FormHelperText id={errorId} error>
+          {error}
+        </FormHelperText>
+      )}
     </>
   );
 }

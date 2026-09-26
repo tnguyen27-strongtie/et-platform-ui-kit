@@ -1,13 +1,13 @@
-import UnfoldLessIcon from '@mui/icons-material/UnfoldLess';
 import { useRef, useState } from 'react';
 
 import {
   Accordion,
+  type AccordionGroup,
   Alert,
   Checkbox,
   DataTable,
+  ExpandCollapseAllButton,
   FormField,
-  IconButton,
   ImageViewer,
   type ImageViewerHandle,
   RadioGroup,
@@ -16,6 +16,7 @@ import {
   SectionLayout,
   Select,
   TextInput,
+  useAccordionGroup,
   ViewControls,
   ViewControlsGroup,
   VisualizationStage,
@@ -33,11 +34,17 @@ function Fake3DViewer() {
   );
 }
 
-function InputBody() {
+const inputGroups = ['connection', 'load', 'member'] as const;
+type InputGroupKey = (typeof inputGroups)[number];
+
+/** `group` is shared with the section header button; on mobile the body owns its own group. */
+function InputBody({ group }: { group?: AccordionGroup<InputGroupKey> }) {
   const [connection, setConnection] = useState('wood');
+  const ownGroup = useAccordionGroup(inputGroups);
+  const g = group ?? ownGroup;
   return (
     <>
-      <Accordion title="Connection type">
+      <Accordion title="Connection type" {...g.item('connection')}>
         <FormField label="Connection" htmlFor="conn">
           <Select
             id="conn"
@@ -50,7 +57,7 @@ function InputBody() {
           />
         </FormField>
       </Accordion>
-      <Accordion title="Load properties">
+      <Accordion title="Load properties" {...g.item('load')}>
         <div className="flex flex-col gap-3">
           <FormField label="Design load" htmlFor="p" help="Factored load applied to the connection.">
             <TextInput id="p" defaultValue="1250" addonAfter="lbs" />
@@ -60,7 +67,7 @@ function InputBody() {
           </FormField>
         </div>
       </Accordion>
-      <Accordion title="Member properties">
+      <Accordion title="Member properties" {...g.item('member')}>
         <FormField label="Side member thickness" htmlFor="t1">
           <TextInput id="t1" defaultValue="1.5" addonAfter="in" />
         </FormField>
@@ -70,16 +77,10 @@ function InputBody() {
 }
 
 function InputSection() {
+  const group = useAccordionGroup(inputGroups);
   return (
-    <Section
-      title="Input"
-      actions={
-        <IconButton aria-label="Collapse all sections" sx={{ color: 'primary.main' }}>
-          <UnfoldLessIcon />
-        </IconButton>
-      }
-    >
-      <InputBody />
+    <Section title="Input" actions={<ExpandCollapseAllButton group={group} />}>
+      <InputBody group={group} />
     </Section>
   );
 }

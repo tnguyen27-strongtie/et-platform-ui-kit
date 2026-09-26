@@ -11,7 +11,7 @@ import { cn } from '../utils/cn';
  */
 export function TopNav({ logo, children, right }: { logo: ReactNode; children?: ReactNode; right?: ReactNode }) {
   return (
-    <header className="relative z-[var(--z-top-nav)] flex h-[var(--top-nav-height)] items-center justify-between border-b border-pumpkin-orange-50 bg-true-gray-0 p-2">
+    <header className="relative z-[var(--z-top-nav)] flex h-[var(--top-nav-height)] items-center justify-between border-b border-accent bg-true-gray-0 p-2">
       <div className="md:mr-2">{logo}</div>
       <nav className="hidden flex-1 items-center gap-2 md:ml-6 md:flex lg:ml-12">{children}</nav>
       {right && <div className="flex items-center gap-2">{right}</div>}
@@ -21,7 +21,7 @@ export function TopNav({ logo, children, right }: { logo: ReactNode; children?: 
 
 const navItemClass = cn(
   'relative flex h-[var(--top-nav-height)] cursor-pointer items-center border-0 bg-transparent px-2 font-sans text-sm font-medium text-text-nav',
-  'after:absolute after:bottom-0 after:left-0 after:hidden after:h-1 after:w-full after:bg-pumpkin-orange-50',
+  'after:absolute after:bottom-0 after:left-0 after:hidden after:h-1 after:w-full after:bg-accent',
   'hover:after:block aria-expanded:after:block',
 );
 

@@ -4,23 +4,29 @@ import {
   Accordion,
   Alert,
   Button,
+  Card,
   Checkbox,
   Combobox,
+  ConfirmDialog,
   DataTable,
   Dialog,
   DialogBody,
   DialogFooter,
   DialogHeader,
   type Density,
+  DropdownMenu,
+  EmptyState,
   FormField,
   LoadingIndicator,
   NavMenu,
   notify,
+  NumberInput,
   OptionCardGroup,
   PlatformThemeProvider,
   RadioGroup,
   scales,
   Select,
+  Spinner,
   Switch,
   Tab,
   TabPanel,
@@ -41,6 +47,14 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+/** Demo brand presets: the whole kit follows PlatformThemeProvider `colors`. */
+const brandPresets = [
+  { value: 'fd', label: 'FD orange (default)', colors: undefined },
+  { value: 'blue', label: 'Blue', colors: { brand: '#1f5f99' } },
+  { value: 'green', label: 'Green', colors: { brand: '#2e7d32' } },
+  { value: 'purple', label: 'Purple', colors: { brand: '#6a3d9a' } },
+];
+
 const connectionOptions = [
   { value: 'wood', label: 'Wood to Wood', note: 'most common' },
   { value: 'steel', label: 'Wood to Steel' },
@@ -56,6 +70,12 @@ export function App() {
   const [materials, setMaterials] = useState<string[]>(['wood']);
   const [product, setProduct] = useState<string | null>(null);
   const [load, setLoad] = useState('1250');
+  const [brand, setBrand] = useState('fd');
+  const [thickness, setThickness] = useState<number | null>(4);
+  const [spacing, setSpacing] = useState<number | null>(0.5);
+  const [count, setCount] = useState<number | null>(3);
+  const [calculating, setCalculating] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [country, setCountry] = useState<string | number | boolean | null>('USA');
   const [card, setCard] = useState<string | null>('single');
   const [loading, setLoading] = useState(false);
@@ -64,15 +84,20 @@ export function App() {
   );
 
   return (
-    <PlatformThemeProvider density={density}>
+    <PlatformThemeProvider density={density} colors={brandPresets.find((b) => b.value === brand)?.colors}>
       <TopNav
-        logo={<span className="text-lg font-bold text-pumpkin-orange-50">Platform</span>}
+        logo={<span className="text-lg font-bold text-accent">Platform</span>}
         right={
-          <Switch
-            label="Expanded text"
-            checked={density === 'expanded'}
-            onChange={(on) => setDensity(on ? 'expanded' : 'standard')}
-          />
+          <div className="flex items-center gap-4">
+            <div className="w-44">
+              <Select aria-label="Brand color" value={brand} options={brandPresets} onChange={setBrand} />
+            </div>
+            <Switch
+              label="Expanded text"
+              checked={density === 'expanded'}
+              onChange={(on) => setDensity(on ? 'expanded' : 'standard')}
+            />
+          </div>
         }
       >
         <NavMenu
@@ -126,17 +151,77 @@ export function App() {
               </Button>
             </Tooltip>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="primary"
+              loading={calculating}
+              onClick={() => {
+                setCalculating(true);
+                setTimeout(() => setCalculating(false), 1500);
+              }}
+            >
+              Calculate (loading)
+            </Button>
+            <Button variant="danger" onClick={() => setConfirmOpen(true)}>
+              Reset inputs
+            </Button>
+            <DropdownMenu
+              label="Export"
+              items={[
+                { id: 'pdf', label: 'PDF report', onSelect: () => notify.info('Exporting PDF') },
+                { id: 'csv', label: 'CSV table', onSelect: () => notify.warning('CSV has no units row') },
+                { id: 'sep', divider: true },
+                { id: 'del', label: 'Delete project', danger: true, onSelect: () => setConfirmOpen(true) },
+              ]}
+            />
+            <span className="flex items-center gap-2 text-sm">
+              <Spinner size={16} /> Inline spinner
+            </span>
+          </div>
+        </Section>
+
+        <Section title="Number inputs">
+          <FormField
+            label="Member thickness"
+            htmlFor="num-thickness"
+            required
+            description="1.5 to 3.5 in. Arrow keys step 0.25 (Shift x10)."
+            error={thickness === null ? 'Required.' : thickness < 1.5 || thickness > 3.5 ? 'Must be between 1.5 and 3.5 in.' : undefined}
+          >
+            <NumberInput value={thickness} onChange={setThickness} min={1.5} max={3.5} step={0.25} precision={3} addonAfter="in" />
+          </FormField>
+          <FormField label="Spacing (clamped on blur)" htmlFor="num-spacing" description="0 to 1, clamped when you leave the field.">
+            <NumberInput value={spacing} onChange={setSpacing} min={0} max={1} step={0.1} clampBehavior="blur" addonAfter="ft" />
+          </FormField>
+          <FormField label="Fastener count (integer)" htmlFor="num-count">
+            <NumberInput value={count} onChange={setCount} min={1} precision={0} />
+          </FormField>
+          <p className="m-0 text-xs text-text-muted">
+            Values: thickness = {JSON.stringify(thickness)}, spacing = {JSON.stringify(spacing)}, count = {JSON.stringify(count)}
+          </p>
+        </Section>
+
+        <Section title="Card and empty state">
+          <Card title="Results" actions={<Button size="small" variant="text">Details</Button>} footer={<span className="text-sm font-bold">Total: 1,450 lbs</span>}>
+            <span className="text-sm">Card body content.</span>
+          </Card>
+          <EmptyState title="No results yet" action={<Button variant="primary">Calculate</Button>}>
+            Fill in the inputs, then run the calculation.
+          </EmptyState>
         </Section>
 
         <Section title="Form fields">
           <FormField label="Design load" htmlFor="load" help="Factored load applied to the connection.">
             <TextInput id="load" value={load} onChange={(e) => setLoad(e.target.value)} addonAfter="lbs" />
           </FormField>
-          <FormField label="Member thickness" htmlFor="thickness" required error="Value must be between 1.5 and 3.5 in.">
-            <TextInput id="thickness" defaultValue="4" error addonAfter="in" />
+          <FormField label="Project name" htmlFor="project" required error="Project name is required.">
+            <TextInput defaultValue="" placeholder="Enter a name" />
           </FormField>
-          <FormField label="Disabled" htmlFor="disabled">
-            <TextInput id="disabled" defaultValue="Locked value" disabled />
+          <FormField label="Notes" htmlFor="notes" description="Printed on the report.">
+            <TextInput multiline minRows={2} />
+          </FormField>
+          <FormField label="Disabled" htmlFor="disabled" disabled>
+            <TextInput defaultValue="Locked value" />
           </FormField>
         </Section>
 
@@ -164,6 +249,7 @@ export function App() {
 
         <Section title="Choices">
           <RadioGroup
+            aria-label="Country"
             name="country"
             value={country}
             onChange={setCountry}
@@ -276,7 +362,7 @@ export function App() {
       </main>
       )}
 
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} dismissible="escape">
         <DialogHeader onClose={() => setDialogOpen(false)}>Save as template</DialogHeader>
         <DialogBody>
           <FormField label="Template name" htmlFor="tpl">
@@ -290,6 +376,21 @@ export function App() {
           </Button>
         </DialogFooter>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Reset all inputs?"
+        destructive
+        confirmLabel="Reset"
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          setThickness(null);
+          notify.success('Inputs reset', 'Undo');
+        }}
+      >
+        Every input returns to its default value. This cannot be undone.
+      </ConfirmDialog>
 
       <ToastHost />
     </PlatformThemeProvider>

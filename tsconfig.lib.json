@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "tsBuildInfoFile": "node_modules/.cache/tsconfig.lib.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["src/showcase", "**/*.test.ts"]
+}

@@ -1,12 +1,17 @@
 import type { Shadows, ThemeOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 
-import type { Density } from '../tokens/tokens';
+import type { ColorConfig, Density } from '../tokens/tokens';
 import { colors, layout, radius, scales, shadows, tokens, typography } from '../tokens/tokens';
+import { resolveColors } from './colors';
 
 /**
  * MUI theme reproducing the FD look. Every MUI component used by the kit gets its FD
  * styling here, so plain MUI usage (TextField, Select, Autocomplete...) also matches.
+ *
+ * Styles reference role colors as CSS variables (`colors.*` = var(--color-*)), so an app
+ * color config applies without rebuilding the theme. Only the MUI palette needs resolved
+ * values, because MUI computes channels and contrast from them.
  */
 
 const muiShadows = [
@@ -33,21 +38,34 @@ const thinMenuScrollbar = {
   },
 } as const;
 
+/**
+ * Keyboard focus indicator (WCAG 2.4.7). Ripples are disabled kit-wide, and MUI relies on
+ * the focus ripple to show focus, so every focusable control gets this outline instead.
+ */
+const focusOutline = { outline: `2px solid ${colors.brand}`, outlineOffset: '2px' } as const;
+const focusOutlineInset = { ...focusOutline, outlineOffset: '-2px' } as const;
+
+// Disabled brand buttons keep their hue and fade (root sets opacity), so they never look
+// more prominent than enabled ones.
 const brandFilled = {
   backgroundColor: colors.brand,
   color: colors.textOnBrand,
   '&:hover': { backgroundColor: colors.brandHover },
-  '&:focus-visible': { backgroundColor: colors.brandActive },
-  '&.Mui-disabled': { backgroundColor: colors.brandDark, color: '#fff' },
+  '&.Mui-focusVisible': { backgroundColor: colors.brandActive },
+  '&.Mui-disabled': { backgroundColor: colors.brand, color: colors.textOnBrand },
+  '& .MuiButton-loadingIndicator': { color: colors.textOnBrand },
 } as const;
 
 export interface PlatformThemeOptions {
   density?: Density;
+  /** Role colors to override, e.g. { brand: '#1565c0' }. Brand shades are derived. */
+  colors?: ColorConfig;
   overrides?: ThemeOptions;
 }
 
-export function createPlatformTheme({ density = 'standard', overrides }: PlatformThemeOptions = {}) {
+export function createPlatformTheme({ density = 'standard', colors: colorConfig, overrides }: PlatformThemeOptions = {}) {
   const { fontSize, lineHeight } = typography.density[density];
+  const v = resolveColors(colorConfig);
 
   return createTheme(
     {
@@ -61,26 +79,26 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
       },
       palette: {
         primary: {
-          main: colors.brand,
-          light: colors.brandHover,
-          dark: colors.brandActive,
-          contrastText: colors.textOnBrand,
+          main: v.brand,
+          light: v.brandHover,
+          dark: v.brandActive,
+          contrastText: v.textOnBrand,
         },
-        secondary: { main: colors.neutral, contrastText: '#fff' },
-        error: { main: colors.danger },
-        warning: { main: colors.warning, dark: colors.warningText },
-        success: { main: colors.success, dark: colors.successStrong },
-        info: { main: colors.info },
-        text: { primary: colors.text, secondary: colors.textMuted },
-        background: { default: colors.surfaceApp, paper: colors.surface },
-        divider: colors.border,
+        secondary: { main: v.neutral, contrastText: '#fff' },
+        error: { main: v.danger },
+        warning: { main: v.warning, dark: v.warningText },
+        success: { main: v.success, dark: v.successStrong },
+        info: { main: v.info },
+        text: { primary: v.text, secondary: v.textMuted },
+        background: { default: v.surfaceApp, paper: v.surface },
+        divider: v.border,
         pumpkinOrange: scales.pumpkinOrange,
         trueGray: scales.trueGray,
         sageGreen: scales.sageGreen,
         sstOrange: scales.sstOrange,
         blue: scales.blue,
-        neutral: { main: colors.neutral },
-        muted: colors.borderInput,
+        neutral: { main: v.neutral },
+        muted: v.borderInput,
       },
       typography: {
         fontFamily: typography.fontFamily.sans,
@@ -112,7 +130,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               to: { transform: 'translate(0, 0)' },
             },
             '@keyframes platform-loading-border': {
-              '0%, 100%': { borderColor: scales.pumpkinOrange[50], borderWidth: '1px' },
+              '0%, 100%': { borderColor: colors.accent, borderWidth: '1px' },
               '50%': { borderColor: 'transparent', borderWidth: '15px' },
             },
             '@keyframes platform-loading-pulse': {
@@ -135,12 +153,17 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               transition: 'all 0.15s linear',
               minWidth: 'fit-content',
               '&:hover': { transform: 'scale(1.02)', boxShadow: shadows.button },
+              '&.Mui-focusVisible': focusOutline,
               '&.Mui-disabled': {
                 ...disabledControl,
-                color: 'inherit',
-                backgroundColor: colors.brandDark,
+                color: colors.text,
+                backgroundColor: colors.surfaceDisabled,
                 '&:hover': { transform: 'none' },
               },
+              // Loading: disabled for clicks but not faded; label hidden behind the spinner.
+              '&.MuiButton-loading': { opacity: 1, cursor: 'progress' },
+              '&.MuiButton-loading.MuiButton-loadingPositionCenter': { color: 'transparent' },
+              '& .MuiButton-loadingIndicator': { color: colors.text },
             },
             sizeSmall: { padding: '0.25rem 0.5rem', fontSize: '0.875rem', lineHeight: '1.25rem' },
             sizeMedium: { padding: '0.5rem 0.75rem', fontSize: '1rem', lineHeight: '1.5rem' },
@@ -177,7 +200,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
                   color: colors.textOnBrand,
                   boxShadow: 'none',
                 },
-                '&.Mui-disabled': { color: '#fff' },
+                '&.Mui-disabled': { color: colors.textMuted, backgroundColor: 'transparent' },
               },
             },
             {
@@ -189,7 +212,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
                 textTransform: 'uppercase',
                 boxShadow: 'none',
                 '&:hover': { backgroundColor: colors.brandActive, color: colors.textOnBrand, boxShadow: 'none' },
-                '&.Mui-disabled': { color: colors.brandDark },
+                '&.Mui-disabled': { color: colors.brandDark, backgroundColor: 'transparent' },
               },
             },
             // FD painted disabled default/tertiary buttons dark brown with inherited (black) text,
@@ -214,6 +237,17 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               },
             },
             {
+              props: { variant: 'danger' },
+              style: {
+                backgroundColor: colors.danger,
+                color: '#fff',
+                fontWeight: typography.weight.medium,
+                '&:hover': { backgroundColor: colors.danger, filter: 'brightness(1.1)' },
+                '&.Mui-disabled': { backgroundColor: colors.danger, color: '#fff' },
+                '& .MuiButton-loadingIndicator': { color: '#fff' },
+              },
+            },
+            {
               props: { variant: 'fab' },
               style: { ...brandFilled, borderRadius: radius.full, minWidth: 0, width: '2.5rem', height: '2.5rem', padding: 0 },
             },
@@ -226,6 +260,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               padding: '0.25rem',
               transition: 'all 0.2s ease-in-out',
               '&:hover': { backgroundColor: colors.brandSubtle },
+              '&.Mui-focusVisible': focusOutline,
               '&.Mui-disabled': disabledControl,
             },
           },
@@ -256,7 +291,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
             root: {
               fontSize: typography.size.sm,
               fontWeight: typography.weight.medium,
-              '& input::selection': { backgroundColor: scales.pumpkinOrange[50] },
+              '& input::selection': { backgroundColor: colors.accent },
             },
           },
         },
@@ -365,6 +400,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               color: colors.text,
               '&.Mui-checked': { color: colors.brand },
               '&:hover': { backgroundColor: 'transparent' },
+              '&.Mui-focusVisible': { ...focusOutline, borderRadius: radius.full },
               '&:hover:not(.Mui-checked):not(.Mui-disabled)': { color: colors.brand },
               '&.Mui-disabled': { ...disabledControl, color: colors.text, '&.Mui-checked': { color: colors.brand } },
             },
@@ -378,6 +414,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               color: colors.text,
               '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: colors.brand },
               '&:hover': { backgroundColor: 'transparent' },
+              '&.Mui-focusVisible': { ...focusOutline, borderRadius: radius.sm },
               '&:hover:not(.Mui-checked):not(.Mui-disabled)': { color: colors.brand },
               '&.Mui-disabled': { ...disabledControl, color: colors.text, '&.Mui-checked': { color: colors.brand } },
             },
@@ -416,6 +453,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
                 '&:hover + .MuiSwitch-track': { backgroundColor: colors.brandActive },
               },
               '&:hover + .MuiSwitch-track': { backgroundColor: scales.trueGray[50] },
+              '&.Mui-focusVisible + .MuiSwitch-track': focusOutline,
               '&.Mui-disabled + .MuiSwitch-track': { opacity: 0.5 },
               '&.Mui-disabled': { cursor: 'not-allowed', color: '#fff' },
             },
@@ -456,6 +494,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               color: 'inherit',
               textWrap: 'nowrap',
               '&:hover, &.Mui-selected': { color: colors.brand },
+              '&.Mui-focusVisible': focusOutlineInset,
               '&.Mui-disabled': { ...disabledControl, opacity: 0.5, color: 'inherit' },
             },
           },
@@ -536,6 +575,7 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
               backgroundColor: colors.surfaceSubtle,
               borderBottom: `1px solid ${colors.borderInput}`,
               '&.Mui-expanded': { minHeight: 'auto' },
+              '&.Mui-focusVisible': { ...focusOutlineInset, backgroundColor: colors.surfaceSubtle },
             },
             content: {
               margin: 0,
@@ -574,6 +614,22 @@ export function createPlatformTheme({ density = 'standard', overrides }: Platfor
         },
         MuiTable: {
           styleOverrides: { root: { borderCollapse: 'collapse' } },
+        },
+        MuiToggleButton: {
+          styleOverrides: { root: { '&.Mui-focusVisible': focusOutline } },
+        },
+        MuiLink: {
+          defaultProps: { underline: 'hover' },
+          styleOverrides: { root: { color: colors.link, cursor: 'pointer', '&.Mui-focusVisible, &:focus-visible': focusOutline } },
+        },
+        MuiDivider: {
+          styleOverrides: { root: { borderColor: colors.border } },
+        },
+        MuiCircularProgress: {
+          defaultProps: { color: 'inherit' },
+        },
+        MuiPaper: {
+          styleOverrides: { outlined: { borderColor: colors.borderStrong } },
         },
       },
     },
