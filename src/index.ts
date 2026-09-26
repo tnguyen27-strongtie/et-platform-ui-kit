@@ -8,6 +8,20 @@ export * from './tokens/tokens';
 export { colorCssVars, resolveColors } from './theme/colors';
 export { createPlatformTheme, type PlatformTheme, type PlatformThemeOptions } from './theme/createPlatformTheme';
 export { PlatformThemeProvider, type PlatformThemeProviderProps } from './theme/PlatformThemeProvider';
+export {
+  COLOR_ROLES,
+  contrastRatio,
+  definePlatformTheme,
+  isValidColor,
+  normalizeThemeConfig,
+  parseRgb,
+  parseThemeConfig,
+  THEME_CONFIG_VERSION,
+  themeConfigToJson,
+  themeConfigToTs,
+  type ParseThemeResult,
+  type PlatformThemeConfig,
+} from './theme/themeConfig';
 
 // Utils
 export { cn } from './utils/cn';
@@ -102,6 +116,24 @@ export {
   type GridViewProps,
   type GridViewState,
 } from './components/grid/GridView';
+
+// Release notes ("What's new")
+export { compareVersions, formatReleaseDate, parseReleaseDate, sortReleases } from './components/release-notes/releaseNotesUtils';
+export {
+  defaultReleaseNotesLabels,
+  ReleaseNotes,
+  ReleaseNotesDialog,
+  useReleaseNotesSeen,
+  type ReleaseCategory,
+  type ReleaseNote,
+  type ReleaseNoteGroup,
+  type ReleaseNoteSection,
+  type ReleaseNotesDialogProps,
+  type ReleaseNotesLabelOverrides,
+  type ReleaseNotesLabels,
+  type ReleaseNotesProps,
+  type UseReleaseNotesSeenOptions,
+} from './components/release-notes/ReleaseNotes';
 
 // Workspace (three-section calculator layout)
 export { ImageViewer, type ImageViewerHandle, type ImageViewerProps } from './components/workspace/ImageViewer';

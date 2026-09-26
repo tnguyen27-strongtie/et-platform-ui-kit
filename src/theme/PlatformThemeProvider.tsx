@@ -6,9 +6,16 @@ import { type ReactNode, useEffect, useInsertionEffect, useMemo } from 'react';
 import type { ColorConfig, Density } from '../tokens/tokens';
 import { colorCssVars, resolveColors } from './colors';
 import { createPlatformTheme } from './createPlatformTheme';
+import type { PlatformThemeConfig } from './themeConfig';
 
 export interface PlatformThemeProviderProps {
   children: ReactNode;
+  /**
+   * The app's theme file (exported from the showcase Theme builder):
+   * import theme from './theme.config'; <PlatformThemeProvider config={theme}>.
+   * `colors` and `density` props, when given, override it (e.g. a user's text-size setting).
+   */
+  config?: PlatformThemeConfig;
   /** FD "font size" setting: standard = 14px, expanded = 16px. */
   density?: Density;
   /**
@@ -23,7 +30,9 @@ export interface PlatformThemeProviderProps {
 
 const COLOR_STYLE_ID = 'platform-ui-colors';
 
-export function PlatformThemeProvider({ children, density = 'standard', colors, overrides }: PlatformThemeProviderProps) {
+export function PlatformThemeProvider({ children, config, density: densityProp, colors: colorsProp, overrides }: PlatformThemeProviderProps) {
+  const density = densityProp ?? config?.density ?? 'standard';
+  const colors = config?.colors || colorsProp ? { ...config?.colors, ...colorsProp } : undefined;
   // Callers often pass an inline object; key on its content so the theme is not rebuilt every render.
   const colorKey = JSON.stringify(colors ?? {});
   const theme = useMemo(

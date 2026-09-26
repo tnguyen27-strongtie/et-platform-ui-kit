@@ -1,6 +1,15 @@
 import { type ComponentType, useEffect, useState } from 'react';
 
-import { type ColorConfig, type Density, PlatformThemeProvider, Select, Switch, ToastHost, TopNav } from '../index';
+import {
+  type ColorConfig,
+  parseThemeConfig,
+  type PlatformThemeConfig,
+  PlatformThemeProvider,
+  Select,
+  Switch,
+  ToastHost,
+  TopNav,
+} from '../index';
 import { catalog } from './catalog';
 import { href, ShowcaseContext, useRoute } from './layout';
 import { Actions } from './pages/Actions';
@@ -11,12 +20,15 @@ import { Foundations } from './pages/Foundations';
 import { Navigation } from './pages/Navigation';
 import { Overlays } from './pages/Overlays';
 import { Overview } from './pages/Overview';
+import { Patterns } from './pages/Patterns';
+import { ThemeBuilder } from './pages/ThemeBuilder';
 import { Utilities } from './pages/Utilities';
 import { WorkspacePage } from './pages/WorkspacePage';
 import { WorkspaceDemo } from './WorkspaceDemo';
 
 const pages: Record<string, ComponentType> = {
   overview: Overview,
+  theme: ThemeBuilder,
   foundations: Foundations,
   actions: Actions,
   forms: Forms,
@@ -25,6 +37,7 @@ const pages: Record<string, ComponentType> = {
   data: DataDisplay,
   feedback: Feedback,
   workspace: WorkspacePage,
+  patterns: Patterns,
   utilities: Utilities,
 };
 
@@ -35,6 +48,21 @@ const brandPresets: Array<{ value: string; label: string; colors: ColorConfig | 
   { value: 'green', label: 'Green', colors: { brand: '#2e7d32' } },
   { value: 'purple', label: 'Purple', colors: { brand: '#6a3d9a' } },
 ];
+
+const THEME_STORAGE_KEY = 'showcase:theme';
+
+function loadTheme(): PlatformThemeConfig {
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (!stored) return {};
+    const result = parseThemeConfig(stored);
+    return result.ok ? result.config : {};
+  } catch {
+    return {};
+  }
+}
+
+const sameColors = (a: ColorConfig | undefined, b: ColorConfig | undefined) => JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
 
 function Sidebar({ page }: { page: string }) {
   return (
@@ -64,10 +92,19 @@ function Sidebar({ page }: { page: string }) {
 
 export function App() {
   const route = useRoute();
-  const [density, setDensity] = useState<Density>('standard');
-  const [brand, setBrand] = useState('fd');
-  const colors = brandPresets.find((b) => b.value === brand)?.colors;
+  const [config, setConfig] = useState<PlatformThemeConfig>(loadTheme);
+  const colors = config.colors;
+  const density = config.density ?? 'standard';
+  const brand = brandPresets.find((b) => sameColors(b.colors, colors))?.value ?? 'custom';
   const Page = pages[route.page] ?? Overview;
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(config));
+    } catch {
+      // storage blocked: the theme just resets on reload
+    }
+  }, [config]);
 
   // Scroll to #/<page>/<section> after the page renders; top of page otherwise.
   useEffect(() => {
@@ -80,15 +117,23 @@ export function App() {
   const controls = (
     <div className="flex items-center gap-4">
       <div className="w-44">
-        <Select aria-label="Brand color" value={brand} options={brandPresets} onChange={setBrand} />
+        <Select
+          aria-label="Brand color"
+          value={brand}
+          options={[...brandPresets, ...(brand === 'custom' ? [{ value: 'custom', label: 'Custom (Theme builder)' }] : [])]}
+          onChange={(value) => {
+            const preset = brandPresets.find((b) => b.value === value);
+            if (preset) setConfig((c) => ({ ...c, colors: preset.colors }));
+          }}
+        />
       </div>
-      <Switch label="Expanded text" checked={density === 'expanded'} onChange={(on) => setDensity(on ? 'expanded' : 'standard')} />
+      <Switch label="Expanded text" checked={density === 'expanded'} onChange={(on) => setConfig((c) => ({ ...c, density: on ? 'expanded' : 'standard' }))} />
     </div>
   );
 
   return (
-    <PlatformThemeProvider density={density} colors={colors}>
-      <ShowcaseContext.Provider value={{ colors }}>
+    <PlatformThemeProvider config={config}>
+      <ShowcaseContext.Provider value={{ colors, config, setConfig }}>
         {/* #root is height:100%; this wrapper grows with the content so the sticky bar and sidebar stay put. */}
         <div className="min-h-full">
         <div className="sticky top-0 z-(--z-top-nav)">

@@ -35,6 +35,9 @@ import {
   OptionCardGroup,
   PlatformThemeProvider,
   RadioGroup,
+  type ReleaseNote,
+  ReleaseNotes,
+  ReleaseNotesDialog,
   Section,
   SectionLayout,
   Select,
@@ -47,6 +50,7 @@ import {
   Tooltip,
   TopNav,
   useAccordionGroup,
+  useReleaseNotesSeen,
   type Density,
 } from '../../../src/index';
 
@@ -715,6 +719,81 @@ function GridFixture() {
   );
 }
 
+// ---------- Release notes ----------
+const releases: ReleaseNote[] = [
+  { version: '2.4.1', date: '2026-02-01', sections: [{ category: 'fix', groups: [{ items: ['Fixed report rounding.'] }] }] },
+  {
+    version: '2.10.0',
+    date: '2026-09-03',
+    sections: [
+      {
+        category: 'feature',
+        groups: [
+          { title: 'EU', items: ['Added Chile as a supported country.', <>Added Multi-Ply — <a href="#explore">Explore now</a>.</>] },
+          { title: 'USA', items: ['Added a results filter.'] },
+        ],
+      },
+      { category: 'maintenance', groups: [{ items: ['General system improvements and bug fixes.'] }] },
+    ],
+  },
+  { version: '2.9.0', date: '2026-06-18', sections: [{ category: 'improvement', groups: [{ items: ['Faster 3D loading.'] }] }] },
+];
+
+const RN_KEY = 'harness:release-notes';
+
+function SeenProbe() {
+  const seen = useReleaseNotesSeen({ currentVersion: '2.10.0', storageKey: RN_KEY });
+  return (
+    <>
+      <Out id="should-open" value={seen.shouldOpen} />
+      <Out id="last-seen" value={seen.lastSeenVersion} />
+      <Button onClick={seen.markSeen}>Mark seen</Button>
+    </>
+  );
+}
+
+function ReleaseNotesFixture() {
+  const [open, setOpen] = useState(false);
+  const [probeKey, setProbeKey] = useState(0);
+  const setStored = (v: string | null) => {
+    if (v === null) localStorage.removeItem(RN_KEY);
+    else localStorage.setItem(RN_KEY, v);
+    setProbeKey((k) => k + 1);
+  };
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Open release notes</Button>
+      <ReleaseNotesDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        appName="FD"
+        appTitle="Fastener Designer"
+        intro="Fastener Designer finds fastening solutions."
+        releases={releases}
+        lastSeenVersion="2.4.1"
+      />
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button onClick={() => setStored(null)}>Stored: none</Button>
+        <Button onClick={() => setStored('2.9.0')}>Stored: 2.9.0</Button>
+        <Button onClick={() => setProbeKey((k) => k + 1)}>Remount</Button>
+        <Out id="stored" value={probeKey >= 0 ? localStorage.getItem(RN_KEY) : null} />
+      </div>
+      <SeenProbe key={probeKey} />
+      <section aria-label="Inline Vietnamese">
+        <ReleaseNotes
+          releases={releases.slice(0, 1)}
+          locale="vi-VN"
+          headingLevel="h3"
+          labels={{ released: (d) => `Phát hành ngày ${d}`, categories: { fix: 'Sửa lỗi' } }}
+        />
+      </section>
+      <section aria-label="Empty">
+        <ReleaseNotes releases={[]} labels={{ empty: 'Chưa có ghi chú phát hành.' }} />
+      </section>
+    </>
+  );
+}
+
 export const fixtures: Record<string, ComponentType> = {
   button: ButtonFixture,
   'text-input': TextInputFixture,
@@ -736,4 +815,5 @@ export const fixtures: Record<string, ComponentType> = {
   layout: LayoutFixture,
   density: DensityFixture,
   grid: GridFixture,
+  'release-notes': ReleaseNotesFixture,
 };

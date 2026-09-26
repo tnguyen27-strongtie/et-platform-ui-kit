@@ -18,6 +18,18 @@ export interface CatalogPage {
 
 export const catalog: CatalogPage[] = [
   {
+    page: 'theme',
+    title: 'Theme builder',
+    description: 'Edit the colors and text size, check contrast, export the theme file and load it in your app.',
+    sections: [
+      { id: 'brand', title: 'Brand and text size', exports: ['definePlatformTheme', 'THEME_CONFIG_VERSION'] },
+      { id: 'roles', title: 'Color roles', exports: ['COLOR_ROLES', 'isValidColor', 'parseRgb'] },
+      { id: 'contrast', title: 'Contrast check', exports: ['contrastRatio'] },
+      { id: 'export', title: 'Export and import', exports: ['themeConfigToJson', 'themeConfigToTs', 'normalizeThemeConfig', 'parseThemeConfig'] },
+      { id: 'use', title: 'Use in a project', exports: [] },
+    ],
+  },
+  {
     page: 'foundations',
     title: 'Foundations',
     description: 'Design tokens every component is built from. Colors follow the brand selected in the top bar.',
@@ -107,6 +119,18 @@ export const catalog: CatalogPage[] = [
       { id: 'section', title: 'Section', exports: ['Section'] },
       { id: 'visualization', title: 'VisualizationStage and ImageViewer', exports: ['VisualizationStage', 'ViewControls', 'ViewControlsGroup', 'ResetViewButton', 'ImageViewer'] },
       { id: 'drop-overlay', title: 'DropOverlay', exports: ['DropOverlay'] },
+    ],
+  },
+  {
+    page: 'patterns',
+    title: 'Patterns',
+    description: 'Ready-made pieces every app needs, driven by the app\'s own data.',
+    sections: [
+      {
+        id: 'release-notes',
+        title: 'Release notes',
+        exports: ['ReleaseNotesDialog', 'ReleaseNotes', 'useReleaseNotesSeen', 'defaultReleaseNotesLabels', 'compareVersions', 'sortReleases', 'formatReleaseDate', 'parseReleaseDate'],
+      },
     ],
   },
   {

@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 
-import { Card, type ColorConfig } from '../index';
+import { Card, type ColorConfig, type PlatformThemeConfig } from '../index';
 
 // ---------- Routing: #/<page>/<section>; #workspace and #workspace-columns open full-screen layouts ----------
 
@@ -35,9 +35,12 @@ export const href = (page: string, section?: string) => `#/${page}${section ? `/
 
 export interface ShowcaseSettings {
   colors: ColorConfig | undefined;
+  /** The showcase-wide theme (edited by the Theme builder, persisted in localStorage). */
+  config: PlatformThemeConfig;
+  setConfig: (update: PlatformThemeConfig | ((prev: PlatformThemeConfig) => PlatformThemeConfig)) => void;
 }
 
-export const ShowcaseContext = createContext<ShowcaseSettings>({ colors: undefined });
+export const ShowcaseContext = createContext<ShowcaseSettings>({ colors: undefined, config: {}, setConfig: () => undefined });
 export const useShowcase = () => useContext(ShowcaseContext);
 
 // ---------- Page building blocks ----------

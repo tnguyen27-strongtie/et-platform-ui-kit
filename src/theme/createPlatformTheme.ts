@@ -580,7 +580,10 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           },
         },
         MuiDialogTitle: {
-          styleOverrides: { root: { padding: 0, fontSize: typography.size.base, fontWeight: typography.weight.bold } },
+          // DialogTitle renders with the h6 variant; reset the overline style h6 has (uppercase).
+          styleOverrides: {
+            root: { padding: 0, fontSize: typography.size.base, fontWeight: typography.weight.bold, lineHeight: 1.4, textTransform: 'none', letterSpacing: 'normal' },
+          },
         },
         MuiDialogContent: {
           styleOverrides: { root: { padding: '0.5rem' } },

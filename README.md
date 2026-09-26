@@ -20,7 +20,8 @@ Trạng thái: `tsc` strict pass, library build pass, 15 unit test (logic số) 
 12. [Đưa vào Nx workspace](#đưa-vào-nx-workspace)
 13. [Khác biệt so với FD](#khác-biệt-so-với-fd)
 14. [Chưa có trong kit](#chưa-có-trong-kit)
-15. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
+15. [Thay đổi ở 0.3](#thay-đổi-ở-03)
+16. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
 
 ## Yêu cầu
 
@@ -52,6 +53,7 @@ Showcase gồm thanh bên trái liệt kê component theo nhóm (trên mobile l�
 | Trang | URL | Nội dung |
 | --- | --- | --- |
 | Overview | `/` | Danh sách mọi demo và các export mà demo đó trình bày, dùng để review |
+| Theme builder | `/#/theme` | Chỉnh màu và cỡ chữ, kiểm tra tương phản, xuất/nhập file theme |
 | Foundations | `/#/foundations` | Role color (theo brand đang chọn), thang màu, typography, radius, shadow, spacing, Box/Stack |
 | Actions | `/#/actions` | Button (mọi variant, kích thước, trạng thái), IconButton, CloseButton, DropdownMenu |
 | Forms | `/#/forms` | FormField (kèm `useFormField` cho control tự làm), TextInput, NumberInput, Select, Combobox, Checkbox/Switch, RadioGroup, OptionCardGroup |
@@ -60,6 +62,7 @@ Showcase gồm thanh bên trái liệt kê component theo nhóm (trên mobile l�
 | Data display | `/#/data` | Card, DataTable, GridView, GridImageCell/GridLinkCell, Chip/Link/Divider |
 | Feedback | `/#/feedback` | Alert, EmptyState, Spinner, LoadingIndicator, ErrorBoundary |
 | Workspace | `/#/workspace` | SectionLayout, Section, VisualizationStage + ImageViewer, DropOverlay |
+| Patterns | `/#/patterns` | Release notes: hộp thoại "What's new", giả lập cập nhật, bản nhúng trang Help, đổi ngôn ngữ |
 | Utilities | `/#/utilities` | Ô thử các hàm số, tìm kiếm và theme |
 | Workspace toàn màn hình | `/#workspace`, `/#workspace-columns` | Bố cục FD thật: xếp dọc / cạnh nhau |
 
@@ -122,7 +125,7 @@ Package tên `@platform/ui`. Để `private: true` nên không bao giờ bị pu
 
 | Cách | Lệnh trong app | Khi nào |
 | --- | --- | --- |
-| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.2.0.tgz` | App ở repo khác, muốn khóa phiên bản |
+| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.3.0.tgz` | App ở repo khác, muốn khóa phiên bản |
 | Link thư mục | `pnpm add link:../et-platform-ui-kit` (chạy `pnpm build` trong kit trước) | Sửa kit và app cùng lúc |
 | Registry nội bộ | Bỏ `private`, thêm `publishConfig.registry`, rồi `pnpm publish` | Nhiều team dùng chung |
 
@@ -181,6 +184,44 @@ import { Box, Button, FormField, NumberInput, colors } from '@platform/ui';
 Mọi thứ app cần đều import từ `@platform/ui`, gồm cả `Box`, `Stack`, `Typography`, `Divider`, `Link`, `Chip`, `Tooltip`. Không import trực tiếp `@mui/*` trong app.
 
 ## Đổi màu theo app
+
+### Cách nhanh nhất: Theme builder
+
+1. `pnpm dev`, mở `/#/theme`.
+2. Chọn màu brand (các sắc độ hover/active/subtle/focus tự tính). Nếu cần, bật "Show all roles" để chỉnh từng role. Mọi thay đổi áp lên toàn bộ showcase ngay, nên mở các trang khác để xem kết quả. Cấu hình được giữ khi tải lại trang.
+3. Xem bảng **Contrast check** (WCAG AA) và sửa các cặp màu bị Fail nếu sản phẩm cần đạt AA.
+4. **Export**: tải `theme.config.ts` (hoặc `theme.json`). File chỉ chứa phần đã chỉnh, phần còn lại vẫn theo mặc định của kit.
+5. Lưu file vào app và truyền vào provider:
+
+```tsx
+// apps/fd/src/theme.config.ts  (file export từ builder)
+import { definePlatformTheme } from '@platform/ui';
+export default definePlatformTheme({ version: 1, name: 'Fastener Designer', colors: { brand: '#1f5f99' } });
+
+// apps/fd/src/main.tsx
+import theme from './theme.config';
+<PlatformThemeProvider config={theme} density={userSettings.density}>   // prop riêng đè lên config
+```
+
+Muốn sửa sau này: mở builder, **Import** file của app, chỉnh, rồi export lại.
+
+Theme tải lúc chạy (vd. theo khách hàng, từ API) thì kiểm tra trước bằng `parseThemeConfig`: màu sai là lỗi, key lạ bị bỏ qua kèm cảnh báo.
+
+```ts
+const result = parseThemeConfig(await fetch('/theme.json').then((r) => r.text()));
+const theme = result.ok ? result.config : {};   // lỗi thì dùng mặc định của kit
+```
+
+| API | Dùng để |
+| --- | --- |
+| `PlatformThemeConfig` | `{ version: 1, name?, colors?, density? }`: dạng JSON thuần |
+| `definePlatformTheme(config)` | Viết `theme.config.ts` có kiểm tra kiểu |
+| `PlatformThemeProvider config` | Áp theme; `colors`/`density` truyền riêng sẽ đè lên |
+| `parseThemeConfig(input)` | Kiểm tra JSON không tin cậy: `{ ok, config, warnings }` hoặc `{ ok: false, errors }` |
+| `themeConfigToJson`, `themeConfigToTs`, `normalizeThemeConfig` | Xuất file (chỉ phần đã chỉnh) |
+| `contrastRatio(fg, bg)`, `isValidColor`, `parseRgb`, `COLOR_ROLES` | Kiểm tra màu, tương phản WCAG, danh sách role |
+
+### Chỉnh trực tiếp bằng code
 
 ```tsx
 <PlatformThemeProvider colors={{ brand: '#1565c0' }}>          // chỉ cần brand
@@ -387,6 +428,54 @@ const columns: GridColumn<Fastener>[] = [
 
 Giới hạn: render mọi dòng (không virtualization), phù hợp tới vài nghìn dòng. Chưa có kéo đổi độ rộng cột, nhóm dòng, sửa trực tiếp trong ô.
 
+### Release notes
+
+Mọi app đều cần "What's new". Kit lo giao diện và hành vi; app chỉ cung cấp dữ liệu (thường là một file JSON) và quyết định mở từ đâu.
+
+```tsx
+const seen = useReleaseNotesSeen({ currentVersion: APP_VERSION, storageKey: 'fd:release-notes' });
+
+<ReleaseNotesDialog
+  open={seen.shouldOpen || helpMenuOpen}
+  onClose={() => { seen.markSeen(); setHelpMenuOpen(false); }}
+  appName="FD"
+  appTitle="Fastener Designer"
+  intro="Find strong and reliable fastening solutions…"
+  releases={releases}
+  lastSeenVersion={seen.lastSeenVersion}
+/>
+```
+
+Dữ liệu (`ReleaseNote[]`):
+
+```ts
+[{
+  version: '2.5.0',
+  date: '2026-09-03',                       // đọc theo ngày địa phương
+  sections: [
+    { category: 'feature', groups: [
+      { title: 'EU', items: ['Added Chile as a supported country.', <>Added Multi-Ply — <Link …>Explore now</Link></>] },
+      { title: 'USA', items: ['Added a results filter…'] },
+    ] },
+    { category: 'improvement', groups: [{ items: ['General UI/UX enhancements.'] }] },
+    { category: 'maintenance', groups: [{ items: ['General system improvements and bug fixes.'] }] },
+  ],
+}]
+```
+
+| Thành phần | Hành vi |
+| --- | --- |
+| `ReleaseNotesDialog` | Header: tên viết tắt màu brand + tên đầy đủ; đoạn giới thiệu; danh sách; nút Close. Rộng tối đa 56rem, nội dung cuộn giữa header và footer |
+| `ReleaseNotes` | Danh sách dùng riêng (vd. trang Help). Sắp xếp mới nhất trước **theo semver** (2.10.0 đứng trước 2.9.0, bản beta đứng trước bản chính thức). `defaultExpanded`: `latest` (mặc định) / `all` / `none`. Nút expand/collapse all khi có từ 2 bản |
+| Loại thay đổi | `feature`, `improvement`, `fix`, `maintenance`, `security`, `deprecation`: nhãn màu có icon, màu theo role token. Mỗi loại gồm các nhóm: có `title` thì là tiêu đề đậm + gạch đầu dòng; không có tiêu đề và chỉ một dòng thì là một đoạn văn |
+| Ngày | `"YYYY-MM-DD"` đọc theo ngày địa phương, nên không bị lùi một ngày ở múi giờ Mỹ như `new Date('…')`. `locale` để đổi định dạng (vd. `vi-VN`) |
+| Nhãn "New" | Các bản mới hơn `lastSeenVersion` |
+| `useReleaseNotesSeen` | Lưu phiên bản đã xem trong localStorage. `shouldOpen` = app vừa được cập nhật (tự mở một lần). Lần truy cập đầu tiên không mở, chỉ ghi lại phiên bản (`showOnFirstVisit` để đổi). `markSeen()` khi đóng. Không lỗi khi localStorage bị chặn |
+| Dịch | `labels`: một phần bất kỳ, vd. `{ released: (d) => \`Phát hành ngày ${d}\`, categories: { feature: 'Tính năng mới' } }` |
+| Heading | Mỗi bản là heading (`headingLevel`, mặc định `h3`); loại và nhóm là các cấp tiếp theo, nên trình đọc màn hình duyệt được |
+
+Hàm dùng kèm: `compareVersions`, `sortReleases`, `formatReleaseDate`, `parseReleaseDate`.
+
 ## Quy tắc hành vi
 
 Kit đã áp dụng sẵn các quy tắc dưới đây. Component mới cũng phải theo đúng các quy tắc này.
@@ -437,6 +526,8 @@ Mỗi component có một fixture trong `tests/e2e/harness/fixtures.tsx` (mở b
 | ImageViewer | Nút zoom trong giới hạn; nút zoom vẫn chạy khi đang zoom; bấm nhanh không reset; cuộn chuột, double-click và `ref.reset()` |
 | SectionLayout | 3 khung có thanh kéo; kéo Input nhỏ quá thì thu thành thanh dọc và mở lại được; mobile: mỗi lần một khung, Input giữ dữ liệu |
 | Density | Đổi class trên `<body>` và cỡ chữ 14 ↔ 16px |
+| Theme builder | Brand áp lên mọi trang và tự tính sắc độ; file export chỉ chứa phần đã chỉnh; màu sai bị báo và không được áp; ghi đè/reset từng role; bảng tương phản cập nhật theo màu; cỡ chữ; giữ khi tải lại, Reset; xuất TS và tải file; nhập file/JSON có lỗi và cảnh báo |
+| Release notes | Tên app và giới thiệu; tiêu đề dialog không bị viết hoa; sắp xếp theo semver, bản mới nhất mở; ngày không lệch múi giờ; nhãn New; loại/nhóm/gạch đầu dòng/dòng lẻ/link; expand/collapse all; heading không có margin thừa; Close/Escape trả focus; dịch nhãn và ngày; danh sách rỗng; `useReleaseNotesSeen` lần đầu / sau cập nhật / markSeen |
 | GridView | Kiểu cell (số, rỗng, ảnh, link ngoài an toàn); highlight; sort tăng/giảm/bỏ, rỗng luôn cuối, sort nhiều cột, bàn phím, menu; filter chữ/khoảng số/chọn nhiều, "không có kết quả"; ẩn/hiện hàng filter (filter vẫn áp dụng, badge đếm, giữ giá trị); master search nhiều từ, bỏ dấu, giới hạn cột, Escape; preset bật/tắt; cố định trái/phải và đứng yên khi cuộn; đổi vị trí bằng menu và kéo thả; ẩn/hiện, reset layout; tiêu đề dính; chọn dòng bằng click/Enter; link trong dòng không kích hoạt dòng |
 
 Thêm component mới thì thêm fixture, thêm tên vào `fixtureNames` trong `tests/e2e/helpers.ts`, và viết spec cho các hành vi của nó.
@@ -560,6 +651,7 @@ Không sửa tay `tokens.generated.css`, và không viết mã hex trong compone
 - Control nhận dữ liệu thì gọi `useFormField()` để lấy `id`, `describedBy`, `invalid`, `labelId`.
 - Theo [Quy tắc hành vi](#quy-tắc-hành-vi); control có thể focus phải có style `.Mui-focusVisible` hoặc `:focus-visible`.
 - Export trong `src/index.ts`, rồi thêm demo: một `<DemoSection id=…>` trong trang phù hợp ở `src/showcase/pages/`, và một mục tương ứng trong `src/showcase/catalog.ts` (ghi các export mà demo trình bày). Test `showcase.spec.ts` báo lỗi nếu có export nào chưa có demo.
+- Phát hành cho các app: tăng `version` trong `package.json` (semver: thêm tính năng = minor, sửa lỗi = patch, thay đổi làm vỡ code = major) rồi `pnpm pack`. Không tăng version thì pnpm ở app sẽ dùng lại bản cũ trong cache dù file tarball đã khác.
 - Thêm test vào `tests/e2e` (hoặc `tests/unit` nếu là logic thuần), rồi chạy `pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build`.
 
 **Thêm variant cho Button**: khai báo tên trong `augmentation.d.ts` (`ButtonPropsVariantOverrides`), rồi thêm style vào `MuiButton.variants` trong theme.
@@ -588,6 +680,7 @@ Các điểm dưới đây khác FD có chủ ý: để sửa lỗi của FD ho�
 - **Alert cảnh báo** dùng chữ `warningText` (nâu) thay vì vàng, cho đủ tương phản.
 - **Căn chữ**: file font LT Std có ascent bằng đúng chiều cao chữ hoa, nên chữ bị đẩy lên khoảng 2px so với checkbox, radio, switch và icon trong nút. `fonts.css` dùng `ascent-override: 90.5%; descent-override: 21.2%; line-gap-override: 0%` (tỉ lệ của Helvetica/Arial) để sửa tận gốc.
 - **Tiêu đề in đậm**: tiêu đề Accordion và Dialog dùng bold (FD dùng medium), để tách rõ với label của field.
+- **Release notes** là component dùng chung của kit (FD tự làm riêng): app chỉ cung cấp dữ liệu.
 - **Toast** dừng khi rê chuột; toast lỗi không tự đóng. FD tự đóng sau 5s kể cả khi đang đọc.
 - **Tooltip dùng `describeChild`**, để tooltip không ghi đè tên của nút với trình đọc màn hình.
 - **Icon**: `Blue-Icon-Font` và `material-icons` được thay bằng `@mui/icons-material`, nên hình checkbox và dấu check trên thẻ chọn hơi khác FD.
@@ -609,6 +702,17 @@ Các điểm dưới đây khác FD có chủ ý: để sửa lỗi của FD ho�
 - Dark mode: token đã là biến CSS nên có thể thêm bằng cách truyền bộ `colors` tối. Chưa làm vì FD không có.
 - Tương phản màu FD: chữ xám `textMuted` trên nền xám và cam trên trắng chưa đạt 4.5:1 ở vài chỗ. Test axe đang tắt rule `color-contrast`; nếu cần đạt WCAG AA thì chỉnh bằng `colors`.
 - ESLint (chặn import `@mui/*` và hex trong app) nên cấu hình ở cấp workspace.
+
+## Thay đổi ở 0.3
+
+Chỉ thêm, không làm vỡ code của 0.2:
+
+- `GridView` (sort, filter theo cột, master search, preset, cố định/đổi vị trí/ẩn cột).
+- `Tooltip` (hover, chữ ngắn) và `InfoTip` (click, giải thích dài); `HelpPopover` giờ là alias của `InfoTip`.
+- `ReleaseNotesDialog`, `ReleaseNotes`, `useReleaseNotesSeen`.
+- Theme config: `PlatformThemeProvider config`, `definePlatformTheme`, `parseThemeConfig`, các hàm export, `contrastRatio`.
+- `Accordion headingLevel`, `useAccordionGroup(keys, defaultExpanded, initial)`, `DataTable aria-label`.
+- Sửa lỗi: tiêu đề Dialog bị viết hoa, khoảng trắng thừa trên Accordion, `Checkbox indeterminate` khai báo ARIA mâu thuẫn, id trùng trong Accordion, nút zoom của ImageViewer, vùng cuộn DataTable không focus được.
 
 ## Thay đổi so với 0.1
 

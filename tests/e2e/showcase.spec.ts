@@ -226,3 +226,102 @@ test('full-screen workspace: collapse-all drives every input section', async ({ 
   await page.getByRole('button', { name: 'Expand all sections' }).click();
   for (const h of await headers.all()) await expect(h).toHaveAttribute('aria-expanded', 'true');
 });
+
+// ---------- Theme builder ----------
+
+test.describe('Theme builder', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/#/theme');
+  });
+
+  const brandField = (page: import('@playwright/test').Page) => page.getByRole('textbox', { name: 'brand', exact: true });
+  const exported = (page: import('@playwright/test').Page) => page.locator('#export pre').first();
+  const previewButton = (page: import('@playwright/test').Page) => page.locator('#brand').getByRole('button', { name: 'Calculate' });
+
+  test('brand color applies everywhere, derives shades, and exports only what changed', async ({ page }) => {
+    await brandField(page).fill('#1f5f99');
+    await expect(previewButton(page)).toHaveCSS('background-color', 'rgb(31, 95, 153)');
+    await expect(page.getByRole('combobox', { name: 'Brand color' })).toHaveText('Blue');
+    await expect(page.locator('#roles')).toContainText('Derived from brand');
+    await expect(exported(page)).toHaveText(JSON.stringify({ version: 1, colors: { brand: '#1f5f99' } }, null, 2));
+    // Another page uses the same theme.
+    await page.getByRole('navigation', { name: 'Components' }).getByRole('link', { name: 'Button', exact: true }).click();
+    await expect(page.locator('#button').getByRole('button', { name: 'Calculate', exact: true }).first()).toHaveCSS('background-color', 'rgb(31, 95, 153)');
+  });
+
+  test('an invalid color is flagged and never applied', async ({ page }) => {
+    await brandField(page).fill('blue-ish');
+    await expect(brandField(page)).toHaveAttribute('aria-invalid', 'true');
+    await expect(brandField(page)).toHaveAccessibleDescription(/Use #rrggbb/);
+    await expect(previewButton(page)).toHaveCSS('background-color', 'rgb(168, 103, 29)');
+  });
+
+  test('any role can be overridden and reset', async ({ page }) => {
+    await page.getByRole('checkbox', { name: 'Show all roles (advanced)' }).check();
+    const danger = page.getByRole('textbox', { name: 'danger', exact: true });
+    await danger.fill('#9b1c1c');
+    await expect(exported(page)).toContainText('"danger": "#9b1c1c"');
+    await page.getByRole('button', { name: 'Reset danger' }).click();
+    await expect(danger).toHaveValue('');
+    await expect(exported(page)).not.toContainText('danger');
+  });
+
+  test('contrast check re-evaluates as colors change', async ({ page }) => {
+    const links = page.getByTestId('contrast-Links');
+    await expect(links).toContainText('Fail');
+    await page.getByRole('checkbox', { name: 'Show all roles (advanced)' }).check();
+    await page.getByRole('textbox', { name: 'link', exact: true }).fill('#0b5cad');
+    await expect(links).toContainText('Pass');
+  });
+
+  test('text size is part of the theme', async ({ page }) => {
+    await page.getByRole('radio', { name: 'Expanded (16px)' }).check();
+    await expect(page.locator('body')).toHaveCSS('font-size', '16px');
+    await expect(exported(page)).toContainText('"density": "expanded"');
+  });
+
+  test('the theme survives a reload; Reset returns to kit defaults', async ({ page }) => {
+    await brandField(page).fill('#2e7d32');
+    await page.reload();
+    await expect(brandField(page)).toHaveValue('#2e7d32');
+    await expect(previewButton(page)).toHaveCSS('background-color', 'rgb(46, 125, 50)');
+    await page.getByRole('button', { name: 'Reset to kit defaults' }).click();
+    await expect(exported(page)).toHaveText('{\n  "version": 1\n}');
+    await expect(previewButton(page)).toHaveCSS('background-color', 'rgb(168, 103, 29)');
+  });
+
+  test('TypeScript export and download', async ({ page }) => {
+    await brandField(page).fill('#6a3d9a');
+    await page.getByRole('tab', { name: 'theme.config.ts' }).click();
+    await expect(page.locator('#export pre').filter({ hasText: 'definePlatformTheme' })).toContainText("import { definePlatformTheme } from '@platform/ui';");
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download theme.config.ts' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('theme.config.ts');
+  });
+
+  test('import: errors are reported and nothing changes; valid files apply with warnings', async ({ page }) => {
+    const input = page.getByRole('textbox', { name: 'Paste a theme.json' });
+    await input.fill('{"colors":{"brand":"not-a-color"}}');
+    await page.getByRole('button', { name: 'Apply pasted theme' }).click();
+    await expect(page.getByRole('alert').filter({ hasText: 'Theme not applied' })).toContainText('colors.brand');
+    await expect(previewButton(page)).toHaveCSS('background-color', 'rgb(168, 103, 29)');
+
+    await input.fill('{"version":1,"name":"Acme","colors":{"brand":"#1f5f99","sparkle":"#fff"}}');
+    await page.getByRole('button', { name: 'Apply pasted theme' }).click();
+    await expect(previewButton(page)).toHaveCSS('background-color', 'rgb(31, 95, 153)');
+    await expect(page.getByRole('textbox', { name: 'Theme name' })).toHaveValue('Acme');
+    await expect(page.locator('#export')).toContainText('Unknown color role "sparkle" ignored.');
+  });
+
+  test('import from a file round-trips an exported theme', async ({ page }) => {
+    await page.getByTestId('theme-file').setInputFiles({
+      name: 'theme.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify({ version: 1, colors: { brand: '#2e7d32' }, density: 'expanded' })),
+    });
+    await expect(previewButton(page)).toHaveCSS('background-color', 'rgb(46, 125, 50)');
+    await expect(page.getByRole('radio', { name: 'Expanded (16px)' })).toBeChecked();
+    await expect(exported(page)).toHaveText(JSON.stringify({ version: 1, colors: { brand: '#2e7d32' }, density: 'expanded' }, null, 2));
+  });
+});

@@ -29,6 +29,8 @@ export function Accordion({ title, children, defaultExpanded = true, expanded, o
   return (
     <MuiAccordion
       slots={{ heading: headingLevel }}
+      // A plain heading element keeps browser margins/font; reset them like MUI's own heading slot.
+      slotProps={{ heading: { style: { margin: 0, fontSize: 'inherit', fontWeight: 'inherit', lineHeight: 'inherit' } } }}
       defaultExpanded={defaultExpanded}
       expanded={expanded}
       onChange={(_, isExpanded) => onChange?.(isExpanded)}
@@ -58,8 +60,13 @@ export interface AccordionGroup<K extends string> {
  * Shared open/closed state for a list of accordions, so a header button can
  * expand or collapse them all while each one still toggles on its own.
  */
-export function useAccordionGroup<K extends string>(keys: readonly K[], defaultExpanded = true): AccordionGroup<K> {
-  const [state, setState] = useState<Partial<Record<K, boolean>>>({});
+export function useAccordionGroup<K extends string>(
+  keys: readonly K[],
+  defaultExpanded = true,
+  /** Starting state for specific keys, e.g. { [latest]: true } with defaultExpanded false. */
+  initial?: Partial<Record<K, boolean>>,
+): AccordionGroup<K> {
+  const [state, setState] = useState<Partial<Record<K, boolean>>>(() => ({ ...initial }));
   const isOpen = useCallback((key: K) => state[key] ?? defaultExpanded, [state, defaultExpanded]);
   const setAll = useCallback(
     (open: boolean) => setState(Object.fromEntries(keys.map((k) => [k, open])) as Record<K, boolean>),
