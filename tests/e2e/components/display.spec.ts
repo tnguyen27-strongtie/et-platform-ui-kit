@@ -73,37 +73,96 @@ test.describe('ImageViewer', () => {
 
   const scaleOf = (img: Locator) =>
     img.evaluate((el) => Number(/scale\(([\d.]+)\)/.exec((el as HTMLElement).style.transform)?.[1] ?? 1));
+  const translateOf = (img: Locator) => img.evaluate((el) => /translate\(([^)]*)\)/.exec((el as HTMLElement).style.transform)?.[1]);
 
   test('zoom buttons change the scale within limits', async ({ page }) => {
-    const img = page.getByRole('img', { name: 'Connection drawing' });
-    await expect(page.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
-    await page.getByRole('button', { name: 'Zoom in' }).click();
+    const viewer = page.getByRole('region', { name: 'Main viewer' });
+    const img = viewer.getByRole('img', { name: 'Connection drawing' });
+    await expect(viewer.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
+    await viewer.getByRole('button', { name: 'Zoom in' }).click();
     await expect.poll(() => scaleOf(img)).toBe(1.5);
-    await expect(page.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
-    await page.getByRole('button', { name: 'Zoom out' }).click();
+    await expect(viewer.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
+    await viewer.getByRole('button', { name: 'Zoom out' }).click();
     await expect.poll(() => scaleOf(img)).toBe(1);
   });
 
   test('zoom buttons keep working while zoomed; quick clicks do not reset', async ({ page }) => {
-    const img = page.getByRole('img', { name: 'Connection drawing' });
-    const zoomIn = page.getByRole('button', { name: 'Zoom in' });
+    const viewer = page.getByRole('region', { name: 'Main viewer' });
+    const img = viewer.getByRole('img', { name: 'Connection drawing' });
+    const zoomIn = viewer.getByRole('button', { name: 'Zoom in' });
     await zoomIn.dblclick();
     await expect.poll(() => scaleOf(img)).toBe(2.25);
-    await page.getByRole('button', { name: 'Zoom out' }).click();
+    await viewer.getByRole('button', { name: 'Zoom out' }).click();
     await expect.poll(() => scaleOf(img)).toBe(1.5);
   });
 
-  test('wheel zooms; double-click and the app reset restore the view', async ({ page }) => {
-    const img = page.getByRole('img', { name: 'Connection drawing' });
+  test('wheel zooms without scrolling the page; double-click and the app reset restore the view', async ({ page }) => {
+    await page.setViewportSize({ width: 800, height: 400 }); // page taller than the window, so it could scroll
+    const viewer = page.getByRole('region', { name: 'Main viewer' });
+    const img = viewer.getByRole('img', { name: 'Connection drawing' });
     await img.hover();
+    const scrollBefore = await page.evaluate(() => window.scrollY);
     await page.mouse.wheel(0, -200);
     await expect.poll(() => scaleOf(img)).toBeGreaterThan(1);
+    await page.mouse.wheel(0, 100);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
     await img.dblclick();
     await expect.poll(() => scaleOf(img)).toBe(1);
 
-    await page.getByRole('button', { name: 'Zoom in' }).click();
+    await viewer.getByRole('button', { name: 'Zoom in' }).click();
     await page.getByRole('button', { name: 'Reset from app' }).click();
     await expect.poll(() => scaleOf(img)).toBe(1);
+  });
+
+  test('minScale below 1 zooms out past the fitted size and stays there', async ({ page }) => {
+    const viewer = page.getByRole('region', { name: 'Min scale viewer' });
+    const img = viewer.getByRole('img', { name: 'Zoomed-out drawing' });
+    const zoomOut = viewer.getByRole('button', { name: 'Zoom out' });
+    await expect(zoomOut).toBeEnabled();
+    await zoomOut.click();
+    await expect.poll(() => scaleOf(img)).toBeCloseTo(1 / 1.5, 3);
+    await zoomOut.click();
+    await expect.poll(() => scaleOf(img)).toBe(0.5);
+    await expect(zoomOut).toBeDisabled();
+    expect(await translateOf(img)).toBe('0px, 0px');
+  });
+
+  test('a new image resets the view', async ({ page }) => {
+    const viewer = page.getByRole('region', { name: 'Main viewer' });
+    const img = viewer.getByRole('img', { name: 'Connection drawing' });
+    await viewer.getByRole('button', { name: 'Zoom in' }).click();
+    await expect.poll(() => scaleOf(img)).toBe(1.5);
+    await page.getByRole('button', { name: 'Show another image' }).click();
+    await expect(img).toHaveAttribute('src', /sst-logo/);
+    await expect.poll(() => scaleOf(img)).toBe(1);
+    await expect(viewer.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
+  });
+
+  test('two-finger pinch zooms', async ({ page }) => {
+    const viewer = page.getByRole('region', { name: 'Main viewer' });
+    const img = viewer.getByRole('img', { name: 'Connection drawing' });
+    const box = (await img.boundingBox())!;
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    // Synthetic pointer events: Playwright has no multi-touch API.
+    await img.evaluate(
+      (el, { cx, cy }) => {
+        const target = el.parentElement!;
+        target.setPointerCapture = () => undefined; // synthetic pointers are not "active", capture would throw
+        const fire = (type: string, id: number, x: number) =>
+          target.dispatchEvent(new PointerEvent(type, { pointerId: id, clientX: x, clientY: cy, bubbles: true, pointerType: 'touch', isPrimary: id === 1 }));
+        fire('pointerdown', 1, cx - 20);
+        fire('pointerdown', 2, cx + 20);
+        for (let d = 20; d <= 60; d += 10) {
+          fire('pointermove', 1, cx - d);
+          fire('pointermove', 2, cx + d);
+        }
+        fire('pointerup', 1, cx - 60);
+        fire('pointerup', 2, cx + 60);
+      },
+      { cx, cy },
+    );
+    await expect.poll(() => scaleOf(img)).toBeCloseTo(3, 1);
   });
 });
 
@@ -129,11 +188,28 @@ test.describe('SectionLayout (desktop)', () => {
     await page.mouse.move(box.x - 600, box.y + box.height / 2, { steps: 10 });
     await page.mouse.up();
 
-    const rail = page.getByRole('button', { name: 'Expand panel' });
+    // The rail's name contains its visible label (WCAG 2.5.3).
+    const rail = page.getByRole('button', { name: 'Expand Input' });
     await expect(rail).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Layout input' })).toHaveCount(0);
     await rail.click();
     await expect(page.getByRole('textbox', { name: 'Layout input' })).toBeVisible();
+  });
+
+  test('still renders when localStorage is blocked', async ({ page }) => {
+    // Sandboxed iframes and strict privacy settings throw on any access to window.localStorage.
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          throw new DOMException('blocked', 'SecurityError');
+        },
+      });
+    });
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.reload(); // init scripts run on the next real load, not on a same-URL goto
+    await expect(page.getByRole('textbox', { name: 'Layout input' })).toBeVisible();
+    expect(errors).toEqual([]);
   });
 });
 

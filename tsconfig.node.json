@@ -1,0 +1,10 @@
+{
+  // Code run by Node directly (type stripping, no bundler): unit tests and build scripts.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "types": ["node"],
+    "tsBuildInfoFile": "node_modules/.cache/tsconfig.node.tsbuildinfo"
+  },
+  "include": ["tests/unit", "scripts"]
+}

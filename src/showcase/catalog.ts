@@ -94,7 +94,7 @@ export const catalog: CatalogPage[] = [
     sections: [
       { id: 'card', title: 'Card', exports: ['Card'] },
       { id: 'data-table', title: 'DataTable', exports: ['DataTable'] },
-      { id: 'grid-view', title: 'GridView', exports: ['GridView'] },
+      { id: 'grid-view', title: 'GridView', exports: ['GridView', 'defaultGridViewLabels'] },
       { id: 'grid-cells', title: 'Grid cells', exports: ['GridImageCell', 'GridLinkCell'] },
       { id: 'chip-link-divider', title: 'Chip, Link and Divider', exports: ['Chip', 'Link', 'Divider'] },
     ],

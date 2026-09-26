@@ -107,8 +107,10 @@ export {
   type NumberRange,
 } from './components/grid/gridFilters';
 export {
+  defaultGridViewLabels,
   GridView,
   type GridCellValue,
+  type GridViewLabels,
   type GridColumn,
   type GridFilterType,
   type GridHighlight,

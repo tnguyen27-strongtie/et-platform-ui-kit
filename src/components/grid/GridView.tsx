@@ -36,6 +36,7 @@ import {
 import { type CSSProperties, type DragEvent, type KeyboardEvent, type MouseEvent, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 
 import { cn } from '../../utils/cn';
+import { useStableValue } from '../../utils/useStableValue';
 import { Button, IconButton } from '../Button';
 import { Checkbox } from '../Choice';
 import { NumberInput } from '../NumberInput';
@@ -117,6 +118,82 @@ export interface GridViewState {
   filtersVisible: boolean;
 }
 
+/** Every text GridView shows or announces. Override any subset through the `labels` prop. */
+export interface GridViewLabels {
+  searchPlaceholder: string;
+  /** Accessible name of the search box; receives the grid's aria-label. */
+  searchLabel: (gridLabel: string) => string;
+  clearSearch: string;
+  savedSearches: string;
+  /** Row count in the toolbar. `filtered` is true while a search or filter is active. */
+  rowCount: (shown: number, total: number, filtered: boolean) => string;
+  clearFilters: string;
+  filters: string;
+  /** Screen-reader text after the active filter count ("2 active"). */
+  activeFilters: string;
+  columns: string;
+  resetLayout: string;
+  noMatches: string;
+  /** Accessible text of an empty cell. */
+  emptyCell: string;
+  dragToMove: string;
+  sortHint: string;
+  frozen: string;
+  columnOptions: (header: string) => string;
+  sortAscending: string;
+  sortDescending: string;
+  clearSort: string;
+  freezeLeft: string;
+  freezeRight: string;
+  unfreeze: string;
+  moveLeft: string;
+  moveRight: string;
+  hideColumn: string;
+  filterColumn: (header: string) => string;
+  filterPlaceholder: string;
+  minimum: (header: string) => string;
+  maximum: (header: string) => string;
+  minPlaceholder: string;
+  maxPlaceholder: string;
+  /** Placeholder of a select filter with nothing chosen. */
+  all: string;
+}
+
+export const defaultGridViewLabels: GridViewLabels = {
+  searchPlaceholder: 'Search',
+  searchLabel: (grid) => `Search ${grid}`,
+  clearSearch: 'Clear search',
+  savedSearches: 'Saved searches',
+  rowCount: (shown, total, filtered) => (filtered ? `${shown} of ${total} rows` : `${total} rows`),
+  clearFilters: 'Clear filters',
+  filters: 'Filters',
+  activeFilters: 'active',
+  columns: 'Columns',
+  resetLayout: 'Reset layout',
+  noMatches: 'No rows match the current search and filters.',
+  emptyCell: 'empty',
+  dragToMove: 'Drag to move',
+  sortHint: 'Sort (Shift+click to add)',
+  frozen: 'Frozen',
+  columnOptions: (header) => `Column options: ${header}`,
+  sortAscending: 'Sort ascending',
+  sortDescending: 'Sort descending',
+  clearSort: 'Clear sort',
+  freezeLeft: 'Freeze left',
+  freezeRight: 'Freeze right',
+  unfreeze: 'Unfreeze',
+  moveLeft: 'Move left',
+  moveRight: 'Move right',
+  hideColumn: 'Hide column',
+  filterColumn: (header) => `Filter ${header}`,
+  filterPlaceholder: 'Filter',
+  minimum: (header) => `${header} minimum`,
+  maximum: (header) => `${header} maximum`,
+  minPlaceholder: 'Min',
+  maxPlaceholder: 'Max',
+  all: 'All',
+};
+
 export interface GridViewProps<T extends RowData> {
   rows: T[];
   columns: GridColumn<T>[];
@@ -148,6 +225,8 @@ export interface GridViewProps<T extends RowData> {
   toolbar?: ReactNode;
   /** Text when there are no rows at all. */
   emptyText?: ReactNode;
+  /** Any subset of the grid's texts, e.g. { clearFilters: 'Xóa bộ lọc', rowCount: (n, t) => `${n}/${t} dòng` }. */
+  labels?: Partial<GridViewLabels>;
   className?: string;
 }
 
@@ -172,15 +251,15 @@ const features = tableFeatures({
 
 type Features = typeof features;
 
-const textFilter: FilterFn<Features, any> = Object.assign(
+const textFilter: FilterFn<Features, RowData> = Object.assign(
   (row: { getValue: (id: string) => unknown }, id: string, value: string) => matchesText(row.getValue(id), value),
   { autoRemove: isEmptyFilter },
 );
-const numberFilter: FilterFn<Features, any> = Object.assign(
+const numberFilter: FilterFn<Features, RowData> = Object.assign(
   (row: { getValue: (id: string) => unknown }, id: string, value: NumberRange) => matchesNumberRange(row.getValue(id), value),
   { autoRemove: isEmptyFilter },
 );
-const selectFilter: FilterFn<Features, any> = Object.assign(
+const selectFilter: FilterFn<Features, RowData> = Object.assign(
   (row: { getValue: (id: string) => unknown }, id: string, value: unknown[]) => matchesSelect(row.getValue(id), value),
   { autoRemove: isEmptyFilter },
 );
@@ -242,26 +321,29 @@ export function GridView<T extends RowData>({
   maxHeight,
   toolbar,
   emptyText = 'No data',
+  labels: labelOverrides,
   className,
 }: GridViewProps<T>) {
   const baseId = useId();
+  const L: GridViewLabels = { ...defaultGridViewLabels, ...labelOverrides };
   const byId = useMemo(() => new Map(columns.map((c) => [c.id, c])), [columns]);
   const [query, setQuery] = useState(initialState?.search ?? '');
   const [filtersVisible, setFiltersVisible] = useState(initialState?.filtersVisible ?? true);
 
   // Master search runs before the table so every term may match a different column.
   const searchConfig = typeof search === 'object' ? search : {};
+  // Usually an inline array; depend on its content, not its identity.
+  const searchIds = useStableValue(searchConfig.columns);
   const searchColumns = useMemo(
-    () => columns.filter((c) => c.searchable !== false && (!searchConfig.columns || searchConfig.columns.includes(c.id))),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [columns, searchConfig.columns?.join('\u0000')],
+    () => columns.filter((c) => c.searchable !== false && (!searchIds || searchIds.includes(c.id))),
+    [columns, searchIds],
   );
   const searchedRows = useMemo(
     () => (query.trim() === '' ? rows : rows.filter((row) => matchesSearch(searchColumns.map((c) => displayText(c, row)), query))),
     [rows, searchColumns, query],
   );
 
-  const columnDefs = useMemo<ColumnDef<Features, T, any>[]>(
+  const columnDefs = useMemo<ColumnDef<Features, T, unknown>[]>(
     () =>
       columns.map((c) => {
         const filterType = filterTypeOf(c);
@@ -276,7 +358,7 @@ export function GridView<T extends RowData>({
           enableColumnFilter: filterType !== false,
           filterFn: filterType === 'number' ? numberFilter : filterType === 'select' ? selectFilter : textFilter,
           enableHiding: c.hideable !== false,
-        } as ColumnDef<Features, T, any>;
+        } as ColumnDef<Features, T, unknown>;
       }),
     [columns],
   );
@@ -404,7 +486,7 @@ export function GridView<T extends RowData>({
     if (c.type === 'image' && c.image) {
       return <GridImageCell src={c.image.src(row)} alt={c.image.alt?.(row) ?? ''} text={text} subtext={c.image.subtext?.(row)} />;
     }
-    if (text === '') return <span className="text-text-muted" aria-label="empty">—</span>;
+    if (text === '') return <span className="text-text-muted" aria-label={L.emptyCell}>—</span>;
     if (c.type === 'link' && c.link) {
       const href = c.link.href?.(row);
       const onClick = c.link.onClick;
@@ -432,8 +514,8 @@ export function GridView<T extends RowData>({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Escape' && query && (e.stopPropagation(), setQuery(''))}
-            placeholder={searchConfig.placeholder ?? 'Search'}
-            inputProps={{ 'aria-label': `Search ${ariaLabel}`, type: 'search', 'aria-controls': `${baseId}-table` }}
+            placeholder={searchConfig.placeholder ?? L.searchPlaceholder}
+            inputProps={{ 'aria-label': L.searchLabel(ariaLabel), type: 'search', 'aria-controls': `${baseId}-table` }}
             startAdornment={
               <InputAdornment position="start">
                 <SearchIcon fontSize="small" />
@@ -442,7 +524,7 @@ export function GridView<T extends RowData>({
             endAdornment={
               query ? (
                 <InputAdornment position="end">
-                  <IconButton aria-label="Clear search" size="small" onClick={() => setQuery('')}>
+                  <IconButton aria-label={L.clearSearch} size="small" onClick={() => setQuery('')}>
                     <CloseIcon fontSize="small" />
                   </IconButton>
                 </InputAdornment>
@@ -452,7 +534,7 @@ export function GridView<T extends RowData>({
           />
         )}
         {presets && presets.length > 0 && (
-          <div role="group" aria-label="Saved searches" className="flex flex-wrap items-center gap-1">
+          <div role="group" aria-label={L.savedSearches} className="flex flex-wrap items-center gap-1">
             {presets.map((p) => {
               const active = presetActive(p);
               return (
@@ -472,11 +554,11 @@ export function GridView<T extends RowData>({
         )}
         <div className="ml-auto flex items-center gap-2">
           <span id={statusId} role="status" className="text-xs whitespace-nowrap text-text-muted">
-            {hasFilters ? `${tableRows.length} of ${rows.length} rows` : `${rows.length} rows`}
+            {L.rowCount(tableRows.length, rows.length, hasFilters)}
           </span>
           {hasFilters && (
             <Button size="small" variant="text" onClick={clearFilters}>
-              Clear filters
+              {L.clearFilters}
             </Button>
           )}
           {canFilter && (
@@ -487,11 +569,11 @@ export function GridView<T extends RowData>({
               aria-controls={`${baseId}-table`}
               onClick={() => setFiltersVisible((v) => !v)}
             >
-              Filters
+              {L.filters}
               {activeFilterCount > 0 && (
                 <span className="grid-badge">
                   {activeFilterCount}
-                  <span className="sr-only"> active</span>
+                  <span className="sr-only"> {L.activeFilters}</span>
                 </span>
               )}
             </Button>
@@ -499,6 +581,7 @@ export function GridView<T extends RowData>({
           <ColumnsMenu
             columns={table.getAllLeafColumns()}
             byId={byId}
+            labels={L}
             onReset={() => {
               table.resetColumnOrder();
               table.resetColumnPinning();
@@ -551,7 +634,7 @@ export function GridView<T extends RowData>({
                       <span
                         draggable
                         aria-hidden="true"
-                        title="Drag to move"
+                        title={L.dragToMove}
                         className="grid-drag flex shrink-0 cursor-grab text-true-gray-40"
                         onDragStart={(e) => {
                           e.dataTransfer.effectAllowed = 'move';
@@ -570,7 +653,7 @@ export function GridView<T extends RowData>({
                           type="button"
                           className={cn('grid-sort min-w-0 flex-1', alignOf(c) === 'end' && 'justify-end')}
                           onClick={(e) => col.toggleSorting(undefined, e.shiftKey || e.metaKey || e.ctrlKey ? true : undefined)}
-                          title="Sort (Shift+click to add)"
+                          title={L.sortHint}
                         >
                           <span className="truncate">{c.header}</span>
                           <SortIcon direction={sorted} />
@@ -579,10 +662,11 @@ export function GridView<T extends RowData>({
                       ) : (
                         <span className={cn('min-w-0 flex-1 truncate font-bold', alignOf(c) === 'end' && 'text-right')}>{c.header}</span>
                       )}
-                      {col.getIsPinned() && <PushPinIcon aria-label="Frozen" sx={{ fontSize: '0.875rem' }} className="shrink-0 text-accent" />}
+                      {col.getIsPinned() && <PushPinIcon aria-label={L.frozen} sx={{ fontSize: '0.875rem' }} className="shrink-0 text-accent" />}
                       <ColumnMenu
                         column={col}
                         header={c.header}
+                        labels={L}
                         canMoveLeft={!!neighbour(col.id, -1)}
                         canMoveRight={!!neighbour(col.id, 1)}
                         onMove={(step) => {
@@ -603,7 +687,7 @@ export function GridView<T extends RowData>({
                   return (
                     // <td>, not <th>: filter inputs are not column headers (and may be empty).
                     <td key={col.id} style={stickyStyle(col, true)} className={cn('grid-th-filter', edgeClass(col.id))}>
-                      {col.getCanFilter() && <ColumnFilter column={col} config={c} />}
+                      {col.getCanFilter() && <ColumnFilter column={col} config={c} labels={L} />}
                     </td>
                   );
                 }), true)}
@@ -618,9 +702,9 @@ export function GridView<T extends RowData>({
                     emptyText
                   ) : (
                     <span className="flex items-center justify-center gap-2">
-                      No rows match the current search and filters.
+                      {L.noMatches}
                       <Button size="small" onClick={clearFilters}>
-                        Clear filters
+                        {L.clearFilters}
                       </Button>
                     </span>
                   )}
@@ -686,9 +770,17 @@ function SortIcon({ direction }: { direction: false | 'asc' | 'desc' }) {
   );
 }
 
-function ColumnFilter<T extends RowData>({ column, config }: { column: Column<Features, T, unknown>; config: GridColumn<T> }) {
+function ColumnFilter<T extends RowData>({
+  column,
+  config,
+  labels: L,
+}: {
+  column: Column<Features, T, unknown>;
+  config: GridColumn<T>;
+  labels: GridViewLabels;
+}) {
   const type = filterTypeOf(config);
-  const label = `Filter ${config.header}`;
+  const label = L.filterColumn(config.header);
   const value = column.getFilterValue();
 
   if (type === 'number') {
@@ -696,8 +788,8 @@ function ColumnFilter<T extends RowData>({ column, config }: { column: Column<Fe
     const set = (patch: NumberRange) => column.setFilterValue({ ...range, ...patch });
     return (
       <div className="grid-filter flex gap-1">
-        <NumberInput aria-label={`${config.header} minimum`} placeholder="Min" value={range.min ?? null} onChange={(min) => set({ min })} />
-        <NumberInput aria-label={`${config.header} maximum`} placeholder="Max" value={range.max ?? null} onChange={(max) => set({ max })} />
+        <NumberInput aria-label={L.minimum(config.header)} placeholder={L.minPlaceholder} value={range.min ?? null} onChange={(min) => set({ min })} />
+        <NumberInput aria-label={L.maximum(config.header)} placeholder={L.maxPlaceholder} value={range.max ?? null} onChange={(max) => set({ max })} />
       </div>
     );
   }
@@ -714,7 +806,7 @@ function ColumnFilter<T extends RowData>({ column, config }: { column: Column<Fe
         <Select<string | number>
           multiple
           aria-label={label}
-          placeholder="All"
+          placeholder={L.all}
           value={(value as Array<string | number> | undefined) ?? []}
           onChange={(v) => column.setFilterValue(v)}
           options={options}
@@ -727,7 +819,7 @@ function ColumnFilter<T extends RowData>({ column, config }: { column: Column<Fe
     <div className="grid-filter">
       <TextInput
         inputProps={{ 'aria-label': label, type: 'search' }}
-        placeholder="Filter"
+        placeholder={L.filterPlaceholder}
         value={(value as string | undefined) ?? ''}
         onChange={(e) => column.setFilterValue(e.target.value)}
       />
@@ -738,6 +830,7 @@ function ColumnFilter<T extends RowData>({ column, config }: { column: Column<Fe
 interface ColumnMenuProps<T extends RowData> {
   column: Column<Features, T, unknown>;
   header: string;
+  labels: GridViewLabels;
   canMoveLeft: boolean;
   canMoveRight: boolean;
   onMove: (step: -1 | 1) => void;
@@ -745,7 +838,7 @@ interface ColumnMenuProps<T extends RowData> {
 }
 
 /** Per-column actions; also the keyboard alternative to drag-and-drop. */
-function ColumnMenu<T extends RowData>({ column, header, canMoveLeft, canMoveRight, onMove, canHide }: ColumnMenuProps<T>) {
+function ColumnMenu<T extends RowData>({ column, header, labels: L, canMoveLeft, canMoveRight, onMove, canHide }: ColumnMenuProps<T>) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const menuId = useId();
   const close = () => setAnchor(null);
@@ -759,7 +852,7 @@ function ColumnMenu<T extends RowData>({ column, header, canMoveLeft, canMoveRig
   return (
     <>
       <IconButton
-        aria-label={`Column options: ${header}`}
+        aria-label={L.columnOptions(header)}
         aria-haspopup="menu"
         aria-expanded={!!anchor}
         aria-controls={anchor ? menuId : undefined}
@@ -772,14 +865,14 @@ function ColumnMenu<T extends RowData>({ column, header, canMoveLeft, canMoveRig
       <Menu id={menuId} anchorEl={anchor} open={!!anchor} onClose={close}>
         {column.getCanSort() && [
           <MenuItem key="asc" selected={sorted === 'asc'} onClick={run(() => column.toggleSorting(false))}>
-            Sort ascending
+            {L.sortAscending}
           </MenuItem>,
           <MenuItem key="desc" selected={sorted === 'desc'} onClick={run(() => column.toggleSorting(true))}>
-            Sort descending
+            {L.sortDescending}
           </MenuItem>,
           sorted && (
             <MenuItem key="clear" onClick={run(() => column.clearSorting())}>
-              Clear sort
+              {L.clearSort}
             </MenuItem>
           ),
           <Divider key="d1" />,
@@ -789,22 +882,22 @@ function ColumnMenu<T extends RowData>({ column, header, canMoveLeft, canMoveRig
             <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
               <PushPinIcon fontSize="small" />
             </ListItemIcon>
-            Freeze left
+            {L.freezeLeft}
           </MenuItem>
         )}
-        {pinned !== 'end' && <MenuItem onClick={run(() => column.pin('end'))}>Freeze right</MenuItem>}
-        {pinned && <MenuItem onClick={run(() => column.pin(false))}>Unfreeze</MenuItem>}
+        {pinned !== 'end' && <MenuItem onClick={run(() => column.pin('end'))}>{L.freezeRight}</MenuItem>}
+        {pinned && <MenuItem onClick={run(() => column.pin(false))}>{L.unfreeze}</MenuItem>}
         <Divider />
         <MenuItem disabled={!canMoveLeft} onClick={run(() => onMove(-1))}>
-          Move left
+          {L.moveLeft}
         </MenuItem>
         <MenuItem disabled={!canMoveRight} onClick={run(() => onMove(1))}>
-          Move right
+          {L.moveRight}
         </MenuItem>
         {canHide && [
           <Divider key="d3" />,
           <MenuItem key="hide" onClick={run(() => column.toggleVisibility(false))}>
-            Hide column
+            {L.hideColumn}
           </MenuItem>,
         ]}
       </Menu>
@@ -816,10 +909,12 @@ function ColumnMenu<T extends RowData>({ column, header, canMoveLeft, canMoveRig
 function ColumnsMenu<T extends RowData>({
   columns: all,
   byId,
+  labels: L,
   onReset,
 }: {
   columns: Column<Features, T, unknown>[];
   byId: Map<string, GridColumn<T>>;
+  labels: GridViewLabels;
   onReset: () => void;
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -836,7 +931,7 @@ function ColumnsMenu<T extends RowData>({
         aria-controls={anchor ? menuId : undefined}
         onClick={(e) => setAnchor(e.currentTarget)}
       >
-        Columns
+        {L.columns}
       </Button>
       <Menu id={menuId} anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
         {all.map((col) => {
@@ -862,7 +957,7 @@ function ColumnsMenu<T extends RowData>({
             setAnchor(null);
           }}
         >
-          Reset layout
+          {L.resetLayout}
         </MenuItem>
       </Menu>
     </>

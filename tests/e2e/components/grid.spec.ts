@@ -321,3 +321,20 @@ test.describe('rows', () => {
     await expectOut(page, 'selected', null);
   });
 });
+
+test.describe('labels', () => {
+  test('every overridden text is used; the rest keep their defaults', async ({ page }) => {
+    await openFixture(page, 'grid-labels');
+    const search = page.getByRole('searchbox', { name: 'Tìm trong Vật tư' });
+    await expect(search).toHaveAttribute('placeholder', 'Tìm kiếm');
+    await expect(page.getByRole('status')).toHaveText('6 dòng');
+    await search.fill('sdw');
+    await expect(page.getByRole('status')).toHaveText('2/6 dòng');
+    await expect(page.getByRole('button', { name: 'Xóa bộ lọc' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Bộ lọc/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cột', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Tùy chọn cột Tải' }).click();
+    // Not overridden: English default.
+    await expect(page.getByRole('menuitem', { name: 'Freeze left' })).toBeVisible();
+  });
+});

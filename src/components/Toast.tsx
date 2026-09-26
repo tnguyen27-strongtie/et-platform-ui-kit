@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+// The unstyled entry: the default one injects its CSS as an unlayered <style> tag, which would
+// beat Tailwind utilities. theme.css imports the same CSS into @layer components instead.
+import { toast, ToastContainer } from 'react-toastify/unstyled';
 
 import { colors } from '../tokens/tokens';
-
-// Styles: react-toastify's CSS is imported by theme.css.
 
 /**
  * Mount once in the app shell.

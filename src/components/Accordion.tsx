@@ -7,6 +7,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import Tooltip from '@mui/material/Tooltip';
 import { type ReactNode, useCallback, useId, useMemo, useState } from 'react';
 
+import { useStableValue } from '../utils/useStableValue';
 import { IconButton } from './Button';
 
 export interface AccordionProps {
@@ -61,17 +62,18 @@ export interface AccordionGroup<K extends string> {
  * expand or collapse them all while each one still toggles on its own.
  */
 export function useAccordionGroup<K extends string>(
-  keys: readonly K[],
+  keysProp: readonly K[],
   defaultExpanded = true,
   /** Starting state for specific keys, e.g. { [latest]: true } with defaultExpanded false. */
   initial?: Partial<Record<K, boolean>>,
 ): AccordionGroup<K> {
+  // keys is usually an inline array; depend on its content, not its identity.
+  const keys = useStableValue(keysProp);
   const [state, setState] = useState<Partial<Record<K, boolean>>>(() => ({ ...initial }));
   const isOpen = useCallback((key: K) => state[key] ?? defaultExpanded, [state, defaultExpanded]);
   const setAll = useCallback(
     (open: boolean) => setState(Object.fromEntries(keys.map((k) => [k, open])) as Record<K, boolean>),
-    // keys is usually an inline array; depend on its content, not its identity.
-    [keys.join('\u0000')],
+    [keys],
   );
 
   return useMemo(() => {

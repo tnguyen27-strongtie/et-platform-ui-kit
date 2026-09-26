@@ -2,7 +2,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DownloadIcon from '@mui/icons-material/Download';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useRef, useState } from 'react';
 
 import {
   Alert,
@@ -64,7 +64,12 @@ interface ColorFieldProps {
 /** Text field + native picker. Only valid colors reach the theme; empty = back to default. */
 function ColorField({ role, value, resolved, origin, onChange }: ColorFieldProps) {
   const [draft, setDraft] = useState(value ?? '');
-  useEffect(() => setDraft(value ?? ''), [value]);
+  // Follow outside changes (import, reset): adjust state during render instead of in an effect.
+  const [shownValue, setShownValue] = useState(value);
+  if (shownValue !== value) {
+    setShownValue(value);
+    setDraft(value ?? '');
+  }
   const invalid = draft.trim() !== '' && !isValidColor(draft);
 
   return (

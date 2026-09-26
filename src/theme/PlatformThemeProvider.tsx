@@ -4,6 +4,7 @@ import type { ThemeOptions } from '@mui/material/styles';
 import { type ReactNode, useEffect, useInsertionEffect, useMemo } from 'react';
 
 import type { ColorConfig, Density } from '../tokens/tokens';
+import { useStableValue } from '../utils/useStableValue';
 import { colorCssVars, resolveColors } from './colors';
 import { createPlatformTheme } from './createPlatformTheme';
 import type { PlatformThemeConfig } from './themeConfig';
@@ -24,13 +25,19 @@ export interface PlatformThemeProviderProps {
    * (bg-brand, text-danger...) and `colors.*` in sx.
    */
   colors?: ColorConfig;
-  /** App-level theme additions, merged over the platform theme. */
+  /**
+   * App-level theme additions, merged over the platform theme. May be passed inline: the theme
+   * is rebuilt only when the content changes (functions inside are compared by identity).
+   */
   overrides?: ThemeOptions;
 }
 
 const COLOR_STYLE_ID = 'platform-ui-colors';
 
-export function PlatformThemeProvider({ children, config, density: densityProp, colors: colorsProp, overrides }: PlatformThemeProviderProps) {
+export function PlatformThemeProvider({ children, config, density: densityProp, colors: colorsProp, overrides: overridesProp }: PlatformThemeProviderProps) {
+  // Apps often pass `overrides` inline; keep the same object while its content is unchanged.
+  // Functions inside (e.g. styleOverrides callbacks) compare by identity, so hoist those out of render.
+  const overrides = useStableValue(overridesProp);
   const density = densityProp ?? config?.density ?? 'standard';
   const colors = config?.colors || colorsProp ? { ...config?.colors, ...colorsProp } : undefined;
   // Callers often pass an inline object; key on its content so the theme is not rebuilt every render.

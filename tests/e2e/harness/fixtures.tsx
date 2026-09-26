@@ -618,12 +618,17 @@ function ErrorBoundaryFixture() {
 // ---------- ImageViewer ----------
 function ImageViewerFixture() {
   const ref = useRef<ImageViewerHandle>(null);
+  const [src, setSrc] = useState('/images/sample-drawing.svg');
   return (
     <>
       <Button onClick={() => ref.current?.reset()}>Reset from app</Button>
-      <div style={{ width: 400, height: 300, border: '1px solid #ccc' }}>
-        <ImageViewer ref={ref} src="/images/sample-drawing.svg" alt="Connection drawing" />
-      </div>
+      <Button onClick={() => setSrc('/images/sst-logo-noborder-color.svg')}>Show another image</Button>
+      <section aria-label="Main viewer" style={{ width: 400, height: 300, border: '1px solid #ccc' }}>
+        <ImageViewer ref={ref} src={src} alt="Connection drawing" />
+      </section>
+      <section aria-label="Min scale viewer" style={{ width: 400, height: 300, border: '1px solid #ccc' }}>
+        <ImageViewer src="/images/sample-drawing.svg" alt="Zoomed-out drawing" minScale={0.5} />
+      </section>
     </>
   );
 }
@@ -633,6 +638,7 @@ function LayoutFixture() {
   return (
     <div style={{ height: 600, width: '100%' }}>
       <SectionLayout
+        layoutId="harness-layout"
         input={
           <Section title="Input">
             <FormField label="Layout input" htmlFor="layout-input">
@@ -716,6 +722,32 @@ function GridFixture() {
       <Out id="opened" value={opened} />
       <Out id="state" value={state} />
     </>
+  );
+}
+
+function GridLabelsFixture() {
+  const columns: GridColumn<Part>[] = [
+    { id: 'model', header: 'Mã', value: 'model' },
+    { id: 'capacity', header: 'Tải', value: 'capacity', type: 'number' },
+  ];
+  return (
+    <div style={{ width: 640 }}>
+      <GridView
+        aria-label="Vật tư"
+        rows={parts}
+        columns={columns}
+        getRowId={(r) => r.id}
+        labels={{
+          searchPlaceholder: 'Tìm kiếm',
+          searchLabel: (grid) => `Tìm trong ${grid}`,
+          rowCount: (shown, total, filtered) => (filtered ? `${shown}/${total} dòng` : `${total} dòng`),
+          clearFilters: 'Xóa bộ lọc',
+          filters: 'Bộ lọc',
+          columns: 'Cột',
+          columnOptions: (h) => `Tùy chọn cột ${h}`,
+        }}
+      />
+    </div>
   );
 }
 
@@ -815,5 +847,6 @@ export const fixtures: Record<string, ComponentType> = {
   layout: LayoutFixture,
   density: DensityFixture,
   grid: GridFixture,
+  'grid-labels': GridLabelsFixture,
   'release-notes': ReleaseNotesFixture,
 };

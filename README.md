@@ -2,7 +2,7 @@
 
 Design token, MUI theme và component React có sẵn style của **FD** (Blueprint, nhánh `main-3.2`), viết lại trên MUI 9 + Tailwind 4 để dùng cho các app mới trên platform. App dùng kit sẽ có giao diện giống FD mà không phải tự làm lại style.
 
-Trạng thái: `tsc` strict pass, library build pass, 15 unit test (logic số) và 18 test Playwright (hành vi, bàn phím, a11y bằng axe, đổi theme) pass, không có lỗi console. Ở chế độ standard, kích thước đo được khớp FD: label 12px, input 14px và cao 40px, button 16px, tab 14px, ô bảng 12px.
+Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (logic số, filter, theme, release notes) và 208 test Playwright (hành vi, bàn phím, a11y bằng axe, đổi theme) pass, không có lỗi console. CI (GitHub Actions, `.github/workflows/ci.yml`) chạy toàn bộ cho mỗi PR. Ở chế độ standard, kích thước đo được khớp FD: label 12px, input 14px và cao 40px, button 16px, tab 14px, ô bảng 12px.
 
 ## Mục lục
 
@@ -20,16 +20,17 @@ Trạng thái: `tsc` strict pass, library build pass, 15 unit test (logic số) 
 12. [Đưa vào Nx workspace](#đưa-vào-nx-workspace)
 13. [Khác biệt so với FD](#khác-biệt-so-với-fd)
 14. [Chưa có trong kit](#chưa-có-trong-kit)
-15. [Thay đổi ở 0.3](#thay-đổi-ở-03)
-16. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
+15. [Thay đổi ở 0.4](#thay-đổi-ở-04)
+16. [Thay đổi ở 0.3](#thay-đổi-ở-03)
+17. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
 
 ## Yêu cầu
 
 | Công cụ / thư viện | Phiên bản |
 | --- | --- |
-| Node.js | 24 LTS (script `build-tokens.ts` chạy TypeScript trực tiếp, cần Node ≥ 22.18) |
+| Node.js | 24 LTS (script `build-tokens.ts` chạy TypeScript trực tiếp, cần Node ≥ 22.18; khai báo trong `engines`) |
 | pnpm | 12 |
-| React | 19.3 |
+| React | 19.3 trở lên (19.x) |
 | `@mui/material`, `@mui/icons-material` | 9.4 |
 | `@emotion/react`, `@emotion/styled` | 11.14 |
 | Tailwind CSS, `@tailwindcss/vite` | 4.3 |
@@ -73,8 +74,10 @@ Góc phải thanh nav của showcase có ô chọn màu brand để thử cấu 
 Các lệnh khác:
 
 ```bash
-pnpm typecheck        # tsc strict
-pnpm test             # unit test logic số (node --test, không cần thư viện)
+pnpm lint             # ESLint (typescript-eslint, react-hooks, cấm mã hex trong component)
+pnpm typecheck        # tsc strict, gồm cả tests/unit và scripts (tsconfig.node.json)
+pnpm test             # unit test logic thuần (node --test, không cần thư viện)
+pnpm check            # lint + typecheck + test + build, giống job CI đầu tiên
 pnpm test:e2e         # Playwright: hành vi từng component, bàn phím, axe, đổi theme (tự chạy dev server)
 pnpm build            # build library ra dist/ (JS ESM + .d.ts + CSS)
 pnpm build:showcase   # build trang showcase ra dist-showcase/
@@ -98,6 +101,7 @@ src/
 │   └── workspace/                 # bố cục 3 section: SectionLayout, Section, VisualizationStage, ImageViewer
 ├── utils/cn.ts                    # cn() = twMerge(clsx(...))
 ├── utils/number.ts                # parse/format/step số, dùng cho NumberInput và validate của app
+├── utils/useStableValue.ts        # giữ nguyên object/mảng truyền inline khi nội dung không đổi (nội bộ)
 ├── index.ts                       # entry: export mọi thứ ở trên
 └── showcase/                      # trang demo, KHÔNG copy sang dự án
     ├── catalog.ts                 # danh sách trang/demo (nguồn cho thanh bên, Overview, test)
@@ -114,6 +118,9 @@ tests/
     ├── showcase.spec.ts           # showcase: mọi export có demo, mọi trang render + axe, điều hướng, theme
     └── helpers.ts
 vite.lib.config.ts, tsconfig.lib.json  # library build
+tsconfig.node.json                 # typecheck tests/unit và scripts (code Node chạy trực tiếp)
+eslint.config.js                   # ESLint
+.github/workflows/ci.yml           # CI: lint, typecheck, unit test, build, e2e
 public/
 ├── fonts/                         # font có license, nằm trong .gitignore
 └── images/                        # logo SST, bản vẽ mẫu cho showcase
@@ -125,11 +132,11 @@ Package tên `@platform/ui`. Để `private: true` nên không bao giờ bị pu
 
 | Cách | Lệnh trong app | Khi nào |
 | --- | --- | --- |
-| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.3.0.tgz` | App ở repo khác, muốn khóa phiên bản |
+| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.4.0.tgz` | App ở repo khác, muốn khóa phiên bản |
 | Link thư mục | `pnpm add link:../et-platform-ui-kit` (chạy `pnpm build` trong kit trước) | Sửa kit và app cùng lúc |
 | Registry nội bộ | Bỏ `private`, thêm `publishConfig.registry`, rồi `pnpm publish` | Nhiều team dùng chung |
 
-App tự cài các peer dependency: `react`, `react-dom` 19.3, `@mui/material`, `@mui/icons-material` 9.4, `@emotion/react`, `@emotion/styled` 11.14, `tailwindcss` 4. Kit không tự mang theo các package này, nên cả app chỉ có một bản React, MUI và Emotion.
+App tự cài các peer dependency: `react`, `react-dom` ≥ 19.3, `@mui/material`, `@mui/icons-material` ≥ 9.4, `@emotion/react`, `@emotion/styled` ≥ 11.14, `tailwindcss` 4 (khai báo dạng `^`, nên app nâng minor/patch không bị báo lỗi peer). Kit không tự mang theo các package này, nên cả app chỉ có một bản React, MUI và Emotion.
 
 `theme.css` của kit tự khai báo `@source` tới code của kit, nên app không cần thêm `@source` khi cài từ package.
 
@@ -251,7 +258,7 @@ Style của hầu hết component nằm trong theme (`createPlatformTheme.ts`), 
 | `Tooltip` | `Tooltip` (Radix) | **Hover, chữ ngắn** (1–2 dòng, chỉ chữ): nhãn cho icon button, gợi ý một dòng. Mở sau 300ms (100ms giữa các nút cạnh nhau), khi focus bằng bàn phím, khi nhấn giữ trên màn hình cảm ứng. Rê chuột vào tooltip thì tooltip không biến mất, Escape để đóng. Chữ 12px, rộng tối đa 320px. Dùng được trên nút disabled |
 | `InfoTip` | `Popper` (nút "?" màu cam) | **Click, giải thích dài** (nhiều đoạn, danh sách, link). Mở bằng click/Enter/Space thành một dialog nhỏ; focus đi vào trong nên link bấm được; Escape, click ra ngoài hoặc nút X để đóng, focus trả về nút đã mở. `title` in đậm và đặt tên cho dialog. `trigger`: `'help'` (nút "?" FD, mặc định), `'info'` (icon "i") hoặc phần tử tùy chọn như `<Button variant="text">Why?</Button>`. `placement`, `maxWidth` (mặc định 360px); nội dung dài cuộn sau 384px |
 | `HelpPopover` | — | Alias của `InfoTip` với nút "?" (giữ cho code cũ và `FormField help`) |
-| `notify.success/info/warning/error/dismiss`, `ToastHost` | `toastSuccess`, `toastError` | react-toastify. Lỗi ở lại tới khi đóng tay, cảnh báo 8s, còn lại 5s; dừng khi rê chuột |
+| `notify.success/info/warning/error/dismiss`, `ToastHost` | `toastSuccess`, `toastError` | react-toastify (bản `unstyled`: CSS nằm trong `@layer components` của `theme.css`, nên class Tailwind ghi đè được). Lỗi ở lại tới khi đóng tay, cảnh báo 8s, còn lại 5s; dừng khi rê chuột. App không import `react-toastify` trực tiếp: `notify` và `ToastHost` phải dùng chung một bản |
 
 Chọn loại tooltip:
 
@@ -426,6 +433,8 @@ const columns: GridColumn<Fastener>[] = [
 | Cuộn | Tiêu đề và hàng filter dính trên cùng; vùng cuộn focus được bằng bàn phím. Grid luôn rộng theo khung chứa, bảng rộng thì cuộn bên trong (không làm tràn trang) |
 | Lưu layout | `onStateChange` trả `{ sort, filters, search, columnOrder, pinned, hidden, filtersVisible }`; truyền lại qua `initialState` |
 
+| Ngôn ngữ | `labels` ghi đè bất kỳ chữ nào (toolbar, menu, filter, số dòng, nhãn cho trình đọc màn hình); phần còn lại lấy từ `defaultGridViewLabels`. Ví dụ `labels={{ clearFilters: 'Xóa bộ lọc', rowCount: (n, total, filtered) => filtered ? `${n}/${total} dòng` : `${total} dòng` }}` |
+
 Giới hạn: render mọi dòng (không virtualization), phù hợp tới vài nghìn dòng. Chưa có kéo đổi độ rộng cột, nhóm dòng, sửa trực tiếp trong ô.
 
 ### Release notes
@@ -523,12 +532,12 @@ Mỗi component có một fixture trong `tests/e2e/harness/fixtures.tsx` (mở b
 | Toast | Mỗi loại được đọc; success tự đóng, error ở lại; hover dừng timer; nút đóng, dismiss all; tối đa 5 toast |
 | Alert, Card, DataTable, EmptyState, Spinner, LoadingIndicator | Role đúng (`alert`/`status`/`progressbar`); heading của Card; bảng có header, vùng cuộn focus được bằng bàn phím, header dính |
 | ErrorBoundary | Lỗi bị chặn trong khung, báo qua `onError`, thử lại vẫn lỗi nếu dữ liệu chưa sửa, `resetKeys` khôi phục |
-| ImageViewer | Nút zoom trong giới hạn; nút zoom vẫn chạy khi đang zoom; bấm nhanh không reset; cuộn chuột, double-click và `ref.reset()` |
-| SectionLayout | 3 khung có thanh kéo; kéo Input nhỏ quá thì thu thành thanh dọc và mở lại được; mobile: mỗi lần một khung, Input giữ dữ liệu |
+| ImageViewer | Nút zoom trong giới hạn; nút zoom vẫn chạy khi đang zoom; bấm nhanh không reset; cuộn chuột không cuộn trang; double-click và `ref.reset()`; `minScale` < 1; đổi `src` reset view; pinch hai ngón |
+| SectionLayout | 3 khung có thanh kéo; kéo Input nhỏ quá thì thu thành thanh dọc và mở lại được (tên nút chứa nhãn hiển thị); vẫn chạy khi localStorage bị chặn; mobile: mỗi lần một khung, Input giữ dữ liệu |
 | Density | Đổi class trên `<body>` và cỡ chữ 14 ↔ 16px |
 | Theme builder | Brand áp lên mọi trang và tự tính sắc độ; file export chỉ chứa phần đã chỉnh; màu sai bị báo và không được áp; ghi đè/reset từng role; bảng tương phản cập nhật theo màu; cỡ chữ; giữ khi tải lại, Reset; xuất TS và tải file; nhập file/JSON có lỗi và cảnh báo |
 | Release notes | Tên app và giới thiệu; tiêu đề dialog không bị viết hoa; sắp xếp theo semver, bản mới nhất mở; ngày không lệch múi giờ; nhãn New; loại/nhóm/gạch đầu dòng/dòng lẻ/link; expand/collapse all; heading không có margin thừa; Close/Escape trả focus; dịch nhãn và ngày; danh sách rỗng; `useReleaseNotesSeen` lần đầu / sau cập nhật / markSeen |
-| GridView | Kiểu cell (số, rỗng, ảnh, link ngoài an toàn); highlight; sort tăng/giảm/bỏ, rỗng luôn cuối, sort nhiều cột, bàn phím, menu; filter chữ/khoảng số/chọn nhiều, "không có kết quả"; ẩn/hiện hàng filter (filter vẫn áp dụng, badge đếm, giữ giá trị); master search nhiều từ, bỏ dấu, giới hạn cột, Escape; preset bật/tắt; cố định trái/phải và đứng yên khi cuộn; đổi vị trí bằng menu và kéo thả; ẩn/hiện, reset layout; tiêu đề dính; chọn dòng bằng click/Enter; link trong dòng không kích hoạt dòng |
+| GridView | Kiểu cell (số, rỗng, ảnh, link ngoài an toàn); highlight; sort tăng/giảm/bỏ, rỗng luôn cuối, sort nhiều cột, bàn phím, menu; filter chữ/khoảng số/chọn nhiều, "không có kết quả"; ẩn/hiện hàng filter (filter vẫn áp dụng, badge đếm, giữ giá trị); master search nhiều từ, bỏ dấu, giới hạn cột, Escape; preset bật/tắt; `labels` dịch chữ; cố định trái/phải và đứng yên khi cuộn; đổi vị trí bằng menu và kéo thả; ẩn/hiện, reset layout; tiêu đề dính; chọn dòng bằng click/Enter; link trong dòng không kích hoạt dòng |
 
 Thêm component mới thì thêm fixture, thêm tên vào `fixtureNames` trong `tests/e2e/helpers.ts`, và viết spec cho các hành vi của nó.
 
@@ -567,7 +576,7 @@ Bố cục chuẩn của calculator FD: **Input** bên trái, **Illustration** (
 
 | Màn hình | Hành vi |
 | --- | --- |
-| Desktop ≥ 992px | Input rộng 36%; Illustration và Output chia 50/50, xếp theo `secondarySplit`. Kéo thanh chia 5px để đổi kích thước. Kéo Input nhỏ hơn 250px thì panel thu thành thanh dọc, bấm để mở lại |
+| Desktop ≥ 992px | Input rộng 36%; Illustration và Output chia 50/50, xếp theo `secondarySplit`. Kéo thanh chia 5px để đổi kích thước. Kéo Input nhỏ hơn 250px thì panel thu thành thanh dọc (nút "Expand Input"), bấm để mở lại. Có `layoutId` thì kích thước được lưu vào localStorage; nếu trình duyệt chặn storage thì layout vẫn chạy, chỉ không nhớ kích thước |
 | Tablet 768–991px | Như desktop, nhưng Illustration và Output luôn xếp dọc |
 | Mobile < 768px | Mỗi lần một section, chuyển bằng tab. Tab có `keepMounted` vẫn giữ state và query khi bị ẩn |
 
@@ -600,7 +609,7 @@ const imageRef = useRef<ImageViewerHandle>(null);
 | `Section` | `Tabs` dùng làm khung panel | Một tiêu đề (`title`) hoặc nhiều tab (`tabs`); `actions` ở bên phải thanh tab |
 | `VisualizationStage` | khung `IllustrationContent` | Tablet/desktop: controls nổi góc phải, note góc trái. Mobile: controls và note nằm dưới viewer |
 | `ViewControls`, `ViewControlsGroup`, `ResetViewButton` | cột điều khiển 3D, `ResetViewButton` | |
-| `ImageViewer` | `IllustrationImage` + `@panzoom/panzoom` | Cuộn chuột để zoom quanh con trỏ, kéo để di chuyển, double-click để reset, nút +/−. Không cần thư viện ngoài |
+| `ImageViewer` | `IllustrationImage` + `@panzoom/panzoom` | Cuộn chuột hoặc pinch trên trackpad để zoom quanh con trỏ (trang không bị cuộn theo), pinch hai ngón trên màn hình cảm ứng, kéo để di chuyển, double-click để reset, nút +/−. `minScale` < 1 cho thu nhỏ hơn cỡ vừa khung. Đổi `src` thì reset view và hiện lại loading. Không cần thư viện ngoài |
 | `DropOverlay` | lớp phủ khi kéo file JSON vào Input | |
 
 Viewer 3D là code riêng của app. Đặt nó làm `children` của `VisualizationStage`.
@@ -652,9 +661,9 @@ Không sửa tay `tokens.generated.css`, và không viết mã hex trong compone
 - Theo [Quy tắc hành vi](#quy-tắc-hành-vi); control có thể focus phải có style `.Mui-focusVisible` hoặc `:focus-visible`.
 - Export trong `src/index.ts`, rồi thêm demo: một `<DemoSection id=…>` trong trang phù hợp ở `src/showcase/pages/`, và một mục tương ứng trong `src/showcase/catalog.ts` (ghi các export mà demo trình bày). Test `showcase.spec.ts` báo lỗi nếu có export nào chưa có demo.
 - Phát hành cho các app: tăng `version` trong `package.json` (semver: thêm tính năng = minor, sửa lỗi = patch, thay đổi làm vỡ code = major) rồi `pnpm pack`. Không tăng version thì pnpm ở app sẽ dùng lại bản cũ trong cache dù file tarball đã khác.
-- Thêm test vào `tests/e2e` (hoặc `tests/unit` nếu là logic thuần), rồi chạy `pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build`.
+- Thêm test vào `tests/e2e` (hoặc `tests/unit` nếu là logic thuần), rồi chạy `pnpm check && pnpm test:e2e`.
 
-**Thêm variant cho Button**: khai báo tên trong `augmentation.d.ts` (`ButtonPropsVariantOverrides`), rồi thêm style vào `MuiButton.variants` trong theme.
+**Thêm variant cho Button**: khai báo tên trong `src/theme/augmentation.ts` (`ButtonPropsVariantOverrides`), rồi thêm style vào `MuiButton.variants` trong theme.
 
 ## Đưa vào Nx workspace
 
@@ -701,7 +710,19 @@ Các điểm dưới đây khác FD có chủ ý: để sửa lỗi của FD ho�
 - Chưa có vì các app hiện tại chưa cần (thêm khi có app cần): Pagination, Breadcrumb, Skeleton, Progress bar, Date picker, File input, Slider.
 - Dark mode: token đã là biến CSS nên có thể thêm bằng cách truyền bộ `colors` tối. Chưa làm vì FD không có.
 - Tương phản màu FD: chữ xám `textMuted` trên nền xám và cam trên trắng chưa đạt 4.5:1 ở vài chỗ. Test axe đang tắt rule `color-contrast`; nếu cần đạt WCAG AA thì chỉnh bằng `colors`.
-- ESLint (chặn import `@mui/*` và hex trong app) nên cấu hình ở cấp workspace.
+- ESLint của kit chỉ kiểm tra code của kit. Chặn import `@mui/*` và mã hex trong app nên cấu hình ở cấp workspace.
+
+## Thay đổi ở 0.4
+
+Chỉ thêm và sửa lỗi, không làm vỡ code của 0.3:
+
+- `GridView labels` và `defaultGridViewLabels`: dịch mọi chữ của grid.
+- `ImageViewer`: pinch hai ngón trên màn hình cảm ứng; cuộn chuột không còn cuộn trang; sửa lỗi `minScale` < 1 bị nhảy về 1; đổi `src` thì reset view và hiện loading; xử lý `pointercancel`.
+- `SectionLayout`: không lỗi khi localStorage bị chặn (iframe sandbox, chế độ riêng tư chặt); nút mở lại panel có tên "Expand <nhãn>" thay vì "Expand panel" (WCAG 2.5.3).
+- Toast dùng `react-toastify/unstyled`: CSS chỉ còn một bản trong `@layer components`, không bị nạp thêm một bản ngoài layer đè lên class Tailwind.
+- `PlatformThemeProvider overrides` truyền inline không còn tạo lại theme mỗi lần render.
+- `peerDependencies` dạng `^` (React ≥ 19.3, MUI ≥ 9.4, Emotion ≥ 11.14).
+- Công cụ: ESLint, `pnpm check`, typecheck cho `tests/unit` và `scripts`, CI GitHub Actions, `engines` và `packageManager`.
 
 ## Thay đổi ở 0.3
 
@@ -728,6 +749,6 @@ Những điểm có thể làm vỡ code đang dùng 0.1:
 
 ## License
 
-Helvetica Neue LT Std là font thương mại. `public/fonts` nằm trong `.gitignore` và được chép bằng `scripts/copy-assets.sh`. Package không chứa file font, chỉ chứa `fonts.css` trỏ tới `/fonts/…` trong `public/` của app. Cần xác nhận license cho sản phẩm mới trước khi phát hành.
+Helvetica Neue LT Std là font thương mại. `public/fonts` nằm trong `.gitignore` và được chép bằng `scripts/copy-assets.sh`. Package không chứa file font, chỉ chứa `fonts.css` trỏ tới `/fonts/…` trong `public/` của app. Với Vite, đường dẫn này tự thêm `base` khi app chạy dưới thư mục con (ví dụ `base: '/calc/'` cho ra `/calc/fonts/…`). Bundler khác không làm việc này: app tự khai báo `@font-face` với đường dẫn của mình. Trên CI không có font, nên test e2e bỏ qua lỗi 404 của `/fonts/`. Cần xác nhận license cho sản phẩm mới trước khi phát hành.
 
 Lưu ý: bản 0.1 đã commit file font vào git. Commit gỡ font chỉ bỏ chúng khỏi các commit sau; font vẫn còn trong lịch sử. Nếu repo được chia sẻ ra ngoài, cần viết lại lịch sử (ví dụ `git filter-repo --path public/fonts --path dist --invert-paths`).

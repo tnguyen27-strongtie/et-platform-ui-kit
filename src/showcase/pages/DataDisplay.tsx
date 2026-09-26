@@ -125,7 +125,13 @@ export function DataDisplay() {
         <Code>{`<GridView aria-label="Fastener results" rows={rows} columns={columns} getRowId={(r) => r.id}
   presets={presets} rowHighlight={(r) => r.fails ? 'danger' : undefined}
   selectedRowId={id} onRowClick={(r) => setId(r.id)}
-  initialState={{ pinned: { start: ['model'] } }} onStateChange={saveLayout} maxHeight={420} />`}</Code>
+  initialState={{ pinned: { start: ['model'] } }} onStateChange={saveLayout} maxHeight={420} />
+
+// Other languages: override any subset of defaultGridViewLabels
+<GridView … labels={{
+  clearFilters: 'Xóa bộ lọc',
+  rowCount: (shown, total, filtered) => (filtered ? \`\${shown}/\${total} dòng\` : \`\${total} dòng\`),
+}} />`}</Code>
       </DemoSection>
 
       <DemoSection

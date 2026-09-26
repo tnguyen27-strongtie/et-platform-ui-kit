@@ -47,17 +47,40 @@ function ResizeHandle({ direction }: { direction: 'columns' | 'rows' }) {
   );
 }
 
+/**
+ * localStorage that never throws: reading `window.localStorage` itself throws a SecurityError when
+ * storage is blocked (sandboxed iframe, strict privacy settings), and it is missing during SSR.
+ * Sizes are then simply not remembered.
+ */
+const safeStorage = {
+  getItem(key: string) {
+    try {
+      return globalThis.localStorage?.getItem(key) ?? null;
+    } catch {
+      return null;
+    }
+  },
+  setItem(key: string, value: string) {
+    try {
+      globalThis.localStorage?.setItem(key, value);
+    } catch {
+      // Blocked or full: layout persistence is a convenience, nothing breaks.
+    }
+  },
+};
+
 /** Thin bar shown when a column pane is collapsed; click to expand it again. */
 function CollapsedRail({ label, onExpand }: { label: ReactNode; onExpand: () => void }) {
   return (
+    // Name "Expand <label>" contains the visible label (WCAG 2.5.3: label in name).
     <button
       type="button"
       onClick={onExpand}
-      aria-label="Expand panel"
       aria-expanded={false}
       className="flex h-full w-full cursor-pointer flex-col items-center gap-2 border-0 bg-true-gray-10 py-2 text-sm font-medium text-text hover:text-brand"
     >
       <KeyboardDoubleArrowRightIcon fontSize="small" />
+      <span className="sr-only">Expand </span>
       <span className="[writing-mode:vertical-rl]">{label}</span>
     </button>
   );
@@ -72,8 +95,8 @@ function useCollapsed(collapsedPx: number) {
 function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, labels }: Required<Pick<SectionLayoutProps, 'input' | 'illustration' | 'output' | 'secondarySplit'>> & Pick<SectionLayoutProps, 'layoutId'> & { labels: Record<SectionId, ReactNode> }) {
   const inputRef = usePanelRef();
   const [inputCollapsed, onInputResize] = useCollapsed(32);
-  const primary = useDefaultLayout({ id: `${layoutId ?? 'layout'}-primary`, storage: layoutId ? localStorage : undefined });
-  const secondary = useDefaultLayout({ id: `${layoutId ?? 'layout'}-secondary-${secondarySplit}`, storage: layoutId ? localStorage : undefined });
+  const primary = useDefaultLayout({ id: `${layoutId ?? 'layout'}-primary`, storage: layoutId ? safeStorage : undefined });
+  const secondary = useDefaultLayout({ id: `${layoutId ?? 'layout'}-secondary-${secondarySplit}`, storage: layoutId ? safeStorage : undefined });
 
   return (
     <Group
