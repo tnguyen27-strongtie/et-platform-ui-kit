@@ -14,7 +14,7 @@ The package is named `@platform/ui`. It is marked `"private": true` so it can ne
 
 | Method | In the kit | In the app | Use when |
 | --- | --- | --- | --- |
-| Tarball | `pnpm pack`, or download it from the GitHub Release (tagged versions) or the CI run's artifacts (any commit) | `pnpm add ./path/platform-ui-0.7.0.tgz` | The app lives in another repository and you want a pinned version |
+| Tarball | `pnpm pack`, or download it from the GitHub Release (tagged versions) or the CI run's artifacts (any commit) | `pnpm add ./path/platform-ui-0.8.0.tgz` | The app lives in another repository and you want a pinned version |
 | Local link | `pnpm build` | `pnpm add link:../et-platform-ui-kit` | You change the kit and the app at the same time |
 | Internal registry | Remove `private`, add `publishConfig.registry`, `pnpm publish` | `pnpm add @platform/ui` | Several teams share the kit |
 
