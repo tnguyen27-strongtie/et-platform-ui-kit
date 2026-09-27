@@ -16,16 +16,10 @@
  * MathML `<math>` elements and the `font-math` class. It carries an OpenType MATH table, which
  * browsers need to stretch radicals, brackets and big operators and to lay out fractions.
  *
- * Declared here instead of importing the package CSS: that CSS limits the face to the Latin
- * unicode-range, which would send operators, Greek and math alphanumerics to fallback fonts.
+ * Imports latin-400.css, the one package file without a unicode-range: the face then covers every
+ * glyph in the file (operators, Greek, math alphanumerics), not just Latin. The package's relative
+ * font paths are rebased when this file is inlined, so the font resolves from the kit's own
+ * dependency in apps too; a bare '@fontsource/…' font URL would not.
  * The file (about 400 KB) is downloaded only by pages that render math.
  */
-@font-face {
-  font-family: 'STIX Two Math';
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src:
-    url('@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2') format('woff2'),
-    url('@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff') format('woff');
-}
+@import '@fontsource/stix-two-math/latin-400.css';

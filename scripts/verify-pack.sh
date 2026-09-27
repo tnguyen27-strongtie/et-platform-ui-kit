@@ -30,6 +30,17 @@ if [[ -n "$forbidden" ]]; then
   status=1
 fi
 
+# Packed CSS is inlined into the app's CSS, where url() resolves from the app, not the kit: a bare
+# specifier (url('@fontsource/…')) stays unresolved and 404s. Font files come in through @import.
+css_files=()
+while IFS= read -r file; do css_files+=("package/$file"); done < <(grep -E '^dist/.*\.css$' <<<"$files")
+bare_urls="$(tar -xzOf "$tgz" "${css_files[@]}" | grep -oE "url\\(['\"]?[^'\")./#][^'\")]*" | grep -vE "url\\(['\"]?(data:|https?:)" || true)"
+if [[ -n "$bare_urls" ]]; then
+  echo "bare url() in packed CSS (use @import of the package CSS instead):"
+  sed 's/^/  /' <<<"$bare_urls"
+  status=1
+fi
+
 name="$(tar -xzOf "$tgz" package/package.json | node -e 'const p = JSON.parse(require("fs").readFileSync(0, "utf8")); console.log(`${p.name}@${p.version}`)')"
 if [[ $status -eq 0 ]]; then
   echo "ok: $name, $(wc -l <<<"$files" | tr -d ' ') files"
