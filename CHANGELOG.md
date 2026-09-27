@@ -2,21 +2,29 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.6.0] - 2026-09-27
 
 ### Added
 
-- **Math font: STIX Two Math** (SIL Open Font License 1.1), bundled through `@fontsource/stix-two-math`. MathML `<math>` elements use it automatically, and the `font-math` class applies it to symbols in plain text. New token `typography.fontFamily.math` (`--font-math`). The font file is downloaded only by pages that show math.
-- Showcase: Foundations → Math formulas, with display formulas (fractions, roots, sums, integrals, matrices, piecewise), inline formulas, a calculator that substitutes its inputs into the formula, and formulas in a table.
-
-### Fixed
-
-- `InfoTip` / `HelpPopover` / `FormField help`: in Safari, closing the popover (Escape, click outside, X) now returns focus to the "?" or "i" trigger after it was opened with the mouse. Safari does not focus buttons on click, so focus used to fall back to the page.
+- **Math formulas.** The kit bundles STIX Two Math (SIL Open Font License 1.1, through `@fontsource/stix-two-math`) and applies it to every MathML `<math>` element, so formulas render with proper fractions, radicals, stretched brackets and big operators without a math library. Use the `font-math` class for symbols in ordinary text (`σ ≤ 0.6 F<sub>y</sub>`). New token `typography.fontFamily.math` (`--font-math`). The font file (about 400 KB) is downloaded only by pages that show math. See `docs/design-tokens.md` → "Math formulas".
+- Showcase: Foundations → Math formulas (display and inline formulas, a calculator that substitutes its inputs, formulas in a table).
 
 ### Changed
 
-- The e2e suite and CI also run in WebKit (Safari's engine), desktop and iPhone.
-- CI packs the kit on every push and keeps the tarball as a run artifact (`platform-ui-<version>-<commit>`, 30 days). Pushing a tag `vX.Y.Z` creates a GitHub Release with the tarball and the changelog section.
+- `<math>` elements already in an app now use STIX Two Math instead of the browser's default math font.
+- To write MathML in TSX, apps declare the MathML tags once (`src/mathml.d.ts`); `@types/react` does not include them yet. The snippet is in `docs/design-tokens.md`.
+
+### Fixed
+
+- `InfoTip`, `HelpPopover` and `FormField help` in Safari: after opening with the mouse, closing (Escape, click outside, X) returns focus to the "?" or "i" trigger. Safari does not focus buttons on click, so focus used to fall back to the page.
+
+### Development
+
+- The e2e suite and CI run in Chromium and WebKit (Safari's engine), desktop and mobile.
+- CI keeps the packed tarball of every commit as a run artifact (`platform-ui-<version>-<commit>`, 30 days); pushing a tag `vX.Y.Z` creates a GitHub Release with the tarball and this changelog section.
+- Playwright starts vite directly, so test runs no longer hang or leave a dev server running.
+
+No breaking changes.
 
 ## [0.5.1] - 2026-09-27
 
