@@ -1,6 +1,6 @@
 import { expect, type Locator, test } from '@playwright/test';
 
-import { openFixture } from '../helpers';
+import { expectOut, openFixture } from '../helpers';
 
 test.describe('Alert, Card, DataTable, status indicators', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,9 +60,115 @@ test.describe('ErrorBoundary', () => {
     await page.getByRole('button', { name: 'Try again' }).click();
     await expect(page.getByRole('alert')).toContainText('Something went wrong');
 
+    // Focus stays on the (new) retry button instead of falling back to the page.
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeFocused();
+
     await page.getByRole('button', { name: 'Fix data' }).click();
     await expect(page.getByText('Safe content')).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);
+  });
+
+  test('labels translate the default fallback; after a successful retry focus moves into the content', async ({ page }) => {
+    const pane = page.getByRole('region', { name: 'Translated pane' });
+    await pane.getByRole('button', { name: 'Break translated' }).click();
+    const alert = pane.getByRole('alert');
+    await expect(alert).toContainText('Đã xảy ra lỗi');
+    // Message not overridden: English default.
+    await expect(alert).toContainText('This part of the page could not be displayed.');
+    await pane.getByRole('button', { name: 'Repair' }).click();
+    await expect(alert).toBeVisible();
+    await alert.getByRole('button', { name: 'Thử lại' }).click();
+    await expect(pane.getByRole('textbox', { name: 'Recovered input' })).toBeFocused();
+  });
+});
+
+test.describe('Card as input group, DescriptionList, math', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'input-group');
+  });
+
+  test('role="group" names the group with the title; plain cards stay plain sections', async ({ page }) => {
+    const group = page.getByRole('group', { name: 'Seismic' });
+    await expect(group).toBeVisible();
+    await expect(group.getByRole('heading', { name: 'Seismic', level: 3 })).toBeVisible();
+    await expect(group.getByRole('spinbutton', { name: 'Short-period acceleration' })).toBeVisible();
+    await expect(page.getByRole('group')).toHaveCount(2);
+    const plain = page.locator('section', { has: page.getByRole('heading', { name: 'Plain card' }) });
+    await expect(plain).not.toHaveAttribute('role');
+    await expect(plain).not.toHaveAttribute('aria-labelledby');
+  });
+
+  test('wrapTitle wraps a long title instead of truncating it', async ({ page }) => {
+    const title = page.getByRole('heading', { name: /A very long card title/ });
+    await expect(title).toHaveCSS('white-space', 'normal');
+    const box = await title.boundingBox();
+    expect(box!.height).toBeGreaterThan(30);
+  });
+
+  test('description list: dl/dt/dd, two columns when wide, stacked when narrow', async ({ page }) => {
+    for (const id of ['wide-list', 'narrow-list']) {
+      await expect(page.getByTestId(id).getByRole('term')).toHaveCount(2);
+      await expect(page.getByTestId(id).getByRole('definition')).toHaveCount(2);
+    }
+    const pos = async (id: string) => {
+      const list = page.getByTestId(id);
+      const dt = (await list.getByRole('term').first().boundingBox())!;
+      const dd = (await list.getByRole('definition').first().boundingBox())!;
+      return { dt, dd };
+    };
+    const wide = await pos('wide-list');
+    expect(wide.dd.x).toBeGreaterThan(wide.dt.x + wide.dt.width - 1);
+    expect(Math.abs(wide.dd.y - wide.dt.y)).toBeLessThan(4);
+    const narrow = await pos('narrow-list');
+    expect(Math.abs(narrow.dd.x - narrow.dt.x)).toBeLessThan(1);
+    expect(narrow.dd.y).toBeGreaterThanOrEqual(narrow.dt.y + narrow.dt.height - 1);
+    await expect(page.getByTestId('wide-list').getByRole('term').first()).toHaveCSS('font-weight', '500');
+  });
+
+  test('MathVar is an italic math-font variable; MathSub is upright', async ({ page }) => {
+    const v = page.locator('var', { hasText: 'S' });
+    await expect(v).toHaveCSS('font-style', 'italic');
+    await expect(v).toHaveCSS('font-family', /STIX Two Math/);
+    await expect(page.locator('sub', { hasText: 'DS' })).toHaveCSS('font-style', 'normal');
+  });
+});
+
+test.describe('ErrorAlert', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'error-alert');
+  });
+
+  test('shows the message, a selectable reference and a retry button', async ({ page }) => {
+    const alert = page.getByRole('alert').filter({ hasText: 'Could not calculate' });
+    await expect(alert).toContainText('The service did not respond.');
+    const reference = alert.getByText('Reference: 00-4bf92f35');
+    await expect(reference).toHaveCSS('user-select', 'text');
+    await alert.getByRole('button', { name: 'Try again' }).click();
+    await expectOut(page, 'retries', 1);
+  });
+
+  test('without onRetry there is no button', async ({ page }) => {
+    await expect(page.getByRole('alert').filter({ hasText: 'Not allowed' }).getByRole('button')).toHaveCount(0);
+  });
+});
+
+test.describe('Section footer', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'section-footer');
+  });
+
+  test('stays visible below the scrolling body and never covers the focused field', async ({ page }) => {
+    const calculate = page.getByRole('button', { name: 'Calculate' });
+    await expect(calculate).toBeInViewport();
+    const restart = (await page.getByRole('button', { name: 'Restart' }).boundingBox())!;
+    const calc = (await calculate.boundingBox())!;
+    expect(restart.x).toBeLessThan(calc.x); // footerAlign="between": primary last, at the right
+    const last = page.getByRole('textbox', { name: 'Field 8' });
+    await last.focus();
+    const field = (await last.boundingBox())!;
+    expect(field.y + field.height).toBeLessThanOrEqual(calc.y);
+    await calculate.click();
+    await expectOut(page, 'runs', 1);
   });
 });
 

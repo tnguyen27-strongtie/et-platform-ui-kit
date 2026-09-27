@@ -65,6 +65,7 @@ const columns: GridColumn<Fastener>[] = [
 | `toolbar` | `ReactNode` | | Extra buttons at the right of the toolbar |
 | `emptyText` | `ReactNode` | `'No data'` | Shown when `rows` is empty |
 | `labels` | `Partial<GridViewLabels>` | | Translated texts, see [Translation](#translation) |
+| `locale` | `string` | `'en-US'` | Separators of number columns without `format`, e.g. `'de-DE'` shows `1.234,5` |
 | `className` | `string` | | |
 
 ## Columns
@@ -143,6 +144,8 @@ Override any subset of the grid's texts with `labels`. Everything else comes fro
 ```
 
 `GridViewLabels` covers the toolbar, column menu, filters, row count, empty states and screen reader texts. Function labels receive the values they describe (header name, counts).
+
+Pass `locale` (usually the app's current language) so number columns use its decimal and grouping separators; the master search matches the text as displayed. Columns with their own `format` are not affected.
 
 ## Limits
 

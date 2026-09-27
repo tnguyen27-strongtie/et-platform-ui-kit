@@ -24,6 +24,10 @@ export const fixtureNames = [
   'grid',
   'grid-labels',
   'release-notes',
+  'input-group',
+  'error-alert',
+  'agreement',
+  'section-footer',
 ] as const;
 
 export type FixtureName = (typeof fixtureNames)[number];

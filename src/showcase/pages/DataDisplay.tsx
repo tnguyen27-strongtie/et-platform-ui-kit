@@ -5,13 +5,16 @@ import {
   Card,
   Chip,
   DataTable,
+  DescriptionList,
   Divider,
+  FormField,
   GridImageCell,
   GridLinkCell,
   GridView,
   type GridViewState,
   Link,
   notify,
+  NumberInput,
 } from '../../index';
 import { fastenerColumns, fastenerPresets, fasteners } from '../data';
 import { Code, DemoGrid, DemoPage, DemoSection } from '../layout';
@@ -27,7 +30,9 @@ export function DataDisplay() {
         title="Card"
         description="Groups related content under a bold title on a gray header. padding: sm (8px, default), md (12px), none (tables sit flush)."
         code={`<Card title="Fastener capacity" subtitle="per connection" actions={<Button size="small">Details</Button>} footer="Total: 1,450 lbs">…</Card>
-<Card title="Results" padding="none"><DataTable>…</DataTable></Card>`}
+<Card title="Results" padding="none"><DataTable>…</DataTable></Card>
+// Input group: screen readers announce "Seismic" when focus enters a field inside
+<Card role="group" title="Seismic" titleAs="h4" padding="md" wrapTitle>…fields…</Card>`}
       >
         <DemoGrid>
           <Card
@@ -60,6 +65,39 @@ export function DataDisplay() {
             </DataTable>
           </Card>
           <Card>Card without a header.</Card>
+          <Card role="group" title="Seismic design parameters from the site class table" titleAs="h4" padding="md" wrapTitle>
+            <FormField label="Short-period acceleration" htmlFor="card-sds">
+              <NumberInput value={1.2} onChange={() => undefined} precision={3} />
+            </FormField>
+          </Card>
+        </DemoGrid>
+      </DemoSection>
+
+      <DemoSection
+        id="description-list"
+        title="DescriptionList"
+        description="Label/value pairs (About dialog, result details) as dl/dt/dd. Two columns when there is room, stacked in narrow panels. size sm for inside cards."
+        code={`<DescriptionList items={[{ id: 'version', label: 'Version', value: '2.4.0' }, …]} />
+<Card title="Details"><DescriptionList size="sm" items={details} /></Card>`}
+      >
+        <DemoGrid>
+          <DescriptionList
+            items={[
+              { id: 'version', label: 'Version', value: '2.4.0' },
+              { id: 'build', label: 'Build date', value: 'September 27, 2026' },
+              { id: 'code', label: 'Design code', value: 'ASCE 7-22, AWC SDPWS-2021 (special design provisions for wind and seismic)' },
+            ]}
+          />
+          <Card title="Result details">
+            <DescriptionList
+              size="sm"
+              items={[
+                { id: 'wall', label: 'Wall length', value: '12 ft' },
+                { id: 'cap', label: 'Unit shear capacity', value: '1,450 plf' },
+                { id: 'ratio', label: 'Demand / capacity', value: '0.82' },
+              ]}
+            />
+          </Card>
         </DemoGrid>
       </DemoSection>
 

@@ -28,6 +28,10 @@ export { cn } from './utils/cn';
 export {
   clamp,
   decimalsOf,
+  formatDisplayNumber,
+  type FormatDisplayNumberOptions,
+  formatFraction,
+  type FormatFractionOptions,
   formatNumber,
   isInRange,
   isPartialNumber,
@@ -43,9 +47,17 @@ export {
   ExpandCollapseAllButton,
   useAccordionGroup,
   type AccordionGroup,
+  type AccordionGroupOptions,
   type AccordionProps,
   type ExpandCollapseAllButtonProps,
 } from './components/Accordion';
+export {
+  AgreementDialog,
+  useAgreementAccepted,
+  type AgreementDialogLabels,
+  type AgreementDialogProps,
+  type UseAgreementAcceptedOptions,
+} from './components/AgreementDialog';
 export { Alert, type AlertProps, type AlertSeverity } from './components/Alert';
 export { Button, CloseButton, IconButton, type ButtonProps, type IconButtonProps } from './components/Button';
 export { Card, type CardProps } from './components/Card';
@@ -69,13 +81,21 @@ export {
   type DialogCloseReason,
   type DialogProps,
 } from './components/Dialog';
+export { DescriptionList, type DescriptionListItem, type DescriptionListProps } from './components/DescriptionList';
 export { DropdownMenu, type DropdownMenuItem, type DropdownMenuProps } from './components/DropdownMenu';
 export { EmptyState, type EmptyStateProps } from './components/EmptyState';
-export { ErrorBoundary, type ErrorBoundaryProps } from './components/ErrorBoundary';
+export { ErrorAlert, type ErrorAlertProps } from './components/ErrorAlert';
+export {
+  defaultErrorBoundaryLabels,
+  ErrorBoundary,
+  type ErrorBoundaryLabels,
+  type ErrorBoundaryProps,
+} from './components/ErrorBoundary';
 export { FormField, useFormField, type FormFieldContextValue, type FormFieldProps } from './components/FormField';
 export { HelpPopover, type HelpPopoverProps } from './components/HelpPopover';
 export { InfoTip, type InfoTipPlacement, type InfoTipProps } from './components/InfoTip';
 export { LoadingIndicator } from './components/LoadingIndicator';
+export { MathSub, MathVar, type MathNotationProps } from './components/Math';
 export { NumberInput, type NumberInputProps } from './components/NumberInput';
 export { OptionCardGroup, type OptionCard, type OptionCardGroupProps } from './components/OptionCardGroup';
 export { Select, type SelectOption, type SelectProps } from './components/Select';

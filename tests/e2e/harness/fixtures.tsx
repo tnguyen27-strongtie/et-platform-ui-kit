@@ -3,6 +3,7 @@ import { type ComponentType, useRef, useState } from 'react';
 
 import {
   Accordion,
+  AgreementDialog,
   Alert,
   Button,
   Card,
@@ -10,6 +11,7 @@ import {
   Combobox,
   ConfirmDialog,
   DataTable,
+  DescriptionList,
   Dialog,
   DialogBody,
   type DialogCloseReason,
@@ -18,6 +20,7 @@ import {
   type DialogProps,
   DropdownMenu,
   EmptyState,
+  ErrorAlert,
   ErrorBoundary,
   ExpandCollapseAllButton,
   FormField,
@@ -29,6 +32,8 @@ import {
   InfoTip,
   type ImageViewerHandle,
   LoadingIndicator,
+  MathSub,
+  MathVar,
   NavMenu,
   notify,
   NumberInput,
@@ -50,6 +55,7 @@ import {
   Tooltip,
   TopNav,
   useAccordionGroup,
+  useAgreementAccepted,
   useReleaseNotesSeen,
   type Density,
 } from '../../../src/index';
@@ -255,6 +261,7 @@ function ChoiceFixture() {
   const [accept, setAccept] = useState(false);
   const [metric, setMetric] = useState(true);
   const [locked, setLocked] = useState(false);
+  const [wet, setWet] = useState(false);
   const [count, setCount] = useState<number | null>(1);
   const [yes, setYes] = useState<boolean | null>(null);
   return (
@@ -262,6 +269,7 @@ function ChoiceFixture() {
       <Checkbox label="Accept terms" checked={accept} onChange={setAccept} />
       <Switch label="Metric units" checked={metric} onChange={setMetric} />
       <Checkbox label="Locked option" checked={locked} onChange={setLocked} disabled />
+      <Checkbox label="Wet service" checked={wet} onChange={setWet} help="Moisture content above 19% in service." helpLabel="About wet service" />
       <FormField label="Plies" htmlFor="plies" error={count === null ? 'Pick one' : undefined}>
         <RadioGroup<number>
           name="plies"
@@ -288,6 +296,7 @@ function ChoiceFixture() {
       <Out id="accept" value={accept} />
       <Out id="metric" value={metric} />
       <Out id="locked" value={locked} />
+      <Out id="wet" value={wet} />
       <Out id="count" value={count} />
       <Out id="yes" value={yes} />
     </>
@@ -304,7 +313,7 @@ function OptionCardFixture() {
         value={shear}
         onChange={setShear}
         options={[
-          { value: 'single', label: 'Single shear' },
+          { value: 'single', label: 'Single shear', description: 'One shear plane between two members.' },
           { value: 'double', label: 'Double shear' },
           { value: 'none', label: 'Unavailable', disabled: true },
         ]}
@@ -344,6 +353,8 @@ function AccordionFixture() {
   const [open, setOpen] = useState(false);
   const [events, setEvents] = useState<boolean[]>([]);
   const group = useAccordionGroup(['a', 'b'] as const);
+  const single = useAccordionGroup(['x', 'y', 'z'] as const, { exclusive: true, initial: { y: true } });
+  const legacy = useAccordionGroup(['p', 'q'] as const, false, { q: true });
   return (
     <>
       <Accordion title="Uncontrolled section" defaultExpanded={false}>
@@ -367,6 +378,23 @@ function AccordionFixture() {
           B body
         </Accordion>
       </Section>
+      <Accordion title="Exclusive X" {...single.item('x')}>
+        X body
+      </Accordion>
+      <Accordion title="Exclusive Y" {...single.item('y')}>
+        Y body
+      </Accordion>
+      <Accordion title="Exclusive Z" {...single.item('z')}>
+        Z body
+      </Accordion>
+      <Button onClick={single.expandAll}>Expand exclusive</Button>
+      <Button onClick={single.collapseAll}>Collapse exclusive</Button>
+      <Accordion title="Legacy P" {...legacy.item('p')}>
+        P body
+      </Accordion>
+      <Accordion title="Legacy Q" {...legacy.item('q')}>
+        Q body
+      </Accordion>
       <Out id="events" value={events} />
     </>
   );
@@ -611,7 +639,31 @@ function ErrorBoundaryFixture() {
       </ErrorBoundary>
       <p>Sibling content</p>
       <Out id="errors" value={errors} />
+      <TranslatedBoundary />
     </>
+  );
+}
+
+function Flaky({ broken }: { broken: boolean }) {
+  if (broken) throw new Error('Flaky');
+  return (
+    <div>
+      <TextInput aria-label="Recovered input" />
+    </div>
+  );
+}
+
+/** Translated default fallback; "Repair" fixes the data without resetKeys, so only the retry button recovers. */
+function TranslatedBoundary() {
+  const [broken, setBroken] = useState(false);
+  return (
+    <section aria-label="Translated pane">
+      <Button onClick={() => setBroken(true)}>Break translated</Button>
+      <Button onClick={() => setBroken(false)}>Repair</Button>
+      <ErrorBoundary labels={{ title: 'Đã xảy ra lỗi', retry: 'Thử lại' }}>
+        <Flaky broken={broken} />
+      </ErrorBoundary>
+    </section>
   );
 }
 
@@ -737,6 +789,7 @@ function GridLabelsFixture() {
         rows={parts}
         columns={columns}
         getRowId={(r) => r.id}
+        locale="de-DE"
         labels={{
           searchPlaceholder: 'Tìm kiếm',
           searchLabel: (grid) => `Tìm trong ${grid}`,
@@ -826,6 +879,118 @@ function ReleaseNotesFixture() {
   );
 }
 
+// ---------- Card as input group, DescriptionList, math notation ----------
+function InputGroupFixture() {
+  const [sds, setSds] = useState<number | null>(1.2);
+  const details = [
+    { id: 'version', label: 'Version', value: '2.4.0' },
+    { id: 'code', label: 'Design code', value: 'A long value that has to wrap onto several lines in a narrow container' },
+  ];
+  return (
+    <>
+      <Card role="group" title="Seismic" padding="md">
+        <FormField label="Short-period acceleration" htmlFor="ig-sds">
+          <NumberInput value={sds} onChange={setSds} />
+        </FormField>
+      </Card>
+      <div style={{ width: 200 }}>
+        <Card role="group" title="A very long card title that needs to wrap onto more lines" wrapTitle>
+          Wrapped title
+        </Card>
+      </div>
+      <Card title="Plain card">Plain body</Card>
+      <div data-testid="wide-list" style={{ width: 500 }}>
+        <DescriptionList items={details} />
+      </div>
+      <div data-testid="narrow-list" style={{ width: 240 }}>
+        <DescriptionList size="sm" items={details} />
+      </div>
+      <p>
+        Design spectral acceleration <MathVar>S</MathVar>
+        <MathSub>DS</MathSub>
+      </p>
+    </>
+  );
+}
+
+// ---------- ErrorAlert ----------
+function ErrorAlertFixture() {
+  const [retries, retry] = useCounter();
+  return (
+    <>
+      <ErrorAlert title="Could not calculate" reference="Reference: 00-4bf92f35" onRetry={retry} retryLabel="Try again">
+        The service did not respond.
+      </ErrorAlert>
+      <ErrorAlert title="Not allowed">No access.</ErrorAlert>
+      <Out id="retries" value={retries} />
+    </>
+  );
+}
+
+// ---------- AgreementDialog ----------
+const AGREEMENT_KEY = 'harness:agreement';
+
+function AgreementFixture() {
+  const agreement = useAgreementAccepted({ storageKey: AGREEMENT_KEY, version: '2' });
+  const [declined, decline] = useCounter();
+  const [dismissed, setDismissed] = useState(false);
+  return (
+    <>
+      <Button onClick={() => localStorage.setItem(AGREEMENT_KEY, '1')}>Store old version</Button>
+      <AgreementDialog
+        open={!agreement.accepted && !dismissed}
+        title="License agreement"
+        note="Available in English only."
+        lang="en"
+        labels={{ accept: 'I agree', decline: 'I disagree' }}
+        onAccept={agreement.accept}
+        onDecline={() => {
+          decline();
+          setDismissed(true);
+        }}
+      >
+        <p>Read carefully.</p>
+        <h3>1. License</h3>
+        {Array.from({ length: 30 }, (_, i) => (
+          <p key={i}>Clause text {i + 1}.</p>
+        ))}
+      </AgreementDialog>
+      <Out id="accepted" value={agreement.accepted} />
+      <Out id="declined" value={declined} />
+    </>
+  );
+}
+
+// ---------- Section footer ----------
+function SectionFooterFixture() {
+  const [runs, run] = useCounter();
+  return (
+    <div style={{ height: 260, width: 360 }}>
+      <Section
+        title="Input"
+        footerAlign="between"
+        footer={
+          <>
+            <Button>Restart</Button>
+            <Button variant="primary" onClick={run}>
+              Calculate
+            </Button>
+          </>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 12 }}>
+          {Array.from({ length: 8 }, (_, i) => (
+            <FormField key={i} label={`Field ${i + 1}`} htmlFor={`sf-${i}`}>
+              <TextInput />
+            </FormField>
+          ))}
+        </div>
+      </Section>
+      <Out id="runs" value={runs} />
+    </div>
+  );
+}
+
 export const fixtures: Record<string, ComponentType> = {
   button: ButtonFixture,
   'text-input': TextInputFixture,
@@ -849,4 +1014,8 @@ export const fixtures: Record<string, ComponentType> = {
   grid: GridFixture,
   'grid-labels': GridLabelsFixture,
   'release-notes': ReleaseNotesFixture,
+  'input-group': InputGroupFixture,
+  'error-alert': ErrorAlertFixture,
+  agreement: AgreementFixture,
+  'section-footer': SectionFooterFixture,
 };

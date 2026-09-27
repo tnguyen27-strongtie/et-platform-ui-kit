@@ -5,6 +5,8 @@ import {
   colorCssVars,
   DataTable,
   decimalsOf,
+  formatDisplayNumber,
+  formatFraction,
   formatNumber,
   FormField,
   isEmptyFilter,
@@ -64,7 +66,9 @@ export function Utilities() {
         code={`parseNumber('1,5')          // 1.5 (null for '', undefined for '-')
 roundTo(1.005, 2)            // 1.01 (no binary drift)
 stepNumber(0.2, 0.1)         // 0.3
-isInRange(4, { min: 1.5, max: 3.5 })  // false`}
+isInRange(4, { min: 1.5, max: 3.5 })  // false
+formatDisplayNumber(1234.5, { locale: 'de-DE' })  // '1.234,5' (display only, not for inputs)
+formatFraction(1.4375, { unit: '"' })           // '1 7/16"'`}
       >
         <FormField label="Input text" htmlFor="util-number" description="Try 1,5 · -0 · 1e3 · . · 0.1">
           <TextInput value={text} onChange={(e) => setText(e.target.value)} />
@@ -80,6 +84,8 @@ isInRange(4, { min: 1.5, max: 3.5 })  // false`}
             ['decimalsOf(value)', n === null ? '—' : decimalsOf(n)],
             ['clamp(value, 0, 1)', n === null ? '—' : clamp(n, 0, 1)],
             ['isInRange(value, { min: 0, max: 1 })', n === null ? '—' : isInRange(n, { min: 0, max: 1 })],
+            ["formatDisplayNumber(value, { locale: 'de-DE' })", formatDisplayNumber(n, { locale: 'de-DE' })],
+            ['formatFraction(value, { denominator: 16 })', formatFraction(n, { denominator: 16 })],
           ]}
         />
       </DemoSection>

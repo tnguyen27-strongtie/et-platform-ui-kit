@@ -5,6 +5,7 @@ import {
   Checkbox,
   DropOverlay,
   EmptyState,
+  FormField,
   ImageViewer,
   type ImageViewerHandle,
   notify,
@@ -12,6 +13,7 @@ import {
   Section,
   SectionLayout,
   Switch,
+  TextInput,
   ViewControls,
   ViewControlsGroup,
   VisualizationStage,
@@ -77,9 +79,11 @@ export function WorkspacePage() {
       <DemoSection
         id="section"
         title="Section"
-        description="Panel frame for a workspace section: one title or several tabs, actions at the right of the bar, scrolling body."
+        description="Panel frame for a workspace section: one title or several tabs, actions at the right of the bar, scrolling body. footer stays visible under the body (Calculate / Restart) without covering fields."
         code={`<Section title="Output" actions={<IconButton aria-label="Export">…</IconButton>}>…</Section>
-<Section value={tab} onChange={setTab} tabs={[{ value: '3d', label: '3D', content: <Viewer /> }]} />`}
+<Section value={tab} onChange={setTab} tabs={[{ value: '3d', label: '3D', content: <Viewer /> }]} />
+<Section title="Input" footerAlign="between"
+  footer={<><Button>Restart</Button><Button variant="primary">Calculate</Button></>}>…</Section>`}
       >
         <DemoGrid>
           <div className="h-48 border border-border">
@@ -96,6 +100,28 @@ export function WorkspacePage() {
                 { value: '2d', label: '2D Drawing', content: <p className="m-0 p-3 text-sm">2D content</p> },
               ]}
             />
+          </div>
+          <div className="h-48 border border-border">
+            <Section
+              title="Input"
+              footerAlign="between"
+              footer={
+                <>
+                  <Button onClick={() => notify.info('Inputs restored')}>Restart</Button>
+                  <Button variant="primary" onClick={() => notify.success('Calculated')}>
+                    Calculate
+                  </Button>
+                </>
+              }
+            >
+              <div className="flex flex-col gap-3 p-3">
+                {['Wall length', 'Wall height', 'Sheathing thickness', 'Nail spacing'].map((label, i) => (
+                  <FormField key={label} label={label} htmlFor={`footer-demo-${i}`}>
+                    <TextInput />
+                  </FormField>
+                ))}
+              </div>
+            </Section>
           </div>
         </DemoGrid>
       </DemoSection>

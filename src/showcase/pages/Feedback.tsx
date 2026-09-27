@@ -1,7 +1,7 @@
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import { useState } from 'react';
 
-import { Alert, Button, EmptyState, ErrorBoundary, LoadingIndicator, notify, Spinner, Switch } from '../../index';
+import { Alert, Button, EmptyState, ErrorAlert, ErrorBoundary, LoadingIndicator, notify, Spinner, Switch } from '../../index';
 import { DemoGrid, DemoPage, DemoSection, Labeled, Variants } from '../layout';
 
 function ResultPanel({ broken }: { broken: boolean }) {
@@ -20,7 +20,8 @@ export function Feedback() {
         id="alert"
         title="Alert"
         description="Inline status message in a panel. error is announced immediately (role=alert); the others politely (role=status)."
-        code={`<Alert severity="error" title="Validation">Member thickness is outside the allowed range.</Alert>`}
+        code={`<Alert severity="error" title="Validation">Member thickness is outside the allowed range.</Alert>
+<Alert severity="success" title="Saved" actions={<Button size="small">Undo</Button>}>Template saved.</Alert>`}
       >
         <Alert severity="error" title="Validation">
           Member thickness is outside the allowed range.
@@ -32,6 +33,28 @@ export function Feedback() {
           All checks are within capacity.
         </Alert>
         <Alert severity="info">Results use the 2024 NDS. Change the code edition in Settings.</Alert>
+        <Alert severity="success" title="Template saved" actions={<Button size="small">Undo</Button>}>
+          The template is available in every project.
+        </Alert>
+      </DemoSection>
+
+      <DemoSection
+        id="error-alert"
+        title="ErrorAlert"
+        description="A failed request: message, optional support reference (selectable, for the support team), optional retry. Mapping error codes to messages stays in the app."
+        code={`<ErrorAlert title="Could not calculate" reference={\`Reference: \${traceId}\`} onRetry={refetch} retryLabel="Try again">
+  The calculation service did not respond.
+</ErrorAlert>`}
+      >
+        <ErrorAlert
+          title="Could not calculate"
+          reference="Reference: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+          onRetry={() => notify.info('Retrying…')}
+          retryLabel="Try again"
+        >
+          The calculation service did not respond. Your inputs are kept.
+        </ErrorAlert>
+        <ErrorAlert title="Not allowed">Your account cannot open this project.</ErrorAlert>
       </DemoSection>
 
       <DemoSection
@@ -91,8 +114,9 @@ export function Feedback() {
       <DemoSection
         id="error-boundary"
         title="ErrorBoundary"
-        description="Keeps a crash in one pane (e.g. unexpected result data) from blanking the app. resetKeys retries when the data changes; onError reports it."
-        code={`<ErrorBoundary resetKeys={[results]} onError={(e) => log(e)}>
+        description="Keeps a crash in one pane (e.g. unexpected result data) from blanking the app. resetKeys retries when the data changes; onError reports it. labels translates the default fallback; after Try again, focus stays in the pane."
+        code={`<ErrorBoundary resetKeys={[results]} onError={(e) => log(e)}
+  labels={{ title: t('errors.title'), message: t('errors.renderFailed'), retry: t('actions.tryAgain') }}>  // English defaults: defaultErrorBoundaryLabels
   <ResultsTable results={results} />
 </ErrorBoundary>`}
       >

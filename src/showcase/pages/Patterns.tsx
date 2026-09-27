@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import {
+  AgreementDialog,
   Button,
   compareVersions,
   defaultReleaseNotesLabels,
@@ -10,12 +11,66 @@ import {
   ReleaseNotesDialog,
   Select,
   sortReleases,
+  useAgreementAccepted,
   useReleaseNotesSeen,
 } from '../../index';
 import { DemoPage, DemoSection, Variants } from '../layout';
 import { sampleIntro, sampleReleases } from '../releaseNotesData';
 
 const STORAGE_KEY = 'showcase:release-notes-seen';
+const AGREEMENT_VERSION = '2026-09';
+
+/** An app opens the agreement on load while `accepted` is false; the demo opens it from a button. */
+function AgreementDemo() {
+  const agreement = useAgreementAccepted({ storageKey: 'showcase:agreement', version: AGREEMENT_VERSION });
+  const [open, setOpen] = useState(false);
+  const [declined, setDeclined] = useState(false);
+  return (
+    <>
+      <p className="m-0 text-xs text-text-muted">
+        Version {AGREEMENT_VERSION} · accepted: {String(agreement.accepted)}
+        {declined && ' · declined (the app would sign out or leave)'}
+      </p>
+      <Variants>
+        <Button variant="primary" onClick={() => setOpen(true)}>
+          Show agreement
+        </Button>
+      </Variants>
+      <AgreementDialog
+        open={open}
+        title="End user license agreement"
+        note="This agreement is available in English only."
+        lang="en"
+        labels={{ accept: 'I agree', decline: 'I disagree' }}
+        onAccept={() => {
+          agreement.accept();
+          setDeclined(false);
+          setOpen(false);
+        }}
+        onDecline={() => {
+          setDeclined(true);
+          setOpen(false);
+        }}
+      >
+        <p>Read this agreement carefully before using the software.</p>
+        <h3>1. License</h3>
+        <p>You may use the software to design and check structural connections for your own projects.</p>
+        <h3>2. Restrictions</h3>
+        <ul>
+          <li>Do not copy, modify or redistribute the software.</li>
+          <li>Do not use the results without review by a qualified design professional.</li>
+        </ul>
+        <h3>3. Disclaimer</h3>
+        {Array.from({ length: 6 }, (_, i) => (
+          <p key={i}>
+            The software is provided as is, without warranty of any kind. Results depend on the inputs you provide and on the design
+            assumptions described in the documentation.
+          </p>
+        ))}
+      </AgreementDialog>
+    </>
+  );
+}
 const CURRENT_VERSION = sortReleases(sampleReleases)[0]!.version;
 
 /** What an app shell does: open "What's new" once after an update, and from the Help menu. */
@@ -121,6 +176,20 @@ export function Patterns() {
           Helpers: compareVersions(&apos;2.10.0&apos;, &apos;2.9.0&apos;) = {compareVersions('2.10.0', '2.9.0')}; formatReleaseDate(&apos;2026-09-03&apos;) ={' '}
           {formatReleaseDate('2026-09-03')} (parsed as a local date: day {parseReleaseDate('2026-09-03')?.getDate()}).
         </p>
+      </DemoSection>
+
+      <DemoSection
+        id="agreement"
+        title="Agreement"
+        description="Terms that must be accepted before the app can be used: only the two buttons close it, the text scrolls. useAgreementAccepted remembers the accepted version; a new version asks again."
+        code={`const agreement = useAgreementAccepted({ storageKey: 'my-app:eula', version: EULA_VERSION });
+<AgreementDialog open={!agreement.accepted} title={t('eula.title')} lang="en"
+  labels={{ accept: t('eula.agree'), decline: t('eula.disagree') }}
+  onAccept={agreement.accept} onDecline={signOut}>
+  {eulaText}
+</AgreementDialog>`}
+      >
+        <AgreementDemo />
       </DemoSection>
     </DemoPage>
   );

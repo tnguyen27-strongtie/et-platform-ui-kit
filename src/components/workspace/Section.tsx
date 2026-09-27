@@ -17,6 +17,13 @@ export interface SectionTab<V extends string> {
 interface SectionBaseProps {
   /** Icons or buttons at the right end of the header bar (e.g. expand/collapse all). */
   actions?: ReactNode;
+  /**
+   * Bar under the scrolling body that stays visible (e.g. Calculate / Restart). It is outside
+   * the scroll area, so it never covers a field or the focused control. Put the primary button last.
+   */
+  footer?: ReactNode;
+  /** 'end' (default) right-aligns the footer buttons; 'between' puts the first one at the left. */
+  footerAlign?: 'end' | 'between';
   className?: string;
   bodyClassName?: string;
 }
@@ -45,8 +52,18 @@ const tabsSx = { flex: 1, border: 0, backgroundColor: 'transparent' } as const;
  * A single-title section renders its title as the only tab, so every section header looks the same.
  */
 export function Section<V extends string>(props: SectionProps<V>) {
-  const { actions, className, bodyClassName } = props;
+  const { actions, footer, footerAlign = 'end', className, bodyClassName } = props;
   const tabsId = useId();
+  const footerBar = footer && (
+    <div
+      className={cn(
+        'flex shrink-0 flex-wrap items-center gap-2 border-t border-border bg-surface p-2',
+        footerAlign === 'between' ? 'justify-between' : 'justify-end',
+      )}
+    >
+      {footer}
+    </div>
+  );
 
   if (props.tabs) {
     const { tabs, value, onChange } = props;
@@ -65,6 +82,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
             {t.content}
           </TabPanel>
         ))}
+        {footerBar}
       </div>
     );
   }
@@ -78,6 +96,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
         {actions && <div className="flex items-center gap-1">{actions}</div>}
       </div>
       <div className={cn('min-h-0 flex-1 overflow-auto', bodyClassName)}>{props.children}</div>
+      {footerBar}
     </div>
   );
 }

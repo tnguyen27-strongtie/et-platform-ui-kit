@@ -55,6 +55,31 @@ test.describe('Accordion', () => {
     await openFixture(page, 'accordion');
   });
 
+  test('exclusive group keeps at most one section open', async ({ page }) => {
+    const x = page.getByRole('button', { name: 'Exclusive X' });
+    const y = page.getByRole('button', { name: 'Exclusive Y' });
+    const z = page.getByRole('button', { name: 'Exclusive Z' });
+    await expect(x).toHaveAttribute('aria-expanded', 'false');
+    await expect(y).toHaveAttribute('aria-expanded', 'true');
+    await expect(z).toHaveAttribute('aria-expanded', 'false');
+    await z.click();
+    await expect(z).toHaveAttribute('aria-expanded', 'true');
+    await expect(y).toHaveAttribute('aria-expanded', 'false');
+    // expandAll does nothing in exclusive mode; closing the open one leaves all closed.
+    await page.getByRole('button', { name: 'Expand exclusive' }).click();
+    await expect(x).toHaveAttribute('aria-expanded', 'false');
+    await z.click();
+    for (const b of [x, y, z]) await expect(b).toHaveAttribute('aria-expanded', 'false');
+    await y.click();
+    await page.getByRole('button', { name: 'Collapse exclusive' }).click();
+    await expect(y).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('the positional signature (keys, defaultExpanded, initial) still works', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'Legacy P' })).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByRole('button', { name: 'Legacy Q' })).toHaveAttribute('aria-expanded', 'true');
+  });
+
   test('header button toggles the region with click, Enter and Space', async ({ page }) => {
     const header = page.getByRole('button', { name: 'Uncontrolled section' });
     await expect(header).toHaveAttribute('aria-expanded', 'false');

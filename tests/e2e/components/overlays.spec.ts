@@ -319,3 +319,50 @@ test.describe('Toast', () => {
     await expect(page.locator('.Toastify__toast')).toHaveCount(5);
   });
 });
+
+test.describe('AgreementDialog', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'agreement');
+  });
+
+  test('opens until accepted; Escape and outside clicks do not close it', async ({ page }) => {
+    const dialog = page.getByRole('dialog', { name: 'License agreement' });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.mouse.click(5, 5);
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Close' })).toHaveCount(0);
+  });
+
+  test('the scrolling text describes the dialog, is keyboard scrollable and carries lang', async ({ page }) => {
+    const dialog = page.getByRole('dialog', { name: 'License agreement' });
+    await expect(dialog).toHaveAccessibleDescription(/Read carefully\. 1\. License Clause text 1\./);
+    const text = dialog.getByRole('region', { name: 'License agreement' });
+    await expect(text).toHaveAttribute('lang', 'en');
+    await expect(text.getByRole('heading', { name: '1. License', level: 3 })).toBeVisible();
+    await expect(dialog.getByText('Available in English only.')).toBeVisible();
+    const overflows = await text.evaluate((el) => el.scrollHeight > el.clientHeight);
+    expect(overflows).toBe(true);
+    await text.focus();
+    await page.keyboard.press('End');
+    await expect.poll(() => text.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  });
+
+  test('accept stores the version; the dialog stays closed after a reload', async ({ page }) => {
+    await page.getByRole('button', { name: 'I agree' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expectOut(page, 'accepted', true);
+    await page.reload();
+    await expectOut(page, 'accepted', true);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+  });
+
+  test('a new agreement version asks again; decline is reported to the app', async ({ page }) => {
+    await page.evaluate(() => localStorage.setItem('harness:agreement', '1'));
+    await page.reload();
+    await expect(page.getByRole('dialog', { name: 'License agreement' })).toBeVisible();
+    await page.getByRole('button', { name: 'I disagree' }).click();
+    await expectOut(page, 'declined', 1);
+    await expectOut(page, 'accepted', false);
+  });
+});

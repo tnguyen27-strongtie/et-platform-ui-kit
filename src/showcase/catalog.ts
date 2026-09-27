@@ -36,7 +36,7 @@ export const catalog: CatalogPage[] = [
     sections: [
       { id: 'colors', title: 'Colors', exports: ['colors', 'defaultColors', 'scales'] },
       { id: 'typography', title: 'Typography', exports: ['Typography', 'typography'] },
-      { id: 'math', title: 'Math formulas', exports: [] },
+      { id: 'math', title: 'Math formulas', exports: ['MathVar', 'MathSub'] },
       { id: 'tokens', title: 'Radius, shadow, spacing', exports: ['radius', 'shadows', 'spacingUnit', 'layout', 'breakpoints'] },
       { id: 'layout-primitives', title: 'Box and Stack', exports: ['Box', 'Stack'] },
     ],
@@ -94,6 +94,7 @@ export const catalog: CatalogPage[] = [
     description: 'Showing results: panels, tables and the data grid.',
     sections: [
       { id: 'card', title: 'Card', exports: ['Card'] },
+      { id: 'description-list', title: 'DescriptionList', exports: ['DescriptionList'] },
       { id: 'data-table', title: 'DataTable', exports: ['DataTable'] },
       { id: 'grid-view', title: 'GridView', exports: ['GridView', 'defaultGridViewLabels'] },
       { id: 'grid-cells', title: 'Grid cells', exports: ['GridImageCell', 'GridLinkCell'] },
@@ -106,9 +107,10 @@ export const catalog: CatalogPage[] = [
     description: 'Status, progress, empty and error states.',
     sections: [
       { id: 'alert', title: 'Alert', exports: ['Alert'] },
+      { id: 'error-alert', title: 'ErrorAlert', exports: ['ErrorAlert'] },
       { id: 'empty-state', title: 'EmptyState', exports: ['EmptyState'] },
       { id: 'loading', title: 'Spinner and LoadingIndicator', exports: ['Spinner', 'LoadingIndicator'] },
-      { id: 'error-boundary', title: 'ErrorBoundary', exports: ['ErrorBoundary'] },
+      { id: 'error-boundary', title: 'ErrorBoundary', exports: ['ErrorBoundary', 'defaultErrorBoundaryLabels'] },
     ],
   },
   {
@@ -132,6 +134,7 @@ export const catalog: CatalogPage[] = [
         title: 'Release notes',
         exports: ['ReleaseNotesDialog', 'ReleaseNotes', 'useReleaseNotesSeen', 'defaultReleaseNotesLabels', 'compareVersions', 'sortReleases', 'formatReleaseDate', 'parseReleaseDate'],
       },
+      { id: 'agreement', title: 'Agreement', exports: ['AgreementDialog', 'useAgreementAccepted'] },
     ],
   },
   {
@@ -139,7 +142,7 @@ export const catalog: CatalogPage[] = [
     title: 'Utilities',
     description: 'Helpers apps can reuse for validation, search and theming.',
     sections: [
-      { id: 'number-helpers', title: 'Number helpers', exports: ['parseNumber', 'isPartialNumber', 'roundTo', 'stepNumber', 'formatNumber', 'clamp', 'decimalsOf', 'isInRange'] },
+      { id: 'number-helpers', title: 'Number helpers', exports: ['parseNumber', 'isPartialNumber', 'roundTo', 'stepNumber', 'formatNumber', 'formatDisplayNumber', 'formatFraction', 'clamp', 'decimalsOf', 'isInRange'] },
       { id: 'search-helpers', title: 'Search and filter helpers', exports: ['normalizeText', 'matchesText', 'matchesSearch', 'matchesNumberRange', 'matchesSelect', 'isEmptyFilter'] },
       { id: 'theme-helpers', title: 'Theme helpers', exports: ['resolveColors', 'colorCssVars', 'createPlatformTheme', 'PlatformThemeProvider', 'cn'] },
     ],

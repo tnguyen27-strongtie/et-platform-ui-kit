@@ -36,6 +36,7 @@ import {
 import { type CSSProperties, type DragEvent, type KeyboardEvent, type MouseEvent, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 
 import { cn } from '../../utils/cn';
+import { formatDisplayNumber } from '../../utils/number';
 import { useStableValue } from '../../utils/useStableValue';
 import { Button, IconButton } from '../Button';
 import { Checkbox } from '../Choice';
@@ -227,6 +228,8 @@ export interface GridViewProps<T extends RowData> {
   emptyText?: ReactNode;
   /** Any subset of the grid's texts, e.g. { clearFilters: 'Xóa bộ lọc', rowCount: (n, t) => `${n}/${t} dòng` }. */
   labels?: Partial<GridViewLabels>;
+  /** Locale of number columns without a `format` (decimal and grouping separators), e.g. 'vi-VN'. Default 'en-US'. */
+  locale?: string;
   className?: string;
 }
 
@@ -273,22 +276,12 @@ function readValue<T>(c: GridColumn<T>, row: T): GridCellValue {
   return v === null || v === '' || (typeof v === 'number' && Number.isNaN(v)) ? undefined : v;
 }
 
-const numberFormats = new Map<number | undefined, Intl.NumberFormat>();
-function formatNumberValue(v: number, precision?: number) {
-  let f = numberFormats.get(precision);
-  if (!f) {
-    f = new Intl.NumberFormat('en-US', precision === undefined ? { maximumFractionDigits: 6 } : { minimumFractionDigits: precision, maximumFractionDigits: precision });
-    numberFormats.set(precision, f);
-  }
-  return f.format(v);
-}
-
 /** Text of a cell as displayed (used by the default renderer and the master search). */
-function displayText<T>(c: GridColumn<T>, row: T): string {
+function displayText<T>(c: GridColumn<T>, row: T, locale: string): string {
   const v = readValue(c, row);
   if (c.format) return c.format(v, row);
   if (v === undefined) return '';
-  if (typeof v === 'number' && c.type === 'number') return formatNumberValue(v, c.precision);
+  if (typeof v === 'number' && c.type === 'number') return formatDisplayNumber(v, { precision: c.precision, locale });
   return String(v);
 }
 
@@ -322,6 +315,7 @@ export function GridView<T extends RowData>({
   toolbar,
   emptyText = 'No data',
   labels: labelOverrides,
+  locale = 'en-US',
   className,
 }: GridViewProps<T>) {
   const baseId = useId();
@@ -339,8 +333,8 @@ export function GridView<T extends RowData>({
     [columns, searchIds],
   );
   const searchedRows = useMemo(
-    () => (query.trim() === '' ? rows : rows.filter((row) => matchesSearch(searchColumns.map((c) => displayText(c, row)), query))),
-    [rows, searchColumns, query],
+    () => (query.trim() === '' ? rows : rows.filter((row) => matchesSearch(searchColumns.map((c) => displayText(c, row, locale)), query))),
+    [rows, searchColumns, query, locale],
   );
 
   const columnDefs = useMemo<ColumnDef<Features, T, unknown>[]>(
@@ -482,7 +476,7 @@ export function GridView<T extends RowData>({
 
   const renderCell = (c: GridColumn<T>, row: T): ReactNode => {
     if (c.cell) return c.cell(row);
-    const text = displayText(c, row);
+    const text = displayText(c, row, locale);
     if (c.type === 'image' && c.image) {
       return <GridImageCell src={c.image.src(row)} alt={c.image.alt?.(row) ?? ''} text={text} subtext={c.image.subtext?.(row)} />;
     }

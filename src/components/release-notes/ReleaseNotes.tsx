@@ -7,6 +7,7 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { Fragment, type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { colors } from '../../tokens/tokens';
+import { readStorage, writeStorage } from '../../utils/storage';
 import { Accordion, ExpandCollapseAllButton, useAccordionGroup } from '../Accordion';
 import { Button } from '../Button';
 import { Dialog, DialogBody, DialogFooter, DialogHeader } from '../Dialog';
@@ -262,22 +263,6 @@ export interface UseReleaseNotesSeenOptions {
   storageKey: string;
   /** Also open for brand-new users. Default false: first visit just records the version. */
   showOnFirstVisit?: boolean;
-}
-
-function readStorage(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStorage(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // Private mode / blocked storage: the dialog may show again next time, nothing breaks.
-  }
 }
 
 /**

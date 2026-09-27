@@ -80,6 +80,8 @@ Write formulas as MathML. Every `<math>` element uses STIX Two Math (SIL OFL 1.1
 <span className="font-math">σ ≤ 0.6 F<sub>y</sub></span>
 ```
 
+For variables in labels (S<sub>DS</sub>), use `MathVar` and `MathSub` (see [Math notation](components.md#math-notation)); they also work as elements in translation components.
+
 The font file (about 400 KB) is downloaded only by pages that show math. Apps copy no files.
 
 React renders MathML, but `@types/react` does not declare its tags yet, so TypeScript reports `Property 'math' does not exist on type 'JSX.IntrinsicElements'`. Declare the tags you use once in the app, for example `src/mathml.d.ts`:

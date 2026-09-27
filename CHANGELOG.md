@@ -2,6 +2,32 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `ErrorAlert`: the standard message for a failed request: title, message, an optional support reference (monospace, selectable) and an optional retry button (`onRetry` + `retryLabel`).
+- `AgreementDialog` and `useAgreementAccepted`: terms the user must accept before using the app. Only its two buttons close it; the text scrolls, is keyboard scrollable, is the dialog's description and can carry its own `lang`. The hook remembers the accepted version, so a new version asks again.
+- `DescriptionList`: label/value pairs as `dl`/`dt`/`dd`, two columns when its container is at least 20rem wide, stacked below that. `size="sm"` for inside cards.
+- `MathVar` and `MathSub`: a variable (italic, math font) and an upright subscript for notation such as S<sub>DS</sub> in labels; both work as elements in translation components.
+- `formatFraction(value, { denominator, unit })`: mixed numbers such as `1 7/16"`, rounded to the nearest 1/32 by default, negative values included.
+- `formatDisplayNumber(value, { precision, locale })`: numbers for display with locale separators and grouping. `formatNumber` is unchanged; it stays the input-field format that `parseNumber` reads back.
+- `Card`: `role="group"` makes a card a named group of inputs (labelled by its title); `wrapTitle` lets a long title wrap instead of truncating.
+- `OptionCardGroup`: `description` on an option shows a tooltip on hover and keyboard focus and is always the card's accessible description.
+- `Checkbox` and `Switch`: `help` and `helpLabel` add the "?" bubble after the label, outside the control's name.
+- `Alert`: `actions` for buttons under the text.
+- `Section`: `footer` and `footerAlign` for a bar under the scrolling body (Calculate / Restart) that never covers a field.
+- `useAccordionGroup(keys, { exclusive, initial, defaultExpanded })`: options object with an exclusive mode (one section open at a time). The positional form still works.
+- `ErrorBoundary`: `labels` translates the default fallback; `defaultErrorBoundaryLabels` holds the English texts.
+- `GridView`: `locale` for number columns (default `'en-US'`, as before).
+
+### Changed
+
+- `ErrorBoundary` default fallback: the "Try again" button is now a small button inside the error alert (it used to sit below it). After "Try again", focus moves into the recovered content, or back to the retry button if it fails again, instead of being lost.
+- `GridView` number columns with `precision` round half away from zero like the rest of the kit (`1.005` at 2 decimals shows `1.01`).
+
+No breaking changes.
+
 ## [0.6.1] - 2026-09-27
 
 ### Fixed

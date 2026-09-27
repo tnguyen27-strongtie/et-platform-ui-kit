@@ -2,9 +2,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { styled } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import type { ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 
 import { colors, radius, shadows } from '../tokens/tokens';
+import { Tooltip } from './Tooltip';
 
 const Group = styled(ToggleButtonGroup)({
   width: '100%',
@@ -53,6 +54,11 @@ export interface OptionCard<V extends string | number> {
   label: ReactNode;
   /** Product image or illustration shown above the label. */
   image?: ReactNode;
+  /**
+   * Longer explanation in plain text. Shown as a tooltip on hover and keyboard focus, and always
+   * announced as the card's accessible description (also while the tooltip is closed).
+   */
+  description?: string;
   disabled?: boolean;
 }
 
@@ -72,15 +78,44 @@ export function OptionCardGroup<V extends string | number>({
   showCheck = true,
   ...aria
 }: OptionCardGroupProps<V>) {
+  const baseId = useId();
+  const descId = (i: number) => `${baseId}-desc-${i}`;
   return (
-    <Group exclusive value={value} onChange={(_, v: V | null) => v !== null && onChange(v)} {...aria}>
-      {options.map((o) => (
-        <Card key={String(o.value)} value={o.value} disabled={o.disabled} showCheck={showCheck}>
-          {o.image}
-          <span className="text-sm">{o.label}</span>
-          {showCheck && value === o.value && <CheckCircleIcon className="option-card-check" />}
-        </Card>
-      ))}
-    </Group>
+    <>
+      <Group exclusive value={value} onChange={(_, v: V | null) => v !== null && onChange(v)} {...aria}>
+        {options.map((o, i) => {
+          const card = (
+            <Card
+              key={String(o.value)}
+              value={o.value}
+              disabled={o.disabled}
+              showCheck={showCheck}
+              aria-describedby={o.description ? descId(i) : undefined}
+              // The tooltip would otherwise add a native title while closed (a second, unstyled tooltip).
+              title={undefined}
+            >
+              {o.image}
+              <span className="text-sm">{o.label}</span>
+              {showCheck && value === o.value && <CheckCircleIcon className="option-card-check" />}
+            </Card>
+          );
+          return o.description ? (
+            <Tooltip key={String(o.value)} title={o.description}>
+              {card}
+            </Tooltip>
+          ) : (
+            card
+          );
+        })}
+      </Group>
+      {/* Outside the buttons: text inside a button would become part of its name. */}
+      {options.map((o, i) =>
+        o.description ? (
+          <span key={String(o.value)} id={descId(i)} className="sr-only">
+            {o.description}
+          </span>
+        ) : null,
+      )}
+    </>
   );
 }

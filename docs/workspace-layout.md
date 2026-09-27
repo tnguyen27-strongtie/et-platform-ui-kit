@@ -72,6 +72,11 @@ A panel with a gray tab bar on top and a scrollable body. A single-title section
   { value: 'summary', label: 'Summary', content: <Summary /> },
   { value: 'details', label: 'Details', content: <Details />, keepMounted: true },
 ]} />
+
+<Section title="Input" footerAlign="between" footer={<>
+  <Button onClick={restart}>Restart</Button>
+  <Button variant="primary" onClick={calculate}>Calculate</Button>
+</>}>…</Section>
 ```
 
 | Prop | Type | Description |
@@ -79,7 +84,11 @@ A panel with a gray tab bar on top and a scrollable body. A single-title section
 | `title` + `children` | `ReactNode` | Single-title section |
 | `tabs`, `value`, `onChange` | `SectionTab<V>[]`, `V`, `(value: V) => void` | Tabbed section. A tab: `{ value, label, content, disabled?, keepMounted?, className? }` |
 | `actions` | `ReactNode` | Icons or buttons at the right end of the header bar |
+| `footer` | `ReactNode` | Bar under the scrolling body that stays visible, e.g. Calculate / Restart. Put the primary button last |
+| `footerAlign` | `'end' \| 'between'` | `'end'` (default) right-aligns the buttons; `'between'` puts the first one at the left |
 | `className`, `bodyClassName` | `string` | |
+
+The footer sits outside the scroll area, so it never covers the last field or the focused control, and no extra padding is needed.
 
 A tab's `className` can draw attention to it, e.g. `"animate-jump"` when a new result arrives.
 

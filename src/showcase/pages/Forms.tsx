@@ -201,13 +201,15 @@ export function Forms() {
         title="Checkbox and Switch"
         description="Checkbox for options that apply on submit/calculate; Switch for settings that apply immediately. onChange returns a boolean."
         code={`<Checkbox label="Include fasteners" checked={v} onChange={setV} />
-<Switch label="Metric units" checked={metric} onChange={setMetric} />`}
+<Switch label="Metric units" checked={metric} onChange={setMetric} />
+<Checkbox label="Wet service" help="Moisture content above 19% in service." helpLabel="About wet service" />`}
       >
         <div className="flex flex-wrap gap-6">
           <Checkbox label="Include fasteners" defaultChecked />
           <Checkbox label="Show notes" />
           <Checkbox label="Disabled" disabled />
           <Checkbox label="Disabled checked" disabled defaultChecked />
+          <Checkbox label="Wet service" help="Moisture content above 19% in service; capacities are reduced." helpLabel="About wet service" />
         </div>
         <div className="flex flex-col gap-1">
           <Checkbox
@@ -270,17 +272,27 @@ export function Forms() {
       <DemoSection
         id="option-cards"
         title="OptionCardGroup"
-        description="Picture choices (connection types, configurations). Clicking the selected card keeps it selected."
+        description="Picture choices (connection types, configurations). Clicking the selected card keeps it selected. description adds a hover/focus tooltip that screen readers always announce."
         code={`<OptionCardGroup aria-label="Shear type" value={v} onChange={setV}
-  options={[{ value: 'single', label: 'Single shear', image: <img … /> }]} />`}
+  options={[{ value: 'single', label: 'Single shear', image: <img … />, description: 'One shear plane…' }]} />`}
       >
         <OptionCardGroup
           value={card}
           onChange={setCard}
           aria-label="Shear type"
           options={[
-            { value: 'single', label: 'Single shear', image: <img src="/images/sample-drawing.svg" alt="" className="h-12 w-20 object-contain" /> },
-            { value: 'double', label: 'Double shear', image: <img src="/images/sample-drawing.svg" alt="" className="h-12 w-20 object-contain" /> },
+            {
+              value: 'single',
+              label: 'Single shear',
+              description: 'One shear plane: the fastener joins two members.',
+              image: <img src="/images/sample-drawing.svg" alt="" className="h-12 w-20 object-contain" />,
+            },
+            {
+              value: 'double',
+              label: 'Double shear',
+              description: 'Two shear planes: a main member between two side members.',
+              image: <img src="/images/sample-drawing.svg" alt="" className="h-12 w-20 object-contain" />,
+            },
             { value: 'none', label: 'Unavailable', disabled: true, image: <div className="h-12 w-20 rounded-sm bg-true-gray-10" /> },
           ]}
         />

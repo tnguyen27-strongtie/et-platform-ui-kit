@@ -5,12 +5,12 @@ Most styling lives in the MUI theme (`createPlatformTheme`), so plain MUI compon
 Live examples of every component are in the [showcase](getting-started.md#the-showcase).
 
 - [Actions](#actions): `Button`, `IconButton`, `CloseButton`, `DropdownMenu`
-- [Overlays](#overlays): `Dialog`, `ConfirmDialog`, `Tooltip`, `InfoTip`, `HelpPopover`, toasts
+- [Overlays](#overlays): `Dialog`, `ConfirmDialog`, `AgreementDialog`, `Tooltip`, `InfoTip`, `HelpPopover`, toasts
 - [Forms](#forms): `FormField`, `TextInput`, `NumberInput`, `Select`, `Combobox`, `Checkbox`, `Switch`, `RadioGroup`, `OptionCardGroup`
 - [Navigation](#navigation): `TopNav`, `NavMenu`, `Tabs`, `Accordion`
-- [Data display](#data-display): `Card`, `DataTable`, `GridView`, grid cells, MUI primitives
-- [Feedback](#feedback): `Alert`, `EmptyState`, `Spinner`, `LoadingIndicator`, `ErrorBoundary`
-- [Utilities](#utilities): `cn`, number helpers, search and filter helpers
+- [Data display](#data-display): `Card`, `DescriptionList`, `DataTable`, `GridView`, grid cells, MUI primitives
+- [Feedback](#feedback): `Alert`, `ErrorAlert`, `EmptyState`, `Spinner`, `LoadingIndicator`, `ErrorBoundary`
+- [Utilities](#utilities): `cn`, number helpers, search and filter helpers, math notation
 
 See also: [GridView](grid-view.md), [Workspace layout](workspace-layout.md), [Release notes](release-notes.md).
 
@@ -123,6 +123,41 @@ Focus is trapped inside the dialog and returns to the trigger on close; the page
 | `destructive` | `boolean` | Red confirm button; focus starts on Cancel and backdrop clicks are ignored |
 | `loading` | `boolean` | Locks the dialog: it cannot be closed or confirmed twice |
 | `onConfirm`, `onCancel` | `() => void` | |
+
+### AgreementDialog
+
+Terms the user must accept before using the app (license agreement, terms of use). Escape and clicks outside do nothing; only the two buttons close it. The text scrolls inside the dialog (up to 60% of the viewport height), can be scrolled with the keyboard, and is read out as the dialog's description.
+
+```tsx
+const agreement = useAgreementAccepted({ storageKey: 'my-app:eula', version: EULA_VERSION });
+
+<AgreementDialog
+  open={!agreement.accepted}
+  title={t('eula.title')}
+  note={t('eula.englishOnly')}
+  lang="en"
+  labels={{ accept: t('eula.agree'), decline: t('eula.disagree') }}
+  onAccept={agreement.accept}
+  onDecline={signOut}
+>
+  <p>Read this agreement carefully…</p>
+  <h3>1. License</h3>
+  <p>…</p>
+</AgreementDialog>
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `open`, `title` | `boolean`, `ReactNode` | |
+| `children` | `ReactNode` | The agreement text. `h3` headings, paragraphs and lists are styled |
+| `note` | `ReactNode` | Muted line above the text, in the UI language (e.g. "Available in English only") |
+| `lang` | `string` | BCP 47 language of the text when it differs from the page, so screen readers pronounce it correctly |
+| `onAccept`, `onDecline` | `() => void` | What declining means (sign out, leave) is up to the app |
+| `labels` | `{ accept: string; decline: string }` | Button texts |
+
+Focus is not restored when it closes, because it usually opens on page load.
+
+**The accepted version.** `useAgreementAccepted({ storageKey, version })` returns `{ accepted, accept() }` and keeps the accepted version in `localStorage`. `accepted` is true only for the current `version`, so publishing a new agreement version asks every user again. If acceptance must be recorded on a server, keep that in the app and pass your own `open`.
 
 ### Tooltip vs InfoTip
 
@@ -316,6 +351,12 @@ Same option shape as `Select`. `value` is `V | null`; clearing gives `null`. Opt
 
 MUI props, with `label` and `onChange(checked: boolean)`. Use a checkbox for options applied on submit or calculate, a switch for settings that apply immediately. `Checkbox` supports `indeterminate` for "select all" parents.
 
+`help` adds the "?" bubble after the label (the same one as `FormField help`); `helpLabel` names its button (default "More information"). The bubble sits next to the label, not inside it, so it is not part of the checkbox's name and opening it does not toggle the checkbox.
+
+```tsx
+<Checkbox label="Wet service" checked={wet} onChange={setWet} help="Moisture content above 19% in service." helpLabel="About wet service" />
+```
+
 ### RadioGroup
 
 ```tsx
@@ -351,7 +392,7 @@ Picture cards for choices such as connection types.
   value={shear}
   onChange={setShear}
   options={[
-    { value: 'single', label: 'Single shear', image: <img src={singleSvg} alt="" /> },
+    { value: 'single', label: 'Single shear', image: <img src={singleSvg} alt="" />, description: 'One shear plane between two members.' },
     { value: 'double', label: 'Double shear', image: <img src={doubleSvg} alt="" /> },
   ]}
 />
@@ -360,9 +401,11 @@ Picture cards for choices such as connection types.
 | Prop | Type | Description |
 | --- | --- | --- |
 | `value`, `onChange` | `V \| null`, `(value: V) => void` | Clicking the selected card keeps it selected |
-| `options` | `OptionCard<V>[]` | `{ value, label, image?, disabled? }` |
+| `options` | `OptionCard<V>[]` | `{ value, label, image?, description?, disabled? }` |
 | `showCheck` | `boolean` | Check mark on the selected card. Default `true` |
 | `aria-label` | `string` | Group name |
+
+`description` (plain text) is shown as a tooltip on hover and keyboard focus, and is always the card's accessible description, also while the tooltip is closed.
 
 ---
 
@@ -409,7 +452,21 @@ const group = useAccordionGroup(['loads', 'members'] as const);
 | `expanded`, `onChange` | `boolean`, `(expanded: boolean) => void` | | Controlled state |
 | `headingLevel` | `'h2'`–`'h6'` | `'h3'` | The header sits inside a heading of this level |
 
-`useAccordionGroup(keys, defaultExpanded = true, initial?)` shares state across several accordions and returns `{ item(key), allExpanded, allCollapsed, expandAll, collapseAll, toggleAll }`. `ExpandCollapseAllButton` toggles the group: "Collapse all" while any section is open, otherwise "Expand all".
+`useAccordionGroup(keys, options?)` shares state across several accordions and returns `{ item(key), allExpanded, allCollapsed, expandAll, collapseAll, toggleAll }`. `ExpandCollapseAllButton` toggles the group: "Collapse all" while any section is open, otherwise "Expand all".
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `defaultExpanded` | `boolean` | `true` (`false` when exclusive) | State of keys not in `initial` |
+| `initial` | `Partial<Record<K, boolean>>` | | Starting state of specific keys, e.g. `{ [latest]: true }` |
+| `exclusive` | `boolean` | `false` | At most one section open: opening one closes the others. Starts with the first key set to true in `initial` open |
+
+In exclusive mode `expandAll` does nothing and `toggleAll` only collapses, so do not show `ExpandCollapseAllButton` with it:
+
+```tsx
+const group = useAccordionGroup(['seismic', 'wind', 'geometry'] as const, { exclusive: true, initial: { seismic: true } });
+```
+
+The older positional form `useAccordionGroup(keys, defaultExpanded, initial)` still works.
 
 ---
 
@@ -432,6 +489,41 @@ const group = useAccordionGroup(['loads', 'members'] as const);
 | `titleAs` | `'h2' \| 'h3' \| 'h4'` | `'h3'` | Heading level of the title |
 | `footer` | `ReactNode` | | Right-aligned bottom row |
 | `padding` | `'none' \| 'sm' \| 'md'` | `'sm'` | 8px, 12px, or none: a table sits flush and doubled borders are removed |
+| `role` | `'group'` | | Makes the card a named group of inputs (see below) |
+| `wrapTitle` | `boolean` | `false` | A long title wraps onto more lines instead of being cut off with an ellipsis |
+
+**Input groups inside an accordion.** With `role="group"` the card is a `role="group"` element labelled by its title, so screen readers announce "Seismic" when focus enters a field inside it. A card without `role` stays a plain `<section>` (not a landmark), which suits result panels.
+
+```tsx
+<Accordion title="Loads" {...group.item('loads')}>
+  <div className="grid gap-3 md:grid-cols-2">
+    <Card role="group" title="Seismic" titleAs="h4" padding="md" wrapTitle>
+      <FormField label="Short-period acceleration" htmlFor="sds"><NumberInput … /></FormField>
+    </Card>
+    <Card role="group" title="Wind" titleAs="h4" padding="md" wrapTitle>…</Card>
+  </div>
+</Accordion>
+```
+
+### DescriptionList
+
+Label/value pairs (an About dialog, result details) as a semantic `dl`/`dt`/`dd` list.
+
+```tsx
+<DescriptionList items={[
+  { id: 'version', label: 'Version', value: '2.4.0' },
+  { id: 'code', label: 'Design code', value: 'ASCE 7-22' },
+]} />
+<Card title="Result details"><DescriptionList size="sm" items={details} /></Card>
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `items` | `{ id: string; label: ReactNode; value: ReactNode }[]` | | |
+| `size` | `'sm' \| 'md'` | `'md'` | `sm`: 12px text and tighter rows, for inside cards |
+| `className` | `string` | | |
+
+Labels are medium weight. Two columns when the list's container is at least 20rem (320px) wide, label over value below that; it measures its container, not the window, so it also stacks in a narrow workspace panel. Long values wrap.
 
 ### DataTable
 
@@ -481,8 +573,31 @@ External links open in a new tab with `rel="noopener noreferrer"` and say so to 
 | --- | --- | --- |
 | `severity` | `'info' \| 'success' \| 'warning' \| 'error'` | `'info'` |
 | `title`, `children`, `icon`, `className` | | |
+| `actions` | `ReactNode` | Buttons under the text, e.g. `<Button size="small">Undo</Button>` |
 
 A tinted banner with a large icon, bold title and 12px text. `error` is announced as an alert; other severities as polite status messages.
+
+### ErrorAlert
+
+The standard message for a failed request: what went wrong, an optional support reference, an optional retry.
+
+```tsx
+<ErrorAlert
+  title={t('errors.title')}
+  reference={error.traceId && t('errors.reference', { traceId: error.traceId })}
+  onRetry={refetch}
+  retryLabel={t('actions.tryAgain')}
+>
+  {messageFor(error.code)}
+</ErrorAlert>
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `title`, `children` | `ReactNode` | Heading and message. Turning error codes into messages stays in the app |
+| `reference` | `ReactNode` | Support reference (e.g. a server trace id), in small monospace text that can be selected and copied |
+| `onRetry`, `retryLabel` | `() => void`, `ReactNode` | Retry button. `retryLabel` is required when `onRetry` is set |
+| `className` | `string` | |
 
 ### EmptyState
 
@@ -511,11 +626,18 @@ Props: `title`, `children`, `icon`, `action`, `className`.
 
 | Prop | Type | Description |
 | --- | --- | --- |
-| `fallback` | `(error, reset) => ReactNode` | Custom fallback. Default: an error alert with "Try again" |
+| `fallback` | `(error, reset) => ReactNode` | Custom fallback. Takes precedence over the default one |
+| `labels` | `Partial<ErrorBoundaryLabels>` | Texts of the default fallback: `{ title, message, retry }`. English defaults in `defaultErrorBoundaryLabels` |
 | `onError` | `(error, info) => void` | Reporting (Sentry, console…) |
 | `resetKeys` | `unknown[]` | The boundary resets when any value changes |
 
-Wrap each workspace section in one, so a render error in one pane does not blank the whole app.
+Wrap each workspace section in one, so a render error in one pane does not blank the whole app. The default fallback is an `ErrorAlert` with a "Try again" button. After "Try again", keyboard focus stays in the pane: it moves to the first focusable element of the recovered content, or back to the retry button if the content fails again. With a custom `fallback`, focus handling is up to the app.
+
+```tsx
+<ErrorBoundary onError={log} labels={{ title: t('errors.title'), message: t('errors.renderFailed'), retry: t('actions.tryAgain') }}>
+  <OutputSection />
+</ErrorBoundary>
+```
 
 ---
 
@@ -535,12 +657,14 @@ Pure functions behind `NumberInput`, exported for app validation and calculation
 | --- | --- |
 | `parseNumber(text)` | `number` for complete input, `null` for empty, `undefined` for incomplete (`-`, `.`). Accepts `,` as decimal separator |
 | `isPartialNumber(text, rules?)` | Whether text may appear while typing a number |
-| `formatNumber(value, precision?)` | Display text; never exponent notation |
+| `formatNumber(value, precision?)` | Text for an input field (what `NumberInput` shows): no grouping, `.` decimal, never exponent notation. `parseNumber` reads it back |
+| `formatDisplayNumber(value, { precision?, locale? })` | Text for people: locale separators and grouping (`1234.5` → `1,234.5`; `'de-DE'` → `1.234,5`). Default `'en-US'`. Not for inputs |
+| `formatFraction(value, { denominator?, unit? })` | Mixed number rounded to the nearest 1/`denominator` (default 32): `0.4375` → `7/16`, `1.5` → `1 1/2`, `-1.5` → `-1 1/2`, `0.99` → `1`. `unit: '"'` gives `7/16"` |
 | `roundTo(n, digits)` | Rounds half away from zero without binary artifacts (`1.005` → `1.01`) |
 | `stepNumber(value, delta, rules?)` | Steps and clamps without float drift |
 | `clamp(n, min?, max?)`, `isInRange(n, rules)`, `decimalsOf(n)` | |
 
-`rules` is `NumberRules`: `{ min?, max?, precision? }`.
+`rules` is `NumberRules`: `{ min?, max?, precision? }`. The format helpers return `''` for `null`, `NaN` and `Infinity`.
 
 ### Search and filter helpers
 
@@ -554,3 +678,16 @@ Pure functions behind `GridView`, usable on their own.
 | `matchesNumberRange(value, { min?, max? })` | Inclusive range |
 | `matchesSelect(value, selected)` | Value is one of the selected values; empty selection matches all |
 | `isEmptyFilter(value)` | Whether a filter value filters nothing |
+
+### Math notation
+
+For variables in labels and running text (S<sub>DS</sub>, F<sub>y</sub>). Whole formulas are MathML, see [Math formulas](design-tokens.md#math-formulas).
+
+```tsx
+<MathVar>S</MathVar><MathSub>DS</MathSub>
+
+// In translated texts, e.g. react-i18next: "<v>S</v><s>DS</s> from the site class table"
+<Trans i18nKey="inputs.sds" components={{ v: <MathVar />, s: <MathSub /> }} />
+```
+
+`MathVar` renders a `<var>` in the math font, italic. `MathSub` renders an upright `<sub>` that does not stretch the line height; descriptive subscripts such as DS are not variables, so they stay upright (wrap a variable subscript in `MathVar`).

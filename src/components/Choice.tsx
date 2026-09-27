@@ -4,12 +4,32 @@ import FormHelperText from '@mui/material/FormHelperText';
 import MuiRadio from '@mui/material/Radio';
 import MuiRadioGroup from '@mui/material/RadioGroup';
 import MuiSwitch, { type SwitchProps as MuiSwitchProps } from '@mui/material/Switch';
-import { type ReactNode, useId } from 'react';
+import { type ReactElement, type ReactNode, useId } from 'react';
 
 import { useFormField } from './FormField';
+import { InfoTip } from './InfoTip';
+
+interface HelpProps {
+  /** Content of a "?" bubble after the label (same as FormField's help). Needs `label`. */
+  help?: ReactNode;
+  /** Accessible name of the "?" button, e.g. "About metric units". Default "More information". */
+  helpLabel?: string;
+}
+
+/** Label + control, plus the "?" bubble next to (not inside) the label so it is not part of the control's name. */
+function Labelled({ control, label, disabled, help, helpLabel }: HelpProps & { control: ReactElement; label: ReactNode; disabled?: boolean }) {
+  const labelled = <FormControlLabel control={control} label={label} disabled={disabled} sx={help ? { mr: 0 } : undefined} />;
+  if (!help) return labelled;
+  return (
+    <span className="inline-flex items-center">
+      {labelled}
+      <InfoTip label={helpLabel}>{help}</InfoTip>
+    </span>
+  );
+}
 
 // ---------- Checkbox ----------
-export interface CheckboxProps extends Omit<MuiCheckboxProps, 'onChange'> {
+export interface CheckboxProps extends Omit<MuiCheckboxProps, 'onChange'>, HelpProps {
   label?: ReactNode;
   onChange?: (checked: boolean) => void;
 }
@@ -19,7 +39,7 @@ export interface CheckboxProps extends Omit<MuiCheckboxProps, 'onChange'> {
  * state (announced as "mixed") instead of MUI's aria-checked="mixed", which conflicts with a
  * native checkbox that is not itself indeterminate.
  */
-export function Checkbox({ label, onChange, indeterminate = false, slotProps, ...props }: CheckboxProps) {
+export function Checkbox({ label, onChange, indeterminate = false, slotProps, help, helpLabel, ...props }: CheckboxProps) {
   const inputSlot = (slotProps?.input ?? {}) as Record<string, unknown> & { ref?: unknown };
   const syncIndeterminate = (el: HTMLInputElement | null) => {
     if (el) el.indeterminate = indeterminate;
@@ -36,7 +56,7 @@ export function Checkbox({ label, onChange, indeterminate = false, slotProps, ..
     />
   );
   if (!label) return control;
-  return <FormControlLabel control={control} label={label} disabled={props.disabled} />;
+  return <Labelled control={control} label={label} disabled={props.disabled} help={help} helpLabel={helpLabel} />;
 }
 
 // ---------- Radio ----------
@@ -118,13 +138,13 @@ export function RadioGroup<V extends string | number | boolean>({
 }
 
 // ---------- Switch ----------
-export interface SwitchProps extends Omit<MuiSwitchProps, 'onChange'> {
+export interface SwitchProps extends Omit<MuiSwitchProps, 'onChange'>, HelpProps {
   label?: ReactNode;
   onChange?: (checked: boolean) => void;
 }
 
-export function Switch({ label, onChange, ...props }: SwitchProps) {
+export function Switch({ label, onChange, help, helpLabel, ...props }: SwitchProps) {
   const control = <MuiSwitch onChange={(_, checked) => onChange?.(checked)} {...props} />;
   if (!label) return control;
-  return <FormControlLabel control={control} label={label} disabled={props.disabled} />;
+  return <Labelled control={control} label={label} disabled={props.disabled} help={help} helpLabel={helpLabel} />;
 }

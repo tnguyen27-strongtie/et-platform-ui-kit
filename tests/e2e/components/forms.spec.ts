@@ -329,10 +329,48 @@ test.describe('OptionCardGroup', () => {
     await expectOut(page, 'shear', 'single');
   });
 
+  test('description is the accessible description, and a tooltip on hover and focus', async ({ page }) => {
+    const single = page.getByRole('button', { name: 'Single shear', exact: true });
+    // Announced while the tooltip is closed, and not part of the name.
+    await expect(single).toHaveAccessibleName('Single shear');
+    await expect(single).toHaveAccessibleDescription('One shear plane between two members.');
+    await expect(single).not.toHaveAttribute('title');
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await single.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('One shear plane between two members.');
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await single.focus();
+    await expect(page.getByRole('tooltip')).toHaveText('One shear plane between two members.');
+  });
+
+  test('cards without description have no description', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'Double shear' })).not.toHaveAttribute('aria-describedby');
+  });
+
   test('disabled card cannot be selected; Space selects a focused card', async ({ page }) => {
     await page.getByRole('button', { name: 'Unavailable' }).click({ force: true });
     await expectOut(page, 'shear', 'single');
     await page.getByRole('button', { name: 'Double shear' }).press(' ');
     await expectOut(page, 'shear', 'double');
+  });
+});
+
+test.describe('Checkbox help', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'choice');
+  });
+
+  test('the "?" sits next to the label without joining the checkbox name', async ({ page }) => {
+    await expect(page.getByRole('checkbox', { name: 'Wet service' })).toHaveAccessibleName('Wet service');
+  });
+
+  test('opening the help does not toggle the checkbox', async ({ page }) => {
+    await page.getByRole('button', { name: 'About wet service' }).click();
+    await expect(page.getByRole('dialog', { name: 'About wet service' })).toContainText('Moisture content above 19% in service.');
+    await expectOut(page, 'wet', false);
+    await page.keyboard.press('Escape');
+    await page.getByText('Wet service', { exact: true }).click();
+    await expectOut(page, 'wet', true);
   });
 });

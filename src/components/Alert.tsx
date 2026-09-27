@@ -44,17 +44,20 @@ export interface AlertProps {
   title?: ReactNode;
   children: ReactNode;
   icon?: ReactNode;
+  /** Buttons under the text, e.g. "Try again" or "Undo". Use size="small" buttons. */
+  actions?: ReactNode;
   className?: string;
 }
 
 /** Result/validation banner: tinted background, large icon, bold title, small description. */
-export function Alert({ severity = 'info', title, children, icon, className }: AlertProps) {
+export function Alert({ severity = 'info', title, children, icon, actions, className }: AlertProps) {
   return (
     <Root role={severity === 'error' ? 'alert' : 'status'} severity={severity} className={className}>
       {icon ?? icons[severity]}
       <div className="flex flex-col gap-2">
         {title && <div style={{ fontWeight: typography.weight.bold, fontSize: typography.size.lg }}>{title}</div>}
         <div style={{ fontWeight: typography.weight.medium, fontSize: typography.size.xs }}>{children}</div>
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
     </Root>
   );

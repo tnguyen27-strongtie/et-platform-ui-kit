@@ -9,6 +9,8 @@ import {
   defaultColors,
   FormField,
   layout,
+  MathSub,
+  MathVar,
   NumberInput,
   radius,
   resolveColors,
@@ -103,7 +105,8 @@ function MathSection() {
   <mi>M</mi><mo>=</mo>
   <mfrac><mrow><mi>w</mi><msup><mi>L</mi><mn>2</mn></msup></mrow><mn>8</mn></mfrac>
 </math>
-<span className="font-math">σ ≤ 0.6 F<sub>y</sub></span>`}
+<span className="font-math">σ ≤ 0.6 F<sub>y</sub></span>
+<MathVar>S</MathVar><MathSub>DS</MathSub>   // variable + upright subscript, also as <Trans components>`}
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
@@ -303,6 +306,11 @@ function MathSection() {
             </math>{' '}
             must not exceed the allowable stress. Symbols in plain text use{' '}
             <code>font-math</code>: <span className="font-math">σ ≤ 0.6 F<sub>y</sub>, α ≈ 45°, ΔL ± 0.5 mm</span>.
+          </p>
+          <p className="m-0 text-sm">
+            Variables in labels use <code>MathVar</code> and <code>MathSub</code>: design spectral acceleration <MathVar>S</MathVar>
+            <MathSub>DS</MathSub> = 1.2 g, response coefficient <MathVar>C</MathVar>
+            <MathSub>s</MathSub>. The subscript is upright and does not stretch the line.
           </p>
         </div>
 

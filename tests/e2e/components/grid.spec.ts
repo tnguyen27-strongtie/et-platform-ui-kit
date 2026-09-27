@@ -338,3 +338,14 @@ test.describe('labels', () => {
     await expect(page.getByRole('menuitem', { name: 'Freeze left' })).toBeVisible();
   });
 });
+
+test.describe('locale', () => {
+  test('number columns use the locale separators, and search matches the displayed text', async ({ page }) => {
+    await openFixture(page, 'grid-labels');
+    const grid = page.getByRole('table', { name: 'Vật tư' });
+    await expect(grid.getByRole('cell', { name: '1.450', exact: true })).toBeVisible();
+    await page.getByRole('searchbox', { name: 'Tìm trong Vật tư' }).fill('3.120');
+    await expect(grid.getByRole('cell', { name: '3.120', exact: true })).toBeVisible();
+    await expect(grid.getByRole('cell', { name: '1.450', exact: true })).toHaveCount(0);
+  });
+});

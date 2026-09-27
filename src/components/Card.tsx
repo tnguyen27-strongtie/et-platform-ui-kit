@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 
 import { cn } from '../utils/cn';
 
@@ -18,6 +18,14 @@ export interface CardProps {
    * 'none' lets a table or list sit flush against the card border.
    */
   padding?: 'none' | 'sm' | 'md';
+  /**
+   * 'group' makes the card a named group (role="group", aria-labelledby the title), so screen
+   * readers announce the title when focus enters an input inside it. Use it for cards that group
+   * form inputs. Default: a plain section.
+   */
+  role?: 'group';
+  /** Let a long title wrap onto more lines instead of being cut off with an ellipsis. Default false. */
+  wrapTitle?: boolean;
   children: ReactNode;
   className?: string;
 }
@@ -34,13 +42,37 @@ const flushTable = [
 const bodyPadding = { none: flushTable, sm: 'p-2', md: 'p-3' } as const;
 
 /** Bordered panel with an optional highlighted header and footer, for grouping results or inputs. */
-export function Card({ title, titleAs: Title = 'h3', subtitle, actions, footer, padding = 'sm', children, className }: CardProps) {
+export function Card({
+  title,
+  titleAs: Title = 'h3',
+  subtitle,
+  actions,
+  footer,
+  padding = 'sm',
+  role,
+  wrapTitle = false,
+  children,
+  className,
+}: CardProps) {
+  const titleId = useId();
+  // A named <section> would be a landmark region; many input cards would flood the landmark list,
+  // so a group card is a <div role="group"> instead.
+  const Root = role === 'group' ? 'div' : 'section';
+  const labelledBy = role === 'group' && title ? titleId : undefined;
   return (
-    <section className={cn('flex min-w-0 flex-col overflow-hidden rounded-sm border border-border-strong bg-surface', className)}>
+    <Root
+      role={role}
+      aria-labelledby={labelledBy}
+      className={cn('flex min-w-0 flex-col overflow-hidden rounded-sm border border-border-strong bg-surface', className)}
+    >
       {(title || actions) && (
         <header className="flex min-h-10 items-center justify-between gap-2 border-b border-border-input bg-surface-subtle px-2 py-1">
-          <div className="flex min-w-0 items-baseline gap-2">
-            {title && <Title className="m-0 truncate text-sm font-bold text-text">{title}</Title>}
+          <div className={cn('flex min-w-0 items-baseline gap-x-2', wrapTitle && 'flex-wrap')}>
+            {title && (
+              <Title id={labelledBy} className={cn('m-0 text-sm font-bold text-text', wrapTitle ? 'min-w-0 wrap-break-word' : 'truncate')}>
+                {title}
+              </Title>
+            )}
             {subtitle && <span className="truncate text-xs text-text-muted">{subtitle}</span>}
           </div>
           {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
@@ -48,6 +80,6 @@ export function Card({ title, titleAs: Title = 'h3', subtitle, actions, footer, 
       )}
       <div className={cn('min-w-0 flex-1 text-sm', bodyPadding[padding])}>{children}</div>
       {footer && <footer className="flex items-center justify-end gap-2 border-t border-border px-2 py-1.5">{footer}</footer>}
-    </section>
+    </Root>
   );
 }

@@ -21,6 +21,7 @@ export function Navigation() {
   const [tab, setTab] = useState('input');
   const [load, setLoad] = useState<number | null>(1250);
   const group = useAccordionGroup(['connection', 'loads', 'members'] as const);
+  const single = useAccordionGroup(['seismic', 'wind', 'geometry'] as const, { exclusive: true, initial: { seismic: true } });
 
   return (
     <DemoPage title="Navigation" description="Moving between views and sections.">
@@ -76,11 +77,13 @@ export function Navigation() {
       <DemoSection
         id="accordion"
         title="Accordion"
-        description="Collapsible input groups. useAccordionGroup + ExpandCollapseAllButton give the Input panel its collapse-all button. headingLevel fits the page outline."
+        description="Collapsible input groups. useAccordionGroup + ExpandCollapseAllButton give the Input panel its collapse-all button. exclusive keeps one section open at a time. headingLevel fits the page outline."
         code={`const group = useAccordionGroup(['connection', 'loads'] as const);
 <Section title="Input" actions={<ExpandCollapseAllButton group={group} />}>
   <Accordion title="Connection" {...group.item('connection')}>…</Accordion>
-</Section>`}
+</Section>
+// One open at a time (no expand-all button)
+const single = useAccordionGroup(['seismic', 'wind'] as const, { exclusive: true, initial: { seismic: true } });`}
       >
         <div className="h-96 border border-true-gray-20">
           <Section title="Input" actions={<ExpandCollapseAllButton group={group} />}>
@@ -96,6 +99,17 @@ export function Navigation() {
               <p className="m-0 text-sm">Member inputs go here.</p>
             </Accordion>
           </Section>
+        </div>
+        <div>
+          <Accordion title="Seismic (exclusive group)" {...single.item('seismic')}>
+            <p className="m-0 text-sm">Opening another section closes this one.</p>
+          </Accordion>
+          <Accordion title="Wind" {...single.item('wind')}>
+            <p className="m-0 text-sm">Wind inputs go here.</p>
+          </Accordion>
+          <Accordion title="Geometry" {...single.item('geometry')}>
+            <p className="m-0 text-sm">Geometry inputs go here.</p>
+          </Accordion>
         </div>
         <Accordion title="Standalone, collapsed by default" defaultExpanded={false}>
           <p className="m-0 text-sm">Uncontrolled accordion.</p>

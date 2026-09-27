@@ -3,6 +3,8 @@ import { describe, it } from 'node:test';
 
 import {
   decimalsOf,
+  formatDisplayNumber,
+  formatFraction,
   formatNumber,
   isInRange,
   isPartialNumber,
@@ -109,5 +111,62 @@ describe('isInRange', () => {
     assert.ok(isInRange(1.5, { min: 1.5, max: 3.5 }));
     assert.ok(!isInRange(4, { min: 1.5, max: 3.5 }));
     assert.ok(isInRange(-1e9, {}));
+  });
+});
+
+describe('formatFraction', () => {
+  it('writes mixed numbers reduced to lowest terms', () => {
+    assert.equal(formatFraction(0), '0');
+    assert.equal(formatFraction(0.4375), '7/16');
+    assert.equal(formatFraction(1.5), '1 1/2');
+    assert.equal(formatFraction(2), '2');
+    assert.equal(formatFraction(0.03125), '1/32');
+  });
+  it('rounds to the nearest 1/denominator and carries into the whole part', () => {
+    assert.equal(formatFraction(0.99), '1');
+    assert.equal(formatFraction(1.999), '2');
+    assert.equal(formatFraction(0.01), '0');
+    assert.equal(formatFraction(0.3, { denominator: 8 }), '1/4');
+  });
+  it('handles negative values', () => {
+    assert.equal(formatFraction(-0.5), '-1/2');
+    assert.equal(formatFraction(-1.5), '-1 1/2');
+    assert.equal(formatFraction(-2), '-2');
+    assert.equal(formatFraction(-0.99), '-1');
+    assert.equal(formatFraction(-0.001), '0');
+  });
+  it('appends the unit and accepts any denominator', () => {
+    assert.equal(formatFraction(0.4375, { unit: '"' }), '7/16"');
+    assert.equal(formatFraction(1.5, { unit: '"' }), '1 1/2"');
+    assert.equal(formatFraction(2 / 3, { denominator: 3, unit: ' in' }), '2/3 in');
+    assert.equal(formatFraction(0.5, { denominator: 10 }), '1/2');
+  });
+  it('returns an empty string for missing or non-finite values', () => {
+    assert.equal(formatFraction(null), '');
+    assert.equal(formatFraction(Number.NaN), '');
+    assert.equal(formatFraction(Infinity), '');
+  });
+  it('rejects a denominator that is not a positive integer', () => {
+    assert.throws(() => formatFraction(1, { denominator: 0 }), RangeError);
+    assert.throws(() => formatFraction(1, { denominator: 2.5 }), RangeError);
+  });
+});
+
+describe('formatDisplayNumber', () => {
+  it('groups thousands and drops trailing zeros by default', () => {
+    assert.equal(formatDisplayNumber(1234.5), '1,234.5');
+    assert.equal(formatDisplayNumber(0.1 + 0.2), '0.3');
+  });
+  it('uses fixed decimals with precision, rounding half away from zero', () => {
+    assert.equal(formatDisplayNumber(1.005, { precision: 2 }), '1.01');
+    assert.equal(formatDisplayNumber(2, { precision: 1 }), '2.0');
+    assert.equal(formatDisplayNumber(-0.001, { precision: 2 }), '0.00');
+  });
+  it('follows the locale separators', () => {
+    assert.equal(formatDisplayNumber(1234.5, { locale: 'de-DE', precision: 1 }), '1.234,5');
+  });
+  it('returns an empty string for missing or non-finite values', () => {
+    assert.equal(formatDisplayNumber(null), '');
+    assert.equal(formatDisplayNumber(Number.NaN), '');
   });
 });
