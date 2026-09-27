@@ -55,11 +55,12 @@ scripts/verify-pack.sh <dir>/platform-ui-x.y.z.tgz   # required files present, n
 
 The tarball must contain `package.json`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `docs/*.md`, `dist/index.js`, `dist/index.d.ts`, `dist/theme/theme.css`, `dist/theme/fonts.css`, `dist/theme/tokens.generated.css` and `dist/tokens/tokens.js`. It must not contain `src/showcase`, tests, `public/`, or any font files: fonts (`@fontsource-variable/inter`, `@fontsource/stix-two-math`) are dependencies resolved at the app's build time. `scripts/verify-pack.sh` checks all of this; CI runs it on every push and keeps the tarball as an artifact.
 
-For larger changes, smoke-test the tarball in a throwaway Vite app outside the repo: install the `.tgz` with the peer dependencies, import `@platform/ui/theme.css`, render a `Button` inside `PlatformThemeProvider`, `vite build`, and check the output contains the Inter and STIX Two Math `.woff2` files. This catches packaging mistakes the repo's own tests cannot see.
+For larger changes, smoke-test the tarball in a throwaway Vite app outside the repo: install the `.tgz` with the peer dependencies, import `@platform/ui/theme.css`, render a `Button` inside `PlatformThemeProvider`, `vite build`, and check the output contains the Inter and STIX Two Math `.woff2` files. This catches packaging mistakes the repo's own tests cannot see. When the release adds Tailwind classes the kit did not use before (container queries, new utilities), also grep the built CSS for them: apps only get them because `theme.css` scans the kit's `dist/` (`@source "../"`).
 
 ## 6. Commit and hand over
 
 - Commit `package.json`, `CHANGELOG.md` and docs together: `chore(release): x.y.z`.
+- Releases are made on `main`. If the work is on a branch, merge it first (fast-forward or merge commit, not squash, so the tag stays on `main`'s history).
 - Tag it: `git tag vX.Y.Z`. Ask before pushing the tag: `git push origin vX.Y.Z` starts `.github/workflows/release.yml`, which runs the full CI (checks, Chromium and WebKit e2e), fails if the tag does not match `package.json`, and creates a GitHub Release with the `[X.Y.Z]` CHANGELOG section as notes and the CI-built tarball attached. Versions with a `-` (`0.6.0-rc.1`) become pre-releases.
 - If the release job fails after the tag is pushed, fix the cause, then delete and re-push the tag (`git push origin :vX.Y.Z`, `git tag -f vX.Y.Z`, `git push origin vX.Y.Z`) with the user's go-ahead.
 - Report to the user: the version and why that bump, the changelog entry, the verification results, the tarball path (or the GitHub Release link), and what apps must do to upgrade (`pnpm add ./platform-ui-x.y.z.tgz`, plus any migration steps).

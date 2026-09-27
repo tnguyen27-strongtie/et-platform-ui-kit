@@ -34,7 +34,13 @@ These conventions exist because apps rely on them; breaking one usually breaks a
 - **Forms:** a control that takes input calls `useFormField()` and uses `field?.id`, `field?.describedBy`, `field?.invalid`, `field?.labelId`, so it works inside `FormField` without extra props. Outside a `FormField` it accepts `aria-label`.
 - **Accessibility:** real roles and names, `aria-label` required on icon-only buttons (use `IconButton`), visible `:focus-visible` style, keyboard support equal to mouse support. Texts that users read should be overridable through a `labels` prop when the component is text-heavy (see `GridView`, `ReleaseNotes`).
 - **Inline-object props** (arrays of keys, option objects) used in hook dependencies go through `useStableValue` from `utils/useStableValue.ts`, not `JSON.stringify` keys.
-- **Storage** (`localStorage`) access is wrapped in try/catch; it throws in sandboxed iframes.
+- **Storage** (`localStorage`): use `readStorage` / `writeStorage` from `utils/storage.ts`; raw access throws in sandboxed iframes and private mode.
+- **Accessible names:** everything inside a `<label>` or a button becomes part of the control's name. Put a "?" trigger or description text next to the label or button, not inside it (see `Checkbox help`, `OptionCardGroup description`). An element used as an `aria-describedby` target contributes its own `aria-labelledby`/`aria-label` instead of its text, so describe with a plain inner element. Assert names with `toHaveAccessibleName(...)`; `getByRole({ name })` matches substrings and hides these bugs.
+- **Descriptions that must survive a closed tooltip:** MUI `Tooltip` only sets `aria-describedby` while open; point the child at a visually hidden (`sr-only`) element instead.
+- **Components that sit in workspace panels** respond to their container, not the viewport: `@container` on a wrapper and `@xs:`-style variants (see `DescriptionList`).
+- **Scroll areas** need something focusable inside or `tabIndex={0}` on the area; axe (`scrollable-region-focusable`) fails the showcase otherwise.
+- **Focus after content is replaced** (a retry, a reset): move it somewhere sensible in the same area, never leave it on a removed element (see `ErrorBoundary`).
+- **Backward-compatible signatures:** when a function grows options, accept an options object and keep the old positional form working (see `useAccordionGroup`), with a spec for each form.
 - **Comments:** English, describing the component on its own terms. JSDoc on every public prop; it ends up in the `.d.ts` apps see.
 
 ## 3. Export it
