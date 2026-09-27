@@ -34,7 +34,7 @@ for (const { page: pageId, title, sections } of catalog) {
     expect(errors).toEqual([]);
 
     const results = await new AxeBuilder({ page })
-      // Default brand colors are a documented design decision (README, "Chưa có trong kit").
+      // Default brand colors are a documented design decision (README, "Not included yet").
       .disableRules(['color-contrast'])
       .analyze();
     const serious = results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');

@@ -1,0 +1,88 @@
+# Changelog
+
+All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
+
+## [0.5.1] - 2026-09-27
+
+### Changed
+
+- Documentation rewritten in English as library docs: a concise README, guides in `docs/`, `CONTRIBUTING.md` and this changelog.
+- The kit is documented as an independent platform: comments, docs and sample data no longer refer to any legacy app. Examples use a sample "Demo Calculator".
+- Showcase: the default brand preset is named "Orange (default)".
+
+### Removed
+
+- `scripts/copy-assets.sh`. Logos and the sample drawing are already in `public/images`.
+
+No API changes.
+
+## [0.5.0] - 2026-09-27
+
+### Changed
+
+- **Font: Inter** (SIL Open Font License 1.1) replaces Helvetica Neue LT Std (commercial). The font is bundled through `@fontsource-variable/inter`, so apps no longer copy font files or need a font license. Covers Latin, Latin Extended, Vietnamese, Cyrillic and Greek; browsers download only the subsets a page uses.
+- Text is about 5–8% wider than before. Review places with fixed widths (buttons, labels, table columns).
+- The `InfoTip` "?" bubble uses the kit font.
+
+No API changes.
+
+## [0.4.0] - 2026-09-26
+
+### Added
+
+- `GridView` `labels` prop and `defaultGridViewLabels`: translate every text of the grid.
+- `ImageViewer`: two-finger pinch zoom on touch screens.
+- Tooling: ESLint, `pnpm check`, type checking for `tests/unit` and `scripts`, GitHub Actions CI, `engines` and `packageManager`.
+
+### Changed
+
+- `peerDependencies` use `^` ranges (React ≥ 19.3, MUI ≥ 9.4, Emotion ≥ 11.14).
+- `PlatformThemeProvider` `overrides` passed inline no longer rebuild the theme on every render.
+- Toasts use `react-toastify/unstyled`: its CSS is loaded once, inside `@layer components`, so Tailwind classes can override it.
+
+### Fixed
+
+- `ImageViewer`: `minScale` below 1 jumped back to 1; a new `src` now resets the view and shows the loading indicator; wheel zoom no longer scrolls the page; `pointercancel` is handled.
+- `SectionLayout`: no longer throws when localStorage is blocked (sandboxed iframes, strict privacy settings). The collapsed rail is named "Expand Input" instead of "Expand panel" (WCAG 2.5.3).
+
+## [0.3.0] - 2026-09-26
+
+Additions only; no breaking changes from 0.2.
+
+### Added
+
+- `GridView`: sorting, per-column filters, master search, presets, column pinning, reordering and hiding.
+- `Tooltip` (hover, short text) and `InfoTip` (click, long explanations). `HelpPopover` is now an alias of `InfoTip`.
+- `ReleaseNotesDialog`, `ReleaseNotes`, `useReleaseNotesSeen`.
+- Theme files: `PlatformThemeProvider` `config`, `definePlatformTheme`, `parseThemeConfig`, export helpers, `contrastRatio`. Theme builder in the showcase.
+- `Accordion` `headingLevel`, `useAccordionGroup(keys, defaultExpanded, initial)`, `DataTable` `aria-label`.
+
+### Fixed
+
+- Dialog titles rendered in uppercase.
+- Extra space above accordions.
+- `Checkbox indeterminate` declared conflicting ARIA states.
+- Duplicate ids in accordions.
+- `ImageViewer` zoom buttons.
+- The `DataTable` scroll area was not keyboard focusable.
+
+## [0.2.0] - 2026-09-26
+
+### Changed (breaking)
+
+- Package renamed from `@platform/ui-kit` to `@platform/ui`. `react`, `@mui/*` and `@emotion/*` became `peerDependencies`.
+- `colors.*` are now CSS variable references (`var(--color-*)`). Where a hex value is needed (MUI `alpha()`, chart libraries), use `defaultColors` or `resolveColors(config)`.
+- `IconButton` requires `aria-label` (or `aria-labelledby`).
+- `Dialog` `onClose` receives a `reason` argument. Existing `onClose={() => …}` handlers keep working.
+- `notify.error` no longer closes on its own.
+- `FormField` wraps MUI `FormControl`: `error` turns the label red and sets `aria-invalid` on the control; `required` sets `required` on the input.
+- react-toastify's CSS is imported by `theme.css` instead of from JavaScript.
+
+### Added
+
+- Runtime theming through `PlatformThemeProvider` `colors`.
+- `notify.warning` and `notify.dismiss`.
+
+## [0.1.0] - 2026-09-26
+
+- Initial version.

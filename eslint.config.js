@@ -17,7 +17,7 @@ export default tseslint.config(
     },
   },
   {
-    // Components use design tokens, never raw hex (README "Sửa và mở rộng kit"). Pure white/black are allowed.
+    // Components use design tokens, never raw hex (CONTRIBUTING.md, "Changing tokens"). Pure white/black are allowed.
     files: ['src/components/**/*.tsx'],
     rules: {
       'no-restricted-syntax': [

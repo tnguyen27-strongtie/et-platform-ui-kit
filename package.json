@@ -12,7 +12,10 @@
     "**/*.css"
   ],
   "files": [
-    "dist"
+    "dist",
+    "docs",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

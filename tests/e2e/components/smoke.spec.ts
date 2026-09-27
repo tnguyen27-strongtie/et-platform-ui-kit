@@ -13,7 +13,7 @@ for (const name of fixtureNames) {
     expect(errors).toEqual([]);
 
     const results = await new AxeBuilder({ page })
-      // Default brand colors are a documented design decision (see README, "Chưa có trong kit").
+      // Default brand colors are a documented design decision (see README, "Not included yet").
       .disableRules(['color-contrast'])
       .analyze();
     expect(results.violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
