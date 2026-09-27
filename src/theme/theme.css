@@ -90,6 +90,10 @@
     font-size: 16px;
     line-height: 24px;
   }
+  /* MathML needs a font with an OpenType MATH table to size radicals, fractions and big operators */
+  math {
+    font-family: var(--font-math);
+  }
   .grecaptcha-badge {
     visibility: hidden;
   }

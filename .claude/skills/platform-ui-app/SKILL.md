@@ -1,6 +1,6 @@
 ---
 name: platform-ui-app
-description: How to build UI in an app that uses the @platform/ui kit - forms and number inputs, validation messages, dialogs and confirmations, tooltips and help, toasts, result tables and data grids, the Input/Illustration/Output workspace layout, theming with a brand color, and translated texts. Use it whenever you create or change screens, components or styles in a calculator app that depends on @platform/ui (imports from '@platform/ui', uses PlatformThemeProvider, GridView, SectionLayout, NumberInput…), including when the user just says "add a field", "show the results in a table", "add a settings dialog" or "make it match the design", so the app uses the kit's components and rules instead of raw MUI, hand-written styles or hex colors.
+description: How to build UI in an app that uses the @platform/ui kit - forms and number inputs, validation messages, dialogs and confirmations, tooltips and help, toasts, result tables and data grids, the Input/Illustration/Output workspace layout, math formulas and equations, theming with a brand color, and translated texts. Use it whenever you create or change screens, components or styles in a calculator app that depends on @platform/ui (imports from '@platform/ui', uses PlatformThemeProvider, GridView, SectionLayout, NumberInput…), including when the user just says "add a field", "show the results in a table", "add a settings dialog" or "make it match the design", so the app uses the kit's components and rules instead of raw MUI, hand-written styles or hex colors.
 ---
 
 # Building app screens with @platform/ui
@@ -44,6 +44,7 @@ The kit already solves layout, styling, accessibility and the tricky input behav
 | Calculator page layout | `Workspace` + `SectionLayout` + `Section` | custom split panes |
 | Drawing with zoom | `ImageViewer` in `VisualizationStage` | |
 | "What's new" | `ReleaseNotesDialog` + `useReleaseNotesSeen` | custom modal |
+| Formula or equation | MathML `<math>` (see "Math formulas") | images of formulas, KaTeX/MathJax, hand-built `<sup>`/`<sub>` fractions |
 
 ## Forms
 
@@ -88,6 +89,23 @@ const thicknessError =
 ```
 
 Use `mobileTabs` to give mobile a single flat tab bar, and `keepMounted` on tabs whose state or queries must survive being hidden.
+
+## Math formulas
+
+The kit bundles STIX Two Math and applies it to every `<math>` element, so write formulas as MathML; no math library or font setup is needed.
+
+```tsx
+<math display="block">
+  <msub><mi>M</mi><mi>max</mi></msub><mo>=</mo>
+  <mfrac><mrow><mi>w</mi><msup><mi>L</mi><mn>2</mn></msup></mrow><mn>8</mn></mfrac>
+</math>
+```
+
+- `display="block"` for a formula on its own line; omit it inside a sentence. In table cells add `displaystyle="true"` so fractions are not shrunk.
+- Variables in `<mi>` (italic), numbers in `<mn>`, operators in `<mo>`, words in `<mtext>`. Brackets in `<mo>` around an `<mtable>` or fraction stretch by themselves.
+- Symbols inside ordinary text (labels, table values): `<span className="font-math">σ ≤ 0.6 F<sub>y</sub></span>`; a variable name in a label: `<span className="font-math italic">L</span>`.
+- Show a result by substituting the inputs into the formula (`<mn>{value}</mn>`) inside an `<output>`, formatted with `formatNumber`.
+- TypeScript does not know MathML tags yet (`Property 'math' does not exist on type 'JSX.IntrinsicElements'`). Add the declaration from `docs/design-tokens.md` → "Math formulas" once, as `src/mathml.d.ts`, with the tags you use.
 
 ## Theming
 

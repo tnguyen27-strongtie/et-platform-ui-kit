@@ -49,7 +49,7 @@ These choices are deliberate. Keep them when adding or changing components.
 - **Styles live in the theme first.** Prefer `components.MuiXxx.styleOverrides` or `variants`, so plain MUI usage looks right too. Write a wrapper only when a simpler API helps.
 - **Callbacks return values, not events.** `onChange(checked: boolean)`, `onChange(value: number | null)`, typed option values that stay numbers or booleans.
 - **One vocabulary.** MUI's `contained` and `outlined` button variants are turned off; use the platform variants.
-- **Open-source font.** Inter (SIL OFL 1.1) is bundled, covering Latin, Vietnamese, Cyrillic and Greek, with no font licensing to manage.
+- **Open-source font.** Inter (SIL OFL 1.1) is bundled, covering Latin, Vietnamese, Cyrillic and Greek, with no font licensing to manage. Math formulas use STIX Two Math (SIL OFL 1.1), also bundled.
 - **Icons come from `@mui/icons-material` only.**
 - **Brand shadows are their own tokens** (`shadows.popover`…). `theme.shadows[0]` stays `'none'`, as MUI expects.
 - **Density classes go on `<body>`**, not `<html>`, so `rem` units never change.

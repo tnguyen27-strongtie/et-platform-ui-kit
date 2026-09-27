@@ -151,6 +151,8 @@ export const typography = {
   fontFamily: {
     sans: "'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
     serif: "'Clarendon', Georgia, serif",
+    /** Math formulas (MathML `<math>`, `font-math` class): STIX Two Math, with an OpenType MATH table. */
+    math: "'STIX Two Math', 'Cambria Math', 'Latin Modern Math', math, serif",
   },
   /** Text size setting (density): body font-size and line-height. */
   density: {

@@ -2,6 +2,13 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Math font: STIX Two Math** (SIL Open Font License 1.1), bundled through `@fontsource/stix-two-math`. MathML `<math>` elements use it automatically, and the `font-math` class applies it to symbols in plain text. New token `typography.fontFamily.math` (`--font-math`). The font file is downloaded only by pages that show math.
+- Showcase: Foundations → Math formulas, with display formulas (fractions, roots, sums, integrals, matrices, piecewise), inline formulas, a calculator that substitutes its inputs into the formula, and formulas in a table.
+
 ## [0.5.1] - 2026-09-27
 
 ### Changed

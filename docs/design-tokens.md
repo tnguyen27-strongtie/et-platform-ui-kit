@@ -62,9 +62,42 @@ Scale colors do not follow the app theme. Use roles for anything that should cha
 | --- | --- |
 | `typography.fontFamily.sans` | Inter (variable, weights 100–900), then system fonts |
 | `typography.fontFamily.serif` | `'Clarendon', Georgia, serif` (local fonts only) |
+| `typography.fontFamily.math` | STIX Two Math (bundled), then Cambria Math, Latin Modern Math, the `math` generic family |
 | `typography.size` | `xs` 0.75rem (labels, errors, table cells), `sm` 0.875rem (inputs, tabs, menus), `base` 1rem (buttons, dialog titles), `lg` 1.125rem (alert titles) |
 | `typography.weight` | `light` 300, `regular` 400, `medium` 500, `bold` 700, `heavy` 800 |
 | `typography.density` | `standard` 14px / 17.5px, `expanded` 16px / 24px |
+
+### Math formulas
+
+Write formulas as MathML. Every `<math>` element uses STIX Two Math (SIL OFL 1.1), which the kit bundles; its OpenType MATH table lets the browser stretch radicals, brackets and big operators and lay out fractions. For symbols inside ordinary text, use the `font-math` class (Tailwind utility from the `--font-math` token).
+
+```tsx
+<math display="block">
+  <mi>M</mi><mo>=</mo>
+  <mfrac><mrow><mi>w</mi><msup><mi>L</mi><mn>2</mn></msup></mrow><mn>8</mn></mfrac>
+</math>
+
+<span className="font-math">σ ≤ 0.6 F<sub>y</sub></span>
+```
+
+The font file (about 400 KB) is downloaded only by pages that show math. Apps copy no files.
+
+React renders MathML, but `@types/react` does not declare its tags yet, so TypeScript reports `Property 'math' does not exist on type 'JSX.IntrinsicElements'`. Declare the tags you use once in the app, for example `src/mathml.d.ts`:
+
+```ts
+import 'react';
+
+type MathMLProps = React.HTMLAttributes<HTMLElement> & { display?: 'block' | 'inline' };
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      math: MathMLProps; mrow: MathMLProps; mi: MathMLProps; mn: MathMLProps; mo: MathMLProps;
+      mfrac: MathMLProps; msqrt: MathMLProps; msub: MathMLProps; msup: MathMLProps;
+    }
+  }
+}
+```
 
 Headings `h1`–`h6` in MUI `Typography` use a compact scale for tool apps (24px down to 12px), not MUI's default 96px scale.
 

@@ -82,3 +82,10 @@ For visual changes, run `pnpm dev` and look at the demo and the fixture (`/tests
 - In `createPlatformTheme.ts`, use `colors.x` inside `styleOverrides` and resolved values (`v.x`) inside `palette`, because MUI computes contrast from palette values.
 - A new Button variant: declare it in `src/theme/augmentation.ts` (`ButtonPropsVariantOverrides`) and style it in `MuiButton.variants`.
 - Theme changes are visual: take screenshots and run the full e2e suite; many specs measure sizes and colors.
+
+## Fonts
+
+- Fonts are open source (SIL OFL) and bundled as dependencies (`@fontsource*`), declared in `src/theme/fonts.css`, with a family token in `typography.fontFamily` (`pnpm tokens` turns it into `--font-*` and a `font-*` utility). Apps never copy font files.
+- Check the package's `unicode-range` before importing its CSS. Fontsource labels some fonts `latin` even when the file holds every glyph (STIX Two Math does); importing that CSS silently sends symbols outside the range to fallback fonts. In that case write the `@font-face` yourself with `url('@fontsource/<pkg>/files/<file>.woff2')` and no `unicode-range`, as `fonts.css` does for the math font.
+- Verify with `pnpm build:showcase` (the font file must appear in `dist-showcase/assets`) and an e2e check that `document.fonts.load()` returns the face as `loaded` with the expected `unicodeRange`.
+- MathML in the showcase: `@types/react` has no MathML tags, so add any new tag or attribute to `src/showcase/mathml.d.ts`. Formulas are demonstrated in Foundations → Math formulas.

@@ -105,6 +105,33 @@ test('text size switch changes the body density', async ({ page }) => {
   await expect(page.locator('body')).toHaveCSS('font-size', '16px');
 });
 
+test('math formulas load the bundled math font for every glyph', async ({ page }) => {
+  await page.goto('/#/foundations/math');
+  const formula = page.locator('#math math').first();
+  await expect(formula).toBeVisible();
+  expect(await formula.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/^"?STIX Two Math"?/);
+  expect(await page.locator('#math .font-math').first().evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/^"?STIX Two Math"?/);
+  // No unicode-range: operators and Greek letters come from the same face, not a fallback.
+  const faces = await page.evaluate(async () => {
+    const loaded = await document.fonts.load('16px "STIX Two Math"', '∑√σ≤');
+    return loaded.map((f) => ({ family: f.family, status: f.status, unicodeRange: f.unicodeRange }));
+  });
+  expect(faces).toEqual([{ family: 'STIX Two Math', status: 'loaded', unicodeRange: 'U+0-10FFFF' }]);
+});
+
+test('math calculator demo substitutes the inputs into the formula', async ({ page }) => {
+  await page.goto('/#/foundations/math');
+  const result = page.locator('#math output');
+  await expect(result).toContainText('2,160');
+  const span = page.getByRole('spinbutton', { name: 'Span L' });
+  await span.fill('10');
+  await span.blur();
+  await expect(result).toContainText('1,500');
+  await span.fill('');
+  await span.blur();
+  await expect(result).toContainText('–');
+});
+
 // ---------- Demos that exist only in the showcase ----------
 
 test.describe('Forms page', () => {

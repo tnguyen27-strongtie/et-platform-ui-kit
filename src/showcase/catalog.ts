@@ -36,6 +36,7 @@ export const catalog: CatalogPage[] = [
     sections: [
       { id: 'colors', title: 'Colors', exports: ['colors', 'defaultColors', 'scales'] },
       { id: 'typography', title: 'Typography', exports: ['Typography', 'typography'] },
+      { id: 'math', title: 'Math formulas', exports: [] },
       { id: 'tokens', title: 'Radius, shadow, spacing', exports: ['radius', 'shadows', 'spacingUnit', 'layout', 'breakpoints'] },
       { id: 'layout-primitives', title: 'Box and Stack', exports: ['Box', 'Stack'] },
     ],

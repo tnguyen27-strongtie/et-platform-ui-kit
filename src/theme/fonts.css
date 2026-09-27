@@ -10,3 +10,22 @@
  * line box, so text and icons paired with `align-items: center` line up as they are.
  */
 @import '@fontsource-variable/inter/wght.css';
+
+/*
+ * Math font: STIX Two Math (SIL Open Font License 1.1, https://www.stixfonts.org), used by
+ * MathML `<math>` elements and the `font-math` class. It carries an OpenType MATH table, which
+ * browsers need to stretch radicals, brackets and big operators and to lay out fractions.
+ *
+ * Declared here instead of importing the package CSS: that CSS limits the face to the Latin
+ * unicode-range, which would send operators, Greek and math alphanumerics to fallback fonts.
+ * The file (about 400 KB) is downloaded only by pages that render math.
+ */
+@font-face {
+  font-family: 'STIX Two Math';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src:
+    url('@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff2') format('woff2'),
+    url('@fontsource/stix-two-math/files/stix-two-math-latin-400-normal.woff') format('woff');
+}

@@ -38,7 +38,7 @@ pnpm add -D tailwindcss @tailwindcss/vite @vitejs/plugin-react vite
 
 Ranges use `^`, so minor and patch upgrades in the app do not raise peer warnings.
 
-Bundled dependencies: `@tanstack/react-table` (GridView state), `react-resizable-panels` (workspace layout), `react-toastify` (toasts), `clsx`, `tailwind-merge`, and `@fontsource-variable/inter` (font).
+Bundled dependencies: `@tanstack/react-table` (GridView state), `react-resizable-panels` (workspace layout), `react-toastify` (toasts), `clsx`, `tailwind-merge`, `@fontsource-variable/inter` (text font) and `@fontsource/stix-two-math` (math font).
 
 ## Setup
 

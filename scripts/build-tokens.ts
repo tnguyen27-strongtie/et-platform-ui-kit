@@ -27,6 +27,7 @@ for (const [role, value] of Object.entries(tokens.colors)) {
 lines.push('  /* Typography */');
 push('font-sans', tokens.typography.fontFamily.sans);
 push('font-serif', tokens.typography.fontFamily.serif);
+push('font-math', tokens.typography.fontFamily.math);
 push('text-xs', '0.75rem');
 push('text-xs--line-height', '1rem');
 

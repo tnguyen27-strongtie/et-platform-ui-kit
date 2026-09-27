@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import {
   Box,
   Button,
@@ -5,7 +7,9 @@ import {
   colors,
   DataTable,
   defaultColors,
+  FormField,
   layout,
+  NumberInput,
   radius,
   resolveColors,
   scales,
@@ -82,6 +86,370 @@ const typeScale = [
   ['caption', 'Caption and hints, 12px muted.'],
 ] as const;
 
+const heading = 'm-0 text-sm font-bold';
+
+/** Formulas as the kit renders them: display, inline, inside form fields and inside tables. */
+function MathSection() {
+  const [w, setW] = useState<number | null>(120);
+  const [span, setSpan] = useState<number | null>(12);
+  const moment = w != null && span != null ? (w * span * span) / 8 : null;
+
+  return (
+    <DemoSection
+      id="math"
+      title="Math formulas"
+      description="Write formulas as MathML. <math> uses the bundled STIX Two Math font; add font-math for symbols in plain text."
+      code={`<math display="block">
+  <mi>M</mi><mo>=</mo>
+  <mfrac><mrow><mi>w</mi><msup><mi>L</mi><mn>2</mn></msup></mrow><mn>8</mn></mfrac>
+</math>
+<span className="font-math">σ ≤ 0.6 F<sub>y</sub></span>`}
+    >
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <h3 className={heading}>Display formulas</h3>
+          <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+            {/* Fraction and superscript */}
+            <math display="block">
+              <mi>M</mi>
+              <mo>=</mo>
+              <mfrac>
+                <mrow>
+                  <mi>w</mi>
+                  <msup>
+                    <mi>L</mi>
+                    <mn>2</mn>
+                  </msup>
+                </mrow>
+                <mn>8</mn>
+              </mfrac>
+            </math>
+            {/* Stretched radical and a big operator with limits */}
+            <math display="block">
+              <msub>
+                <mi>f</mi>
+                <mi>b</mi>
+              </msub>
+              <mo>=</mo>
+              <msqrt>
+                <mrow>
+                  <munderover>
+                    <mo>∑</mo>
+                    <mrow>
+                      <mi>i</mi>
+                      <mo>=</mo>
+                      <mn>1</mn>
+                    </mrow>
+                    <mi>n</mi>
+                  </munderover>
+                  <msubsup>
+                    <mi>σ</mi>
+                    <mi>i</mi>
+                    <mn>2</mn>
+                  </msubsup>
+                </mrow>
+              </msqrt>
+              <mo>≤</mo>
+              <mn>0.6</mn>
+              <msub>
+                <mi>F</mi>
+                <mi>y</mi>
+              </msub>
+            </math>
+            {/* n-th root */}
+            <math display="block">
+              <mi>d</mi>
+              <mo>=</mo>
+              <mroot>
+                <mfrac>
+                  <mrow>
+                    <mn>16</mn>
+                    <mi>T</mi>
+                  </mrow>
+                  <mrow>
+                    <mi>π</mi>
+                    <msub>
+                      <mi>τ</mi>
+                      <mi>max</mi>
+                    </msub>
+                  </mrow>
+                </mfrac>
+                <mn>3</mn>
+              </mroot>
+            </math>
+            {/* Integral */}
+            <math display="block">
+              <mi>Δ</mi>
+              <mo>=</mo>
+              <msubsup>
+                <mo>∫</mo>
+                <mn>0</mn>
+                <mi>L</mi>
+              </msubsup>
+              <mfrac>
+                <mrow>
+                  <mi>M</mi>
+                  <mo>(</mo>
+                  <mi>x</mi>
+                  <mo>)</mo>
+                  <mi>m</mi>
+                  <mo>(</mo>
+                  <mi>x</mi>
+                  <mo>)</mo>
+                </mrow>
+                <mrow>
+                  <mi>E</mi>
+                  <mi>I</mi>
+                </mrow>
+              </mfrac>
+              <mspace width="0.17em" />
+              <mi>d</mi>
+              <mi>x</mi>
+            </math>
+            {/* Matrix: brackets stretch to the table height */}
+            <math display="block">
+              <mi mathvariant="bold">K</mi>
+              <mo>=</mo>
+              <mfrac>
+                <mrow>
+                  <mi>E</mi>
+                  <mi>A</mi>
+                </mrow>
+                <mi>L</mi>
+              </mfrac>
+              <mrow>
+                <mo>[</mo>
+                <mtable>
+                  <mtr>
+                    <mtd>
+                      <mn>1</mn>
+                    </mtd>
+                    <mtd>
+                      <mo>−</mo>
+                      <mn>1</mn>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mo>−</mo>
+                      <mn>1</mn>
+                    </mtd>
+                    <mtd>
+                      <mn>1</mn>
+                    </mtd>
+                  </mtr>
+                </mtable>
+                <mo>]</mo>
+              </mrow>
+            </math>
+            {/* Piecewise: the brace stretches over both cases */}
+            <math display="block">
+              <msub>
+                <mi>C</mi>
+                <mi>p</mi>
+              </msub>
+              <mo>=</mo>
+              <mrow>
+                <mo>{'{'}</mo>
+                <mtable columnalign="left">
+                  <mtr>
+                    <mtd>
+                      <mn>1.0</mn>
+                    </mtd>
+                    <mtd>
+                      <mtext>if&nbsp;</mtext>
+                      <mi>λ</mi>
+                      <mo>≤</mo>
+                      <mn>0.2</mn>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mfrac>
+                        <mn>1</mn>
+                        <msup>
+                          <mi>λ</mi>
+                          <mn>2</mn>
+                        </msup>
+                      </mfrac>
+                    </mtd>
+                    <mtd>
+                      <mtext>otherwise</mtext>
+                    </mtd>
+                  </mtr>
+                </mtable>
+              </mrow>
+            </math>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <h3 className={heading}>Inline in text</h3>
+          <p className="m-0">
+            The bending stress{' '}
+            <math>
+              <msub>
+                <mi>f</mi>
+                <mi>b</mi>
+              </msub>
+              <mo>=</mo>
+              <mfrac>
+                <mi>M</mi>
+                <msub>
+                  <mi>S</mi>
+                  <mi>x</mi>
+                </msub>
+              </mfrac>
+            </math>{' '}
+            must not exceed the allowable stress. Symbols in plain text use{' '}
+            <code>font-math</code>: <span className="font-math">σ ≤ 0.6 F<sub>y</sub>, α ≈ 45°, ΔL ± 0.5 mm</span>.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <h3 className={heading}>In a calculator</h3>
+          <div className="grid items-start gap-4 sm:grid-cols-3">
+            <FormField
+              label={
+                <>
+                  Uniform load <span className="font-math italic">w</span>
+                </>
+              }
+              htmlFor="math-w"
+              help={
+                <>
+                  Load per unit length, applied over the whole span:{' '}
+                  <math>
+                    <mi>w</mi>
+                    <mo>=</mo>
+                    <mfrac>
+                      <mi>W</mi>
+                      <mi>L</mi>
+                    </mfrac>
+                  </math>
+                </>
+              }
+            >
+              <NumberInput value={w} onChange={setW} min={0} addonAfter="lbs/ft" />
+            </FormField>
+            <FormField
+              label={
+                <>
+                  Span <span className="font-math italic">L</span>
+                </>
+              }
+              htmlFor="math-span"
+            >
+              <NumberInput value={span} onChange={setSpan} min={0} addonAfter="ft" />
+            </FormField>
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">Maximum moment</span>
+              <output htmlFor="math-w math-span" aria-live="polite">
+                <math display="block">
+                  <msub>
+                    <mi>M</mi>
+                    <mi>max</mi>
+                  </msub>
+                  <mo>=</mo>
+                  <mfrac>
+                    <mrow>
+                      <mn>{w ?? '–'}</mn>
+                      <mo>×</mo>
+                      <msup>
+                        <mn>{span ?? '–'}</mn>
+                        <mn>2</mn>
+                      </msup>
+                    </mrow>
+                    <mn>8</mn>
+                  </mfrac>
+                  <mo>=</mo>
+                  <mn>{moment == null ? '–' : moment.toLocaleString('en-US')}</mn>
+                  <mtext>&nbsp;lbs·ft</mtext>
+                </math>
+              </output>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <h3 className={heading}>In a table</h3>
+          <DataTable aria-label="Section properties">
+            <DataTable.Head>
+              <DataTable.Row>
+                <DataTable.Cell>Property</DataTable.Cell>
+                <DataTable.Cell>Formula</DataTable.Cell>
+                <DataTable.Cell align="right">Value</DataTable.Cell>
+              </DataTable.Row>
+            </DataTable.Head>
+            <DataTable.Body>
+              <DataTable.Row>
+                <DataTable.Cell>Moment of inertia</DataTable.Cell>
+                <DataTable.Cell>
+                  <math displaystyle="true">
+                    <mi>I</mi>
+                    <mo>=</mo>
+                    <mfrac>
+                      <mrow>
+                        <mi>b</mi>
+                        <msup>
+                          <mi>h</mi>
+                          <mn>3</mn>
+                        </msup>
+                      </mrow>
+                      <mn>12</mn>
+                    </mfrac>
+                  </math>
+                </DataTable.Cell>
+                <DataTable.Cell align="right">
+                  415.3 in<sup>4</sup>
+                </DataTable.Cell>
+              </DataTable.Row>
+              <DataTable.Row>
+                <DataTable.Cell>Section modulus</DataTable.Cell>
+                <DataTable.Cell>
+                  <math displaystyle="true">
+                    <mi>S</mi>
+                    <mo>=</mo>
+                    <mfrac>
+                      <mrow>
+                        <mi>b</mi>
+                        <msup>
+                          <mi>h</mi>
+                          <mn>2</mn>
+                        </msup>
+                      </mrow>
+                      <mn>6</mn>
+                    </mfrac>
+                  </math>
+                </DataTable.Cell>
+                <DataTable.Cell align="right">
+                  73.8 in<sup>3</sup>
+                </DataTable.Cell>
+              </DataTable.Row>
+              <DataTable.Row>
+                <DataTable.Cell>Radius of gyration</DataTable.Cell>
+                <DataTable.Cell>
+                  <math displaystyle="true">
+                    <mi>r</mi>
+                    <mo>=</mo>
+                    <msqrt>
+                      <mfrac>
+                        <mi>I</mi>
+                        <mi>A</mi>
+                      </mfrac>
+                    </msqrt>
+                  </math>
+                </DataTable.Cell>
+                <DataTable.Cell align="right">2.17 in</DataTable.Cell>
+              </DataTable.Row>
+            </DataTable.Body>
+          </DataTable>
+        </div>
+      </div>
+    </DemoSection>
+  );
+}
+
 export function Foundations() {
   return (
     <DemoPage title="Foundations" description="Design tokens every component is built from.">
@@ -105,6 +473,8 @@ export function Foundations() {
           ))}
         </div>
       </DemoSection>
+
+      <MathSection />
 
       <DemoSection id="tokens" title="Radius, shadow, spacing" description="Spacing uses 4px steps (Tailwind p-2 = sx p: 2 = 8px).">
         <h3 className="m-0 text-sm font-bold">Radius</h3>
