@@ -2,6 +2,16 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-09-28
+
+### Added
+
+- `SectionLayout`: `defaultInputSize` (percent) sets the starting Input width on desktop and tablet. A size saved under `layoutId` still wins.
+
+### Changed
+
+- `SectionLayout` with one section on the right (Input | Output or Input | Illustration) starts half and half instead of Input at 36%. With all three sections Input still starts at 36%. Users who already resized keep their saved width; to start everyone at the new default, change `layoutId`.
+
 ## [0.8.0] - 2026-09-28
 
 ### Added

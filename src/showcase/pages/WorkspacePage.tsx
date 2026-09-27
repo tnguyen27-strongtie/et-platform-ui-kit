@@ -43,7 +43,7 @@ export function WorkspacePage() {
       <DemoSection
         id="section-layout"
         title="SectionLayout"
-        description="Input left (36%), Illustration and Output right. Drag the 5px handles to resize; drag Input below 250px to collapse it to a rail. Tablet stacks the right side; mobile shows one section at a time with tabs. Leave out illustration or output when the app has none: the other one takes the right side."
+        description="Input left (36%; 50% when only one section is on the right, or defaultInputSize), Illustration and Output right. Drag the 5px handles to resize; drag Input below 250px to collapse it to a rail. Tablet stacks the right side; mobile shows one section at a time with tabs. Leave out illustration or output when the app has none: the other one takes the right side."
         code={`<Workspace>
   <SectionLayout layoutId="app" secondarySplit="rows"
     input={<Section title="Input">…</Section>}

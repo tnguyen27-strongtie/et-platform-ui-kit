@@ -21,6 +21,7 @@ export const fixtureNames = [
   'image-viewer',
   'layout',
   'layout-flex',
+  'layout-sized',
   'density',
   'grid',
   'grid-labels',

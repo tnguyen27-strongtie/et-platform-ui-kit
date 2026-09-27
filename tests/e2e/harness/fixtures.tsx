@@ -738,6 +738,19 @@ function FlexibleLayoutFixture() {
   );
 }
 
+// ---------- SectionLayout with a custom Input width ----------
+function SizedLayoutFixture() {
+  return (
+    <div data-testid="layout-root" style={{ height: 560, width: '100%' }}>
+      <SectionLayout
+        defaultInputSize={40}
+        input={<Section title="Input">Sized input</Section>}
+        output={<Section title="Output">Sized output</Section>}
+      />
+    </div>
+  );
+}
+
 // ---------- Density ----------
 function DensityFixture() {
   const [density, setDensity] = useState<Density>('standard');
@@ -1044,6 +1057,7 @@ export const fixtures: Record<string, ComponentType> = {
   'image-viewer': ImageViewerFixture,
   layout: LayoutFixture,
   'layout-flex': FlexibleLayoutFixture,
+  'layout-sized': SizedLayoutFixture,
   density: DensityFixture,
   grid: GridFixture,
   'grid-labels': GridLabelsFixture,

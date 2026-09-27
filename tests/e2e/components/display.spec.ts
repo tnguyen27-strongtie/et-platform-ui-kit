@@ -374,6 +374,19 @@ test.describe('SectionLayout with optional sections (desktop)', () => {
     expect(outputTab.y - root.y).toBeLessThan(4);
   });
 
+  test('Input | Output starts half and half', async ({ page }) => {
+    const root = (await page.getByTestId('layout-root').boundingBox())!;
+    const divider = (await page.getByRole('separator').boundingBox())!;
+    expect((divider.x - root.x) / root.width).toBeCloseTo(0.5, 1);
+  });
+
+  test('defaultInputSize sets the starting Input width', async ({ page }) => {
+    await openFixture(page, 'layout-sized');
+    const root = (await page.getByTestId('layout-root').boundingBox())!;
+    const divider = (await page.getByRole('separator').boundingBox())!;
+    expect((divider.x - root.x) / root.width).toBeCloseTo(0.4, 1);
+  });
+
   test('Input | Illustration, Input alone, and back to all three', async ({ page }) => {
     await page.getByRole('button', { name: 'Mode input-illustration' }).click();
     await expect(page.getByText('Flex drawing')).toBeVisible();

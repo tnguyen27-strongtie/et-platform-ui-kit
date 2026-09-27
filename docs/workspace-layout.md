@@ -59,13 +59,15 @@ The standard layout of a calculator app: **Input** on the left, **Illustration**
 />
 ```
 
+With one section on the right, Input and that section start half and half (`defaultInputSize` changes it).
+
 A section counts as left out when its prop is `undefined`, `null` or `false`, so it can depend on app state (`illustration={hasDrawing && <DrawingSection />}`). The saved Input width (`layoutId`) is shared by all variants. With one section on the right, `secondarySplit` has no effect. A custom `mobileTabs` list replaces the default tabs as before.
 
 ## Responsive behavior
 
 | Screen | Behavior |
 | --- | --- |
-| Desktop ≥ 992px | Input takes 36%; Illustration and Output split 50/50, arranged by `secondarySplit`. Drag the 5px dividers to resize. Dragging Input below 250px collapses it into a vertical rail; its "Expand Input" button opens it again |
+| Desktop ≥ 992px | Input takes 36% with Illustration and Output, 50% with only one of them (`defaultInputSize` overrides); Illustration and Output split 50/50, arranged by `secondarySplit`. Drag the 5px dividers to resize. Dragging Input below 250px collapses it into a vertical rail; its "Expand Input" button opens it again |
 | Tablet 768–991px | Same as desktop, but Illustration and Output are always stacked |
 | Mobile < 768px | One section at a time, switched by tabs. Tabs with `keepMounted` keep their state and running queries while hidden |
 
@@ -79,6 +81,7 @@ With `layoutId`, panel sizes are saved in localStorage. If the browser blocks st
 | `illustration`, `output` | `ReactNode` | | Optional sections. Leave one out and the other takes the right side; see [Choosing the sections](#choosing-the-sections) |
 | `secondarySplit` | `'rows' \| 'columns'` | `'rows'` | How Illustration and Output share the right side on desktop |
 | `layoutId` | `string` | | localStorage key prefix for panel sizes |
+| `defaultInputSize` | `number` | `36` with Illustration and Output, `50` with one | Starting Input width in percent (desktop, tablet). A size saved under `layoutId` wins |
 | `labels` | `Partial<Record<'input' \| 'illustration' \| 'output', ReactNode>>` | `Input`, `3D`, `Output` | Collapsed rail and mobile tab labels |
 | `mobileTabs` | `{ value, label, content, disabled?, keepMounted? }[]` | Input, 3D, Output | Mobile tab bar. Pass section bodies here to avoid a second header |
 | `mobileActions` | `ReactNode` | | Buttons at the right end of the mobile tab bar |

@@ -24,6 +24,12 @@ export interface SectionLayoutProps {
   secondarySplit?: 'rows' | 'columns';
   /** Persists panel sizes in localStorage under this key. Omit to disable. */
   layoutId?: string;
+  /**
+   * Starting width of Input on desktop and tablet, in percent of the workspace (e.g. 40).
+   * Default: 36 with Illustration and Output, 50 with only one of them. A size saved under
+   * `layoutId` (the user resized) wins over it.
+   */
+  defaultInputSize?: number;
   /** Labels for the collapsed rails and the mobile tab bar. */
   labels?: Partial<Record<SectionId, ReactNode>>;
   /** Mobile only: replace the section order or add extra tabs (e.g. "Result"). */
@@ -97,10 +103,10 @@ function useCollapsed(collapsedPx: number) {
 /** A section is left out when the app passes nothing for it (undefined, null or false). */
 const isPresent = (node: ReactNode) => node !== undefined && node !== null && node !== false;
 
-type DesktopLayoutProps = Pick<SectionLayoutProps, 'input' | 'illustration' | 'output' | 'layoutId'> &
+type DesktopLayoutProps = Pick<SectionLayoutProps, 'input' | 'illustration' | 'output' | 'layoutId' | 'defaultInputSize'> &
   Required<Pick<SectionLayoutProps, 'secondarySplit'>> & { labels: Record<SectionId, ReactNode> };
 
-function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, labels }: DesktopLayoutProps) {
+function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, defaultInputSize, labels }: DesktopLayoutProps) {
   const inputRef = usePanelRef();
   const [inputCollapsed, onInputResize] = useCollapsed(32);
   const primary = useDefaultLayout({ id: `${layoutId ?? 'layout'}-primary`, storage: layoutId ? safeStorage : undefined });
@@ -110,6 +116,8 @@ function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, 
 
   // Input only: nothing to resize against.
   if (!hasIllustration && !hasOutput) return <div className="size-full">{input}</div>;
+  // One pane on the right needs as much room as Input; with two, the right side is shared.
+  const inputSize = defaultInputSize ?? (hasIllustration && hasOutput ? 36 : 50);
 
   return (
     <Group
@@ -121,7 +129,7 @@ function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, 
       <Panel
         id="input"
         panelRef={inputRef}
-        defaultSize="36%"
+        defaultSize={`${inputSize}%`}
         minSize={PANE_MIN}
         collapsible
         collapsedSize={RAIL}
@@ -190,7 +198,8 @@ function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileA
 /**
  * Calculator workspace: Input plus Illustration and/or Output. Leave out a section the app does
  * not have; the layout adapts (Input | Output, Input | Illustration, or Input alone).
- * - Desktop (>= 992px): Input | (Illustration / Output), resizable, collapsible Input.
+ * - Desktop (>= 992px): Input | (Illustration / Output), resizable, collapsible Input. Input starts at
+ *   36% with both right sections and 50% with one (`defaultInputSize` overrides).
  * - Tablet (768-991px): same, Illustration and Output always stacked.
  * - Mobile (< 768px): one section at a time, switched by tabs.
  * Sections should render their own header (use <Section>); on mobile the layout's tab bar
