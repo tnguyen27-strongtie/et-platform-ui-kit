@@ -19,7 +19,7 @@ export type TabsProps<V extends string | number> = Omit<MuiTabsProps, 'onChange'
 };
 
 /**
- * Gray tab bar with orange selected tab (FD Tabs.List). Styling lives in the theme.
+ * Gray tab bar with a brand-colored selected tab. Styling lives in the theme.
  * Keyboard: arrow keys move between tabs, Home/End jump to first/last (MUI).
  */
 export function Tabs<V extends string | number>({ onChange, id, ...rest }: TabsProps<V>) {

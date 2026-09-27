@@ -61,7 +61,7 @@ export interface RadioGroupProps<V extends string | number | boolean> {
 }
 
 /**
- * FD RadioGroup. Keeps the original value type (number/boolean) instead of MUI's string.
+ * Radio group. Keeps the original value type (number/boolean) instead of MUI's string.
  * Keyboard: Tab enters the group, arrow keys move and select (native radio behaviour).
  */
 export function RadioGroup<V extends string | number | boolean>({

@@ -12,7 +12,7 @@ export interface VisualizationStageProps {
   controls?: ReactNode;
   /** Footnote pinned bottom-left (e.g. "Fasteners not shown to scale"). */
   note?: ReactNode;
-  /** Shows the FD "Updating Results" overlay above the viewer. */
+  /** Shows the "Updating results" overlay above the viewer. */
   loading?: boolean;
   loadingText?: ReactNode;
   /** Shown instead of the viewer when there is nothing to draw yet. */
@@ -21,7 +21,7 @@ export interface VisualizationStageProps {
 }
 
 /**
- * FD Illustration body.
+ * Illustration pane body.
  * - Tablet/desktop: viewer fills the pane; controls float top-right, note bottom-left.
  * - Mobile: viewer on top, then controls and note in normal flow (no overlap on small screens).
  */
@@ -61,7 +61,7 @@ export function ViewControlsGroup({ title, children }: { title: ReactNode; child
   );
 }
 
-/** FD reset-view button: default button with a target icon and a hover tooltip. */
+/** Reset-view button: default button with a target icon and a hover tooltip. */
 export function ResetViewButton({ onClick, label = 'Reset view' }: { onClick: () => void; label?: string }) {
   return (
     <Tooltip title={label}>
@@ -77,7 +77,7 @@ export function ResetViewButton({ onClick, label = 'Reset view' }: { onClick: ()
   );
 }
 
-/** Dashed overlay shown while a file is dragged over a section (FD Input JSON drop). */
+/** Dashed overlay shown while a file is dragged over a section (e.g. dropping a saved input JSON file). */
 export function DropOverlay({ children }: { children: ReactNode }) {
   return (
     <div className="pointer-events-none absolute inset-1 z-40 flex items-center justify-center rounded-sm border-4 border-dashed border-true-gray-30 bg-white/60 text-4xl font-bold text-true-gray-30">

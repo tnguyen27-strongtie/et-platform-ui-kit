@@ -6,7 +6,7 @@ import { colors, layout, radius, scales, shadows, tokens, typography } from '../
 import { resolveColors } from './colors';
 
 /**
- * MUI theme reproducing the FD look. Every MUI component used by the kit gets its FD
+ * MUI theme of the platform. Every MUI component used by the kit gets its platform
  * styling here, so plain MUI usage (TextField, Select, Autocomplete...) also matches.
  *
  * Styles reference role colors as CSS variables (`colors.*` = var(--color-*)), so an app
@@ -228,8 +228,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
                 '&.Mui-disabled': { color: colors.brandDark, backgroundColor: 'transparent' },
               },
             },
-            // FD painted disabled default/tertiary buttons dark brown with inherited (black) text,
-            // which is unreadable. The kit uses a light disabled surface instead.
+            // Disabled default/tertiary buttons use a light surface so the muted text stays readable.
             {
               props: { variant: 'tertiary' },
               style: {

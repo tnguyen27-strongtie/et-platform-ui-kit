@@ -47,7 +47,7 @@ export interface AlertProps {
   className?: string;
 }
 
-/** FD result/validation banner: tinted background, large icon, bold title, small description. */
+/** Result/validation banner: tinted background, large icon, bold title, small description. */
 export function Alert({ severity = 'info', title, children, icon, className }: AlertProps) {
   return (
     <Root role={severity === 'error' ? 'alert' : 'status'} severity={severity} className={className}>

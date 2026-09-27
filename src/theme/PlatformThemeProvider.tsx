@@ -17,7 +17,7 @@ export interface PlatformThemeProviderProps {
    * `colors` and `density` props, when given, override it (e.g. a user's text-size setting).
    */
   config?: PlatformThemeConfig;
-  /** FD "font size" setting: standard = 14px, expanded = 16px. */
+  /** Text size setting: standard = 14px, expanded = 16px. */
   density?: Density;
   /**
    * Role colors for this app, e.g. { brand: '#1565c0' }. Shades of brand (hover, active,

@@ -22,7 +22,7 @@ export interface AccordionProps {
 }
 
 /**
- * FD section accordion: light gray header, orange chevron rotating 90deg when open.
+ * Section accordion: light gray header, brand-colored chevron rotating 90deg when open.
  * The header is a button inside a heading (WAI-ARIA accordion pattern): Enter/Space toggle.
  */
 export function Accordion({ title, children, defaultExpanded = true, expanded, onChange, headingLevel = 'h3', className }: AccordionProps) {
@@ -53,7 +53,7 @@ export interface AccordionGroup<K extends string> {
   allCollapsed: boolean;
   expandAll: () => void;
   collapseAll: () => void;
-  /** FD behaviour: collapse everything if any section is open, otherwise expand everything. */
+  /** Collapses everything if any section is open, otherwise expands everything. */
   toggleAll: () => void;
 }
 

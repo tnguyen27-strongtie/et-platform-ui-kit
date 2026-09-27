@@ -43,7 +43,7 @@ const pages: Record<string, ComponentType> = {
 
 /** Demo brand presets: the whole kit follows PlatformThemeProvider `colors`. */
 const brandPresets: Array<{ value: string; label: string; colors: ColorConfig | undefined }> = [
-  { value: 'fd', label: 'FD orange (default)', colors: undefined },
+  { value: 'default', label: 'Orange (default)', colors: undefined },
   { value: 'blue', label: 'Blue', colors: { brand: '#1f5f99' } },
   { value: 'green', label: 'Green', colors: { brand: '#2e7d32' } },
   { value: 'purple', label: 'Purple', colors: { brand: '#6a3d9a' } },

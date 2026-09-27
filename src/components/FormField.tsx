@@ -32,7 +32,7 @@ export interface FormFieldProps {
   /** id given to the control; the label points to it. */
   htmlFor: string;
   children: ReactNode;
-  /** Marks the field required: red label with asterisk (FD "warning") and `required` on the control. */
+  /** Marks the field required: red label with asterisk and `required` on the control. */
   required?: boolean;
   /** Content of the "?" bubble next to the label. */
   help?: ReactNode;
@@ -45,7 +45,7 @@ export interface FormFieldProps {
 }
 
 /**
- * Label + control + description + error, stacked with FD spacing (gap 0.5rem).
+ * Label + control + description + error, stacked with 0.5rem gaps.
  * Kit controls inside it (TextInput, NumberInput, Select, Combobox, RadioGroup) pick up
  * aria-describedby, aria-invalid, required and disabled automatically.
  */

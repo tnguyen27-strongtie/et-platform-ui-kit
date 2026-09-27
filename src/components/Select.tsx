@@ -12,7 +12,7 @@ import { useFormField } from './FormField';
 export interface SelectOption<V extends string | number = string> {
   value: V;
   label: ReactNode;
-  /** Product thumbnail shown in the option (FD dropdown with images). */
+  /** Product thumbnail shown in the option. */
   image?: string;
   /** Italic note aligned right in the option. */
   note?: ReactNode;
@@ -71,7 +71,7 @@ export interface MultiSelectProps<V extends string | number> extends BaseProps<V
 
 export type SelectProps<V extends string | number> = SingleSelectProps<V> | MultiSelectProps<V>;
 
-/** FD Dropdown (non-searchable). For search, use Combobox. */
+/** Dropdown (non-searchable). For search, use Combobox. */
 export function Select<V extends string | number = string>(props: MultiSelectProps<V>): React.JSX.Element;
 export function Select<V extends string | number = string>(props: SingleSelectProps<V>): React.JSX.Element;
 export function Select<V extends string | number = string>(props: SelectProps<V>) {

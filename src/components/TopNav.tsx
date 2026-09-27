@@ -5,8 +5,8 @@ import { type ReactNode, useId, useState } from 'react';
 import { cn } from '../utils/cn';
 
 /**
- * FD top navigation bar primitives. The full configurable nav (menus, slots) belongs in
- * libs/shell; these give it the FD look: 54px bar, orange bottom border, gray menu labels
+ * Top navigation bar primitives. The full configurable nav (menus, slots) belongs in the
+ * app shell; these give it the platform look: 54px bar, brand-colored bottom border, gray menu labels
  * with an orange 4px underline on hover/open.
  */
 export function TopNav({ logo, children, right }: { logo: ReactNode; children?: ReactNode; right?: ReactNode }) {

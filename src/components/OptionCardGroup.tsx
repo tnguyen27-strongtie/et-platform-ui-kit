@@ -64,7 +64,7 @@ export interface OptionCardGroupProps<V extends string | number> {
   'aria-label'?: string;
 }
 
-/** FD ButtonGroup: picture cards, one selectable, orange check on the selected card. */
+/** Picture cards, one selectable, brand-colored check on the selected card. */
 export function OptionCardGroup<V extends string | number>({
   value,
   options,

@@ -23,7 +23,7 @@ import {
   Workspace,
 } from '../index';
 
-/** Stand-in for the app's 3D web component (FD mounts <bp-fd> here). */
+/** Stand-in for the app's own 3D viewer (a web component, a Three.js canvas...). */
 function Fake3DViewer() {
   return (
     <svg viewBox="0 0 200 160" className="size-full" role="img" aria-label="3D model placeholder">
@@ -217,7 +217,7 @@ export function WorkspaceDemo({ split }: { split: 'rows' | 'columns' }) {
         input={<InputSection />}
         illustration={<IllustrationSection />}
         output={<OutputSection />}
-        // Mobile: one flat tab bar (FD MobileView), section bodies without their own headers.
+        // Mobile: one flat tab bar, section bodies without their own headers.
         mobileTabs={[
           { value: 'input', label: 'Input', content: <div className="h-full overflow-auto"><InputBody /></div>, keepMounted: true },
           { value: '3d', label: '3D', content: <ThreeDBody /> },

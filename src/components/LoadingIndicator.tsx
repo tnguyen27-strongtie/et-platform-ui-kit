@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-/** FD "Updating Results" overlay: pulsing orange ring with fading text. */
+/** "Updating results" overlay: pulsing brand-colored ring with fading text. */
 export function LoadingIndicator({ children }: { children?: ReactNode }) {
   return (
     <div role="status" aria-live="polite" className="flex-center size-full bg-white/75 text-center">

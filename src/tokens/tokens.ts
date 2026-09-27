@@ -1,11 +1,6 @@
 /**
- * Design tokens extracted from the Blueprint FD app (branch main-3.2).
- *
- * Sources:
- *  - tailwind-workspace-preset.js      (color scales, shadows, keyframes, breakpoints)
- *  - libs/shared/src/utils/constants.js (THEME: font sizes, line heights, palette)
- *  - libs/shared/src/globals/global.css (z-index, layout vars, scrollbar, selection)
- *  - libs/shared/src/utils/BlueprintThemeProvider.jsx (MUI palette, breakpoints)
+ * Design tokens of the platform: color scales, role colors, typography, radius, shadows,
+ * z-index, breakpoints and layout sizes.
  *
  * This file is the single source of truth: the MUI theme and the Tailwind @theme
  * (src/theme/theme.css) are both derived from these values.
@@ -91,7 +86,7 @@ export type ColorScale = (typeof scales)[keyof typeof scales];
  * <PlatformThemeProvider colors={...}>; components read them via `colors` (CSS variables).
  */
 export const defaultColors = {
-  /** FD "new orange": primary buttons, checked radios/switches, selected tabs. */
+  /** Main brand color: primary buttons, checked radios/switches, selected tabs. */
   brand: '#a8671d',
   brandHover: scales.pumpkinOrange[40],
   brandActive: scales.pumpkinOrange[70],
@@ -157,7 +152,7 @@ export const typography = {
     sans: "'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
     serif: "'Clarendon', Georgia, serif",
   },
-  /** FD "density" setting: html font-size and line-height. */
+  /** Text size setting (density): body font-size and line-height. */
   density: {
     standard: { fontSize: 14, lineHeight: 17.5 },
     expanded: { fontSize: 16, lineHeight: 24 },

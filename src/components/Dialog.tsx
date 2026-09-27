@@ -14,7 +14,7 @@ export type DialogCloseReason = 'backdropClick' | 'escapeKeyDown';
 export interface DialogProps extends Omit<MuiDialogProps, 'onClose'> {
   /** Called on Escape or backdrop click (see `dismissible`). The close button calls DialogHeader's onClose. */
   onClose?: (reason: DialogCloseReason) => void;
-  /** 'top' slides in below the top nav (FD default); 'center' centers vertically. */
+  /** 'top' slides in below the top nav (default); 'center' centers vertically. */
   placement?: 'top' | 'center';
   /**
    * How the user may dismiss the dialog without a button:

@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
   await openFixture(page, 'release-notes');
 });
 
-const dialog = (page: Page) => page.getByRole('dialog', { name: /FD/ });
+const dialog = (page: Page) => page.getByRole('dialog', { name: /DC/ });
 const openDialog = async (page: Page) => {
   await page.getByRole('button', { name: 'Open release notes' }).click();
   await expect(dialog(page)).toBeVisible();
@@ -17,10 +17,10 @@ const releaseHeaders = (page: Page) => dialog(page).getByRole('button', { name: 
 test.describe('ReleaseNotesDialog', () => {
   test('shows the app name, title and intro', async ({ page }) => {
     await openDialog(page);
-    await expect(dialog(page)).toHaveAccessibleName(/FD\s*Fastener Designer/);
-    await expect(dialog(page)).toContainText('Fastener Designer finds fastening solutions.');
+    await expect(dialog(page)).toHaveAccessibleName(/DC\s*Demo Calculator/);
+    await expect(dialog(page)).toContainText('Demo Calculator checks timber connections.');
     // Dialog titles are not uppercased (regression: h6 overline style leaked into DialogTitle).
-    await expect(dialog(page).getByText('Fastener Designer', { exact: true })).toHaveCSS('text-transform', 'none');
+    await expect(dialog(page).getByText('Demo Calculator', { exact: true })).toHaveCSS('text-transform', 'none');
   });
 
   test('releases are newest first by version (2.10 after 2.9), latest open', async ({ page }) => {

@@ -10,7 +10,7 @@ import type { ReactNode } from 'react';
 import { colors } from '../tokens/tokens';
 
 /**
- * FD table primitives (Blueprint Table.*): bordered container, 12px cells, bold 48px header.
+ * Table primitives: bordered container, 12px cells, bold 48px header.
  * Styling lives in the theme (MuiTableCell/MuiTableContainer). Pair with @tanstack/react-table
  * for sorting, filtering and virtualization.
  *

@@ -1,8 +1,8 @@
 # Platform UI Kit
 
-Design token, MUI theme và component React có sẵn style của **FD** (Blueprint, nhánh `main-3.2`), viết lại trên MUI 9 + Tailwind 4 để dùng cho các app mới trên platform. App dùng kit sẽ có giao diện giống FD mà không phải tự làm lại style.
+Bộ design token, MUI theme và component React dùng chung cho các app tính toán trên platform, xây trên MUI 9 + Tailwind 4. App dùng kit có sẵn giao diện, hành vi và khả năng truy cập (a11y) thống nhất mà không phải tự làm lại style.
 
-Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (logic số, filter, theme, release notes) và 208 test Playwright (hành vi, bàn phím, a11y bằng axe, đổi theme) pass, không có lỗi console. CI (GitHub Actions, `.github/workflows/ci.yml`) chạy toàn bộ cho mỗi PR. Ở chế độ standard, kích thước đo được khớp FD: label 12px, input 14px và cao 40px, button 16px, tab 14px, ô bảng 12px.
+Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (logic số, filter, theme, release notes) và 208 test Playwright (hành vi, bàn phím, a11y bằng axe, đổi theme) pass, không có lỗi console. CI (GitHub Actions, `.github/workflows/ci.yml`) chạy toàn bộ cho mỗi PR. Ở chế độ standard: label 12px, input 14px và cao 40px, button 16px, tab 14px, ô bảng 12px.
 
 ## Mục lục
 
@@ -18,12 +18,13 @@ Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (l
 10. [Design token](#design-token)
 11. [Sửa và mở rộng kit](#sửa-và-mở-rộng-kit)
 12. [Đưa vào Nx workspace](#đưa-vào-nx-workspace)
-13. [Khác biệt so với FD](#khác-biệt-so-với-fd)
+13. [Quyết định thiết kế](#quyết-định-thiết-kế)
 14. [Chưa có trong kit](#chưa-có-trong-kit)
-15. [Thay đổi ở 0.5](#thay-đổi-ở-05)
-16. [Thay đổi ở 0.4](#thay-đổi-ở-04)
-17. [Thay đổi ở 0.3](#thay-đổi-ở-03)
-18. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
+15. [Thay đổi ở 0.5.1](#thay-đổi-ở-051)
+16. [Thay đổi ở 0.5](#thay-đổi-ở-05)
+17. [Thay đổi ở 0.4](#thay-đổi-ở-04)
+18. [Thay đổi ở 0.3](#thay-đổi-ở-03)
+19. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
 
 ## Yêu cầu
 
@@ -46,9 +47,8 @@ Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (l
 
 ```bash
 pnpm install
-pnpm tokens                             # sinh src/theme/tokens.generated.css từ tokens.ts
-scripts/copy-assets.sh ../et-blueprint  # chép logo từ repo Blueprint vào public/images (font đã đi kèm kit)
-pnpm dev                                # showcase: http://localhost:5173
+pnpm tokens    # sinh src/theme/tokens.generated.css từ tokens.ts
+pnpm dev       # showcase: http://localhost:5173
 ```
 
 Showcase gồm thanh bên trái liệt kê component theo nhóm (trên mobile là ô "Go to page"), và mỗi nhóm là một trang:
@@ -67,7 +67,7 @@ Showcase gồm thanh bên trái liệt kê component theo nhóm (trên mobile l�
 | Workspace | `/#/workspace` | SectionLayout, Section, VisualizationStage + ImageViewer, DropOverlay |
 | Patterns | `/#/patterns` | Release notes: hộp thoại "What's new", giả lập cập nhật, bản nhúng trang Help, đổi ngôn ngữ |
 | Utilities | `/#/utilities` | Ô thử các hàm số, tìm kiếm và theme |
-| Workspace toàn màn hình | `/#workspace`, `/#workspace-columns` | Bố cục FD thật: xếp dọc / cạnh nhau |
+| Workspace toàn màn hình | `/#workspace`, `/#workspace-columns` | Bố cục calculator đầy đủ: xếp dọc / cạnh nhau |
 
 Link tới từng demo có dạng `/#/<trang>/<id>`, ví dụ `/#/data/grid-view`. Mỗi demo có mô tả ngắn về lúc nên dùng, các trạng thái, và đoạn code mẫu.
 
@@ -92,7 +92,7 @@ pnpm pack             # tạo tarball @platform/ui-x.y.z.tgz (tự chạy build)
 src/
 ├── tokens/tokens.ts               # NGUỒN DUY NHẤT: màu, font, radius, shadow, z-index, breakpoint, layout
 ├── theme/
-│   ├── createPlatformTheme.ts     # MUI theme, style FD cho các component MUI
+│   ├── createPlatformTheme.ts     # MUI theme, style của platform cho các component MUI
 │   ├── colors.ts                  # resolveColors(): màu app + màu phái sinh từ brand
 │   ├── augmentation.ts            # type cho palette mở rộng và variant của Button
 │   ├── PlatformThemeProvider.tsx  # CSS layer + ThemeProvider + CssBaseline + density + màu
@@ -110,8 +110,7 @@ src/
     ├── layout.tsx                 # DemoPage, DemoSection, Code, điều hướng theo hash
     └── pages/                     # mỗi nhóm một trang
 scripts/
-├── build-tokens.ts                # tokens.ts → tokens.generated.css
-└── copy-assets.sh                 # logo từ repo Blueprint
+└── build-tokens.ts                # tokens.ts → tokens.generated.css
 tests/
 ├── unit/                          # node --test
 └── e2e/
@@ -133,7 +132,7 @@ Package tên `@platform/ui`. Để `private: true` nên không bao giờ bị pu
 
 | Cách | Lệnh trong app | Khi nào |
 | --- | --- | --- |
-| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.5.0.tgz` | App ở repo khác, muốn khóa phiên bản |
+| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.5.1.tgz` | App ở repo khác, muốn khóa phiên bản |
 | Link thư mục | `pnpm add link:../et-platform-ui-kit` (chạy `pnpm build` trong kit trước) | Sửa kit và app cùng lúc |
 | Registry nội bộ | Bỏ `private`, thêm `publishConfig.registry`, rồi `pnpm publish` | Nhiều team dùng chung |
 
@@ -202,11 +201,11 @@ Mọi thứ app cần đều import từ `@platform/ui`, gồm cả `Box`, `Stac
 5. Lưu file vào app và truyền vào provider:
 
 ```tsx
-// apps/fd/src/theme.config.ts  (file export từ builder)
+// apps/demo-calc/src/theme.config.ts  (file export từ builder)
 import { definePlatformTheme } from '@platform/ui';
-export default definePlatformTheme({ version: 1, name: 'Fastener Designer', colors: { brand: '#1f5f99' } });
+export default definePlatformTheme({ version: 1, name: 'Demo Calculator', colors: { brand: '#1f5f99' } });
 
-// apps/fd/src/main.tsx
+// apps/demo-calc/src/main.tsx
 import theme from './theme.config';
 <PlatformThemeProvider config={theme} density={userSettings.density}>   // prop riêng đè lên config
 ```
@@ -245,21 +244,21 @@ Nguyên tắc để màu đổi được: component chỉ dùng `colors.*` (là 
 
 ## Component
 
-Style của hầu hết component nằm trong theme (`createPlatformTheme.ts`), nên cả component MUI gốc như `TextField`, `Select`, `Autocomplete`, `Menu` cũng có giao diện FD. Wrapper trong kit chỉ thêm API tiện dùng.
+Style của hầu hết component nằm trong theme (`createPlatformTheme.ts`), nên cả component MUI gốc như `TextField`, `Select`, `Autocomplete`, `Menu` cũng có giao diện của platform. Wrapper trong kit chỉ thêm API tiện dùng.
 
 ### Nút và hộp thoại
 
-| Component | Tương ứng FD | Ghi chú |
-| --- | --- | --- |
-| `Button` | `Button` | Variant: `primary`, `primaryDark`, `secondary`, `default` (mặc định), `tertiary`, `text`, `textDark`, `danger`, `fab`. Size: `small`, `medium`. `loading` hiện spinner và chặn click |
-| `IconButton`, `CloseButton` | `Button variant="icon"`, nút đóng của Modal | `IconButton` bắt buộc `aria-label` (kiểm tra ở mức type) |
-| `DropdownMenu` | — | Nút mở danh sách hành động; item có `icon`, `danger`, `divider` |
-| `Dialog`, `DialogHeader`, `DialogBody`, `DialogFooter` | `Modal` (Radix), `Dialog` (MUI) | `placement="top"` (mặc định) hoặc `"center"`. `dismissible`: `any` / `escape` / `none`. `onClose(reason)` |
-| `ConfirmDialog` | — | Xác nhận trước khi xóa/reset. `destructive` = nút đỏ và focus sẵn ở Cancel. `loading` = khóa dialog |
-| `Tooltip` | `Tooltip` (Radix) | **Hover, chữ ngắn** (1–2 dòng, chỉ chữ): nhãn cho icon button, gợi ý một dòng. Mở sau 300ms (100ms giữa các nút cạnh nhau), khi focus bằng bàn phím, khi nhấn giữ trên màn hình cảm ứng. Rê chuột vào tooltip thì tooltip không biến mất, Escape để đóng. Chữ 12px, rộng tối đa 320px. Dùng được trên nút disabled |
-| `InfoTip` | `Popper` (nút "?" màu cam) | **Click, giải thích dài** (nhiều đoạn, danh sách, link). Mở bằng click/Enter/Space thành một dialog nhỏ; focus đi vào trong nên link bấm được; Escape, click ra ngoài hoặc nút X để đóng, focus trả về nút đã mở. `title` in đậm và đặt tên cho dialog. `trigger`: `'help'` (nút "?" FD, mặc định), `'info'` (icon "i") hoặc phần tử tùy chọn như `<Button variant="text">Why?</Button>`. `placement`, `maxWidth` (mặc định 360px); nội dung dài cuộn sau 384px |
-| `HelpPopover` | — | Alias của `InfoTip` với nút "?" (giữ cho code cũ và `FormField help`) |
-| `notify.success/info/warning/error/dismiss`, `ToastHost` | `toastSuccess`, `toastError` | react-toastify (bản `unstyled`: CSS nằm trong `@layer components` của `theme.css`, nên class Tailwind ghi đè được). Lỗi ở lại tới khi đóng tay, cảnh báo 8s, còn lại 5s; dừng khi rê chuột. App không import `react-toastify` trực tiếp: `notify` và `ToastHost` phải dùng chung một bản |
+| Component | Ghi chú |
+| --- | --- |
+| `Button` | Variant: `primary`, `primaryDark`, `secondary`, `default` (mặc định), `tertiary`, `text`, `textDark`, `danger`, `fab`. Size: `small`, `medium`. `loading` hiện spinner và chặn click |
+| `IconButton`, `CloseButton` | `IconButton` bắt buộc `aria-label` (kiểm tra ở mức type) |
+| `DropdownMenu` | Nút mở danh sách hành động; item có `icon`, `danger`, `divider` |
+| `Dialog`, `DialogHeader`, `DialogBody`, `DialogFooter` | `placement="top"` (mặc định) hoặc `"center"`. `dismissible`: `any` / `escape` / `none`. `onClose(reason)` |
+| `ConfirmDialog` | Xác nhận trước khi xóa/reset. `destructive` = nút đỏ và focus sẵn ở Cancel. `loading` = khóa dialog |
+| `Tooltip` | **Hover, chữ ngắn** (1–2 dòng, chỉ chữ): nhãn cho icon button, gợi ý một dòng. Mở sau 300ms (100ms giữa các nút cạnh nhau), khi focus bằng bàn phím, khi nhấn giữ trên màn hình cảm ứng. Rê chuột vào tooltip thì tooltip không biến mất, Escape để đóng. Chữ 12px, rộng tối đa 320px. Dùng được trên nút disabled |
+| `InfoTip` | **Click, giải thích dài** (nhiều đoạn, danh sách, link). Mở bằng click/Enter/Space thành một dialog nhỏ; focus đi vào trong nên link bấm được; Escape, click ra ngoài hoặc nút X để đóng, focus trả về nút đã mở. `title` in đậm và đặt tên cho dialog. `trigger`: `'help'` (nút "?" màu brand, mặc định), `'info'` (icon "i") hoặc phần tử tùy chọn như `<Button variant="text">Why?</Button>`. `placement`, `maxWidth` (mặc định 360px); nội dung dài cuộn sau 384px |
+| `HelpPopover` | Alias của `InfoTip` với nút "?" (giữ cho code cũ và `FormField help`) |
+| `notify.success/info/warning/error/dismiss`, `ToastHost` | react-toastify (bản `unstyled`: CSS nằm trong `@layer components` của `theme.css`, nên class Tailwind ghi đè được). Lỗi ở lại tới khi đóng tay, cảnh báo 8s, còn lại 5s; dừng khi rê chuột. App không import `react-toastify` trực tiếp: `notify` và `ToastHost` phải dùng chung một bản |
 
 Chọn loại tooltip:
 
@@ -290,16 +289,16 @@ Chọn loại tooltip:
 
 ### Form
 
-| Component | Tương ứng FD | Ghi chú |
-| --- | --- | --- |
-| `FormField` | `FormGroup` + `FormLabel` + `ErrorMessage` | Label 12px, `required` = label đỏ có `*`, `help` = nút "?", `description` = gợi ý xám, `error` = chữ đỏ 12px, `disabled`. Tự nối label/mô tả/lỗi vào control bên trong |
-| `TextInput` | `InputGroup`, `FormControl` | Cao 40px, `addonBefore`/`addonAfter` cho đơn vị. `multiline minRows={3}` cho textarea |
-| `NumberInput` | `InputGroup` kiểu số | `value: number \| null`, `min`, `max`, `step`, `precision`, `clampBehavior`. Xem [NumberInput](#numberinput) |
-| `Select` | `Dropdown` | Chọn một hoặc nhiều (`multiple`), option có `image`, `note`, `disabled` |
-| `Combobox` | `Dropdown` có tìm kiếm | MUI Autocomplete. Option có label không phải chuỗi thì thêm `searchText` |
-| `Checkbox`, `Switch` | `Checkbox`, `Switch` (Radix) | `onChange(checked: boolean)` |
-| `RadioGroup` | `RadioGroup` + `Radio` | Giữ nguyên kiểu giá trị (number, boolean), `direction="row" \| "column"` |
-| `OptionCardGroup` | `ButtonGroup` | Thẻ chọn có ảnh, dấu check cam ở thẻ đang chọn |
+| Component | Ghi chú |
+| --- | --- |
+| `FormField` | Label 12px, `required` = label đỏ có `*`, `help` = nút "?", `description` = gợi ý xám, `error` = chữ đỏ 12px, `disabled`. Tự nối label/mô tả/lỗi vào control bên trong |
+| `TextInput` | Cao 40px, `addonBefore`/`addonAfter` cho đơn vị. `multiline minRows={3}` cho textarea |
+| `NumberInput` | `value: number \| null`, `min`, `max`, `step`, `precision`, `clampBehavior`. Xem [NumberInput](#numberinput) |
+| `Select` | Chọn một hoặc nhiều (`multiple`), option có `image`, `note`, `disabled` |
+| `Combobox` | MUI Autocomplete. Option có label không phải chuỗi thì thêm `searchText` |
+| `Checkbox`, `Switch` | `onChange(checked: boolean)` |
+| `RadioGroup` | Giữ nguyên kiểu giá trị (number, boolean), `direction="row" \| "column"` |
+| `OptionCardGroup` | Thẻ chọn có ảnh, dấu check cam ở thẻ đang chọn |
 
 ```tsx
 <FormField label="Connection type" htmlFor="connection">
@@ -351,20 +350,20 @@ Các hàm `parseNumber`, `roundTo`, `stepNumber`, `isInRange`, `formatNumber` c�
 
 ### Hiển thị và điều hướng
 
-| Component | Tương ứng FD | Ghi chú |
-| --- | --- | --- |
-| `Tabs`, `Tab`, `TabPanel` | `Tabs.List/Trigger/Content` | Thanh tab xám, tab đang chọn màu cam. Truyền `id` cho `Tabs` và `tabsId` cho `TabPanel` để nối tab với panel |
-| `Accordion` | `Accordion` (Radix) | Header xám nhạt, mũi tên cam xoay 90° khi mở. `headingLevel` (mặc định `h3`) |
-| `useAccordionGroup`, `ExpandCollapseAllButton` | nút "Collapse all" của Input | Giữ trạng thái chung cho nhiều Accordion: `<Accordion {...group.item('loads')} />`, nút đặt ở `Section actions` |
-| `Alert` | `Alert.Error/Warning/Success/Info` | `severity`, `title`, nội dung 12px |
-| `DataTable` + `.Head/.Body/.Footer/.Row/.Cell` | `Table.*` | Ô 12px, header đậm cao 48px; kết hợp `@tanstack/react-table` để sort, filter |
-| `LoadingIndicator` | `LoadingIndicator` | Vòng cam nhấp nháy "Updating Results", phủ cả khung |
-| `Spinner` | — | Vòng xoay nhỏ inline, theo màu chữ |
-| `Card` | — | Header nền xám, tiêu đề bold (`title`, `subtitle`, `actions`), `footer`. `padding`: `sm` (8px, mặc định), `md` (12px), `none` (đặt bảng sát viền, tự bỏ viền đôi) |
-| `EmptyState` | — | Khung trống: "No results yet" + nút hành động |
-| `ErrorBoundary` | — | Lỗi render trong một khung không làm trắng cả app. `resetKeys`, `fallback`, `onError` |
-| `Box`, `Stack`, `Typography`, `Divider`, `Link`, `Chip` | — | Re-export từ MUI, đã có style theo theme |
-| `TopNav`, `NavMenu` | `.nav-item`, `.nav-dropdown-item` | Thanh cao 54px, gạch chân cam 4px khi hover/mở |
+| Component | Ghi chú |
+| --- | --- |
+| `Tabs`, `Tab`, `TabPanel` | Thanh tab xám, tab đang chọn màu cam. Truyền `id` cho `Tabs` và `tabsId` cho `TabPanel` để nối tab với panel |
+| `Accordion` | Header xám nhạt, mũi tên cam xoay 90° khi mở. `headingLevel` (mặc định `h3`) |
+| `useAccordionGroup`, `ExpandCollapseAllButton` | Giữ trạng thái chung cho nhiều Accordion: `<Accordion {...group.item('loads')} />`, nút đặt ở `Section actions` |
+| `Alert` | `severity`, `title`, nội dung 12px |
+| `DataTable` + `.Head/.Body/.Footer/.Row/.Cell` | Ô 12px, header đậm cao 48px; kết hợp `@tanstack/react-table` để sort, filter |
+| `LoadingIndicator` | Vòng cam nhấp nháy "Updating Results", phủ cả khung |
+| `Spinner` | Vòng xoay nhỏ inline, theo màu chữ |
+| `Card` | Header nền xám, tiêu đề bold (`title`, `subtitle`, `actions`), `footer`. `padding`: `sm` (8px, mặc định), `md` (12px), `none` (đặt bảng sát viền, tự bỏ viền đôi) |
+| `EmptyState` | Khung trống: "No results yet" + nút hành động |
+| `ErrorBoundary` | Lỗi render trong một khung không làm trắng cả app. `resetKeys`, `fallback`, `onError` |
+| `Box`, `Stack`, `Typography`, `Divider`, `Link`, `Chip` | Re-export từ MUI, đã có style theo theme |
+| `TopNav`, `NavMenu` | Thanh cao 54px, gạch chân cam 4px khi hover/mở |
 
 ### GridView
 
@@ -443,14 +442,14 @@ Giới hạn: render mọi dòng (không virtualization), phù hợp tới vài 
 Mọi app đều cần "What's new". Kit lo giao diện và hành vi; app chỉ cung cấp dữ liệu (thường là một file JSON) và quyết định mở từ đâu.
 
 ```tsx
-const seen = useReleaseNotesSeen({ currentVersion: APP_VERSION, storageKey: 'fd:release-notes' });
+const seen = useReleaseNotesSeen({ currentVersion: APP_VERSION, storageKey: 'demo-calc:release-notes' });
 
 <ReleaseNotesDialog
   open={seen.shouldOpen || helpMenuOpen}
   onClose={() => { seen.markSeen(); setHelpMenuOpen(false); }}
-  appName="FD"
-  appTitle="Fastener Designer"
-  intro="Find strong and reliable fastening solutions…"
+  appName="DC"
+  appTitle="Demo Calculator"
+  intro="Demo Calculator checks timber connections…"
   releases={releases}
   lastSeenVersion={seen.lastSeenVersion}
 />
@@ -544,13 +543,13 @@ Thêm component mới thì thêm fixture, thêm tên vào `fixtureNames` trong `
 
 ## Bố cục 3 section
 
-Bố cục chuẩn của calculator FD: **Input** bên trái, **Illustration** (3D, 2D, ảnh) và **Output** bên phải.
+Bố cục chuẩn của một app tính toán: **Input** bên trái, **Illustration** (3D, 2D, ảnh) và **Output** bên phải.
 
 ```tsx
 <Workspace>
   <SectionLayout
-    layoutId="fd"               // lưu kích thước panel vào localStorage; bỏ để không lưu
-    secondarySplit="rows"       // setting "orientation" của FD: rows = xếp dọc, columns = cạnh nhau
+    layoutId="demo-calc"        // lưu kích thước panel vào localStorage; bỏ để không lưu
+    secondarySplit="rows"       // rows = xếp dọc, columns = cạnh nhau (cho người dùng chọn trong setting)
     labels={{ input: 'Input', illustration: '3D', output: 'Output' }}
     input={
       <Section title="Input" actions={<IconButton aria-label="Collapse all">…</IconButton>}>
@@ -599,25 +598,25 @@ const imageRef = useRef<ImageViewerHandle>(null);
   }
 >
   <ImageViewer ref={imageRef} src={drawingUrl} alt="Connection drawing" />
-  {/* hoặc viewer 3D của app: <bp-fd …/>, canvas Three.js… */}
+  {/* hoặc viewer 3D của app: web component, canvas Three.js… */}
 </VisualizationStage>
 ```
 
-| Component | Tương ứng FD | Ghi chú |
-| --- | --- | --- |
-| `Workspace` | `.workspace` | Chiếm toàn bộ chiều cao dưới top nav |
-| `SectionLayout` | `PageView` + `DesktopView`/`TabletView`/`MobileView` + `react-split-pane` | Dùng `react-resizable-panels` |
-| `Section` | `Tabs` dùng làm khung panel | Một tiêu đề (`title`) hoặc nhiều tab (`tabs`); `actions` ở bên phải thanh tab |
-| `VisualizationStage` | khung `IllustrationContent` | Tablet/desktop: controls nổi góc phải, note góc trái. Mobile: controls và note nằm dưới viewer |
-| `ViewControls`, `ViewControlsGroup`, `ResetViewButton` | cột điều khiển 3D, `ResetViewButton` | |
-| `ImageViewer` | `IllustrationImage` + `@panzoom/panzoom` | Cuộn chuột hoặc pinch trên trackpad để zoom quanh con trỏ (trang không bị cuộn theo), pinch hai ngón trên màn hình cảm ứng, kéo để di chuyển, double-click để reset, nút +/−. `minScale` < 1 cho thu nhỏ hơn cỡ vừa khung. Đổi `src` thì reset view và hiện lại loading. Không cần thư viện ngoài |
-| `DropOverlay` | lớp phủ khi kéo file JSON vào Input | |
+| Component | Ghi chú |
+| --- | --- |
+| `Workspace` | Chiếm toàn bộ chiều cao dưới top nav |
+| `SectionLayout` | Dùng `react-resizable-panels` |
+| `Section` | Một tiêu đề (`title`) hoặc nhiều tab (`tabs`); `actions` ở bên phải thanh tab |
+| `VisualizationStage` | Tablet/desktop: controls nổi góc phải, note góc trái. Mobile: controls và note nằm dưới viewer |
+| `ViewControls`, `ViewControlsGroup`, `ResetViewButton` | |
+| `ImageViewer` | Cuộn chuột hoặc pinch trên trackpad để zoom quanh con trỏ (trang không bị cuộn theo), pinch hai ngón trên màn hình cảm ứng, kéo để di chuyển, double-click để reset, nút +/−. `minScale` < 1 cho thu nhỏ hơn cỡ vừa khung. Đổi `src` thì reset view và hiện lại loading. Không cần thư viện ngoài |
+| `DropOverlay` | |
 
 Viewer 3D là code riêng của app. Đặt nó làm `children` của `VisualizationStage`.
 
 ## Design token
 
-Mọi giá trị nằm trong `src/tokens/tokens.ts`, gồm cả thang màu đầy đủ của FD: `pumpkinOrange`, `trueGray`, `sstOrange`, `sageGreen`, `blue` (mỗi thang 0–100). Component chỉ dùng token theo **vai trò**.
+Mọi giá trị nằm trong `src/tokens/tokens.ts`, gồm cả các thang màu đầy đủ: `pumpkinOrange`, `trueGray`, `sstOrange`, `sageGreen`, `blue` (mỗi thang 0–100). Component chỉ dùng token theo **vai trò**.
 
 - `defaultColors`: giá trị hex mặc định.
 - `colors`: tham chiếu biến CSS (`colors.brand` = `var(--color-brand)`), đổi được theo [config](#đổi-màu-theo-app).
@@ -679,45 +678,45 @@ Không sửa tay `tokens.generated.css`, và không viết mã hex trong compone
 - `package.json` của kit đã khai báo sẵn `exports` (`"."`, `"./theme.css"`, `"./tokens"`) và `peerDependencies`. Khi đưa vào Nx, giữ nguyên hai phần này.
 - Trong app, chặn import trực tiếp `@mui/*` (ESLint `no-restricted-imports`) để mọi app đi qua `@platform/ui`.
 
-## Khác biệt so với FD
+## Quyết định thiết kế
 
-Các điểm dưới đây khác FD có chủ ý: để sửa lỗi của FD hoặc để dùng thư viện đang được bảo trì.
+Các lựa chọn dưới đây là có chủ ý. Khi thêm hoặc sửa component, giữ đúng các lựa chọn này.
 
-- **Chỉ dùng MUI.** Các component FD dựng trên Radix (Modal, Tooltip, Popover, Switch, Checkbox, Accordion) được viết lại bằng MUI, giữ kích thước, màu và animation.
-- **Nút `default`/`tertiary` khi disabled** có nền xám nhạt. FD dùng nền nâu đậm với chữ đen nên gần như không đọc được.
-- **Focus dùng `:focus-visible`** thay vì `:focus`, để nút không giữ màu active sau khi click chuột. Mọi control có viền focus rõ ràng; FD dựa vào ripple nên checkbox/radio/switch/tab không hiện focus.
-- **Nút primary khi disabled** mờ đi thay vì chuyển sang nâu đậm (FD làm nút disabled trông nổi hơn nút đang bật).
+- **Chỉ dùng MUI làm nền.** Dialog, Tooltip, Popover, Switch, Checkbox, Accordion đều dựng trên MUI, không trộn thêm Radix hay thư viện UI khác.
+- **Disabled phải trông "tắt".** Nút `default`/`tertiary` khi disabled có nền xám nhạt; nút primary khi disabled mờ đi, không bao giờ đậm hơn trạng thái bình thường.
+- **Focus dùng `:focus-visible`** thay vì `:focus`, để nút không giữ màu active sau khi click chuột. Ripple tắt; mọi control (kể cả checkbox, radio, switch, tab) có viền focus rõ ràng.
 - **Alert cảnh báo** dùng chữ `warningText` (nâu) thay vì vàng, cho đủ tương phản.
-- **Font Inter thay cho Helvetica Neue LT Std** (từ 0.5). Helvetica Neue là font thương mại (Monotype); đưa file font lên web cần license web font riêng. Inter dùng license SIL OFL 1.1: miễn phí, kể cả thương mại, được đóng gói kèm. Inter có đủ chữ tiếng Việt, Latin mở rộng, Cyrillic, Greek; bản LT Std thiếu các chữ này nên trình duyệt phải mượn font khác giữa chừng. Cỡ chữ giữ nguyên; Inter rộng hơn khoảng 5–8%, nên dòng dài có thể xuống dòng sớm hơn.
-- **Tiêu đề in đậm**: tiêu đề Accordion và Dialog dùng bold (FD dùng medium), để tách rõ với label của field.
-- **Release notes** là component dùng chung của kit (FD tự làm riêng): app chỉ cung cấp dữ liệu.
-- **Toast** dừng khi rê chuột; toast lỗi không tự đóng. FD tự đóng sau 5s kể cả khi đang đọc.
+- **Font Inter** (SIL OFL 1.1, mã nguồn mở), đóng gói kèm kit. Có đủ chữ tiếng Việt, Latin mở rộng, Cyrillic, Greek; không phát sinh license font. Xem [License](#license).
+- **Thứ bậc chữ**: tiêu đề Accordion, Dialog, Card dùng bold, label dùng medium, để tách rõ tiêu đề với label của field.
+- **Release notes** là component dùng chung: mỗi app chỉ cung cấp dữ liệu.
+- **Toast** dừng khi rê chuột hoặc khi cửa sổ ở nền; toast lỗi không tự đóng (WCAG 2.2.1).
 - **Tooltip dùng `describeChild`**, để tooltip không ghi đè tên của nút với trình đọc màn hình.
-- **Icon**: `Blue-Icon-Font` và `material-icons` được thay bằng `@mui/icons-material`, nên hình checkbox và dấu check trên thẻ chọn hơi khác FD.
-- **Shadow thương hiệu là token riêng.** FD đặt shadow popover ở `shadows[0]`, trái quy ước MUI (phần tử 0 phải là `'none'`).
+- **Icon** chỉ dùng `@mui/icons-material`.
+- **Shadow thương hiệu là token riêng** (`shadows.popover`…); `theme.shadows[0]` giữ đúng quy ước MUI là `'none'`.
 - **Class density gắn vào `<body>`**, không phải `<html>`, để đơn vị `rem` không đổi.
-- **Bố cục**:
-  - `react-split-pane` (không còn bảo trì) được thay bằng `react-resizable-panels`.
-  - Input thu thành thanh dọc có thể mở lại, thay vì chỉ ẩn nội dung.
-  - Kích thước panel được lưu lại.
-  - Bảng điều khiển viewer có nền trắng mờ, và nằm dưới viewer trên mobile.
-- **`theme.spacing` = 4px** (FD dùng mặc định 8px của MUI).
+- **Bố cục**: dùng `react-resizable-panels` (đang được bảo trì); Input thu thành thanh dọc có thể mở lại; kích thước panel được lưu; bảng điều khiển viewer có nền trắng mờ và nằm dưới viewer trên mobile.
+- **`theme.spacing` = 4px** (mặc định của MUI là 8px), để khoảng cách nhỏ đi theo nhịp 4px.
 
 ## Chưa có trong kit
 
 - Drawer mobile, Help Center, EULA, maintenance mode, menu File/Template/Print đầy đủ: thuộc `libs/shell`.
 - Style in ấn (`print.css`, bảng in dọc), carousel sản phẩm, viewer 3D.
-- Glyph gốc của `Blue-Icon-Font`: nếu cần, chép font từ `libs/shared/src/assets/fonts` của Blueprint và khai báo thêm trong `fonts.css`.
 - Chưa có vì các app hiện tại chưa cần (thêm khi có app cần): Pagination, Breadcrumb, Skeleton, Progress bar, Date picker, File input, Slider.
-- Dark mode: token đã là biến CSS nên có thể thêm bằng cách truyền bộ `colors` tối. Chưa làm vì FD không có.
-- Tương phản màu FD: chữ xám `textMuted` trên nền xám và cam trên trắng chưa đạt 4.5:1 ở vài chỗ. Test axe đang tắt rule `color-contrast`; nếu cần đạt WCAG AA thì chỉnh bằng `colors`.
+- Dark mode: token đã là biến CSS nên có thể thêm bằng cách truyền bộ `colors` tối. Chưa làm vì các app hiện tại chưa cần.
+- Tương phản của màu mặc định: chữ xám `textMuted` trên nền xám và cam trên trắng chưa đạt 4.5:1 ở vài chỗ. Test axe đang tắt rule `color-contrast`; nếu cần đạt WCAG AA thì chỉnh bằng `colors`.
 - ESLint của kit chỉ kiểm tra code của kit. Chặn import `@mui/*` và mã hex trong app nên cấu hình ở cấp workspace.
+
+## Thay đổi ở 0.5.1
+
+- Kit là platform độc lập: tài liệu, comment và dữ liệu mẫu không còn tham chiếu tới app cũ. Ví dụ dùng app mẫu "Demo Calculator".
+- Bỏ `scripts/copy-assets.sh`: logo và ảnh mẫu đã nằm sẵn trong `public/images`.
+- Showcase: preset màu mặc định đổi tên thành "Orange (default)".
+- API không đổi.
 
 ## Thay đổi ở 0.5
 
 - **Font đổi sang Inter** (mã nguồn mở, SIL OFL 1.1) thay cho Helvetica Neue LT Std (thương mại). Kit tự mang font theo, app không cần chép file font và không cần license font riêng. Hỗ trợ tiếng Việt, Latin mở rộng, Cyrillic, Greek.
 - API không đổi. Giao diện thay đổi nhẹ: chữ rộng hơn khoảng 5–8%; nên xem lại các chỗ có chiều rộng cố định (nút, nhãn, cột bảng).
-- `scripts/copy-assets.sh` chỉ còn chép logo.
 - Nút "?" của `InfoTip` dùng font chung của kit.
 
 ## Thay đổi ở 0.4
@@ -761,4 +760,4 @@ Kit không chứa font thương mại. Font Inter (https://rsms.me/inter) dùng 
 
 Font chia theo `unicode-range` (Latin, Latin mở rộng, tiếng Việt, Cyrillic, Greek), nên trình duyệt chỉ tải phần mà trang dùng tới. Chữ Inter không có (Trung, Nhật, Hàn, Thái, Ả Rập…) được hiển thị bằng font hệ thống đứng sau trong `--font-sans`.
 
-Đến 0.4, kit dùng Helvetica Neue LT Std chép từ repo Blueprint vào `public/fonts`. Các file đó không còn được dùng và đã được xóa khỏi toàn bộ lịch sử git; nếu máy bạn còn thư mục `public/fonts` thì có thể xóa (nó vẫn nằm trong `.gitignore`). Font serif `'Clarendon'` trong token chỉ là tên font để trình duyệt tìm trên máy; kit không kèm file, nên không phát sinh license.
+Đến 0.4, kit dùng Helvetica Neue LT Std (font thương mại) đặt trong `public/fonts`. Các file đó không còn được dùng và đã được xóa khỏi toàn bộ lịch sử git; nếu máy bạn còn thư mục `public/fonts` thì có thể xóa (nó vẫn nằm trong `.gitignore`). Font serif `'Clarendon'` trong token chỉ là tên font để trình duyệt tìm trên máy; kit không kèm file, nên không phát sinh license.

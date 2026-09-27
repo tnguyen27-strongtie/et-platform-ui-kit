@@ -16,7 +16,7 @@
 /* Scan the kit's own sources/bundle for Tailwind classes (src/ in the repo, dist/ when installed). */
 @source "../";
 
-/* Blueprint density classes, applied by PlatformThemeProvider on <body>. */
+/* Density (text size) classes, applied by PlatformThemeProvider on <body>. */
 @custom-variant standard (.density-standard &);
 @custom-variant expanded (.density-expanded &);
 /* Style MUI SVG icons inside an element: icon:text-brand */
@@ -95,7 +95,7 @@
   }
 }
 
-/* react-toastify, as configured in FD, colored from the role tokens */
+/* react-toastify, colored from the role tokens */
 @layer components {
   :root {
     --toastify-color-success: var(--color-success);

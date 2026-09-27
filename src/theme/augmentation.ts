@@ -39,7 +39,7 @@ declare module '@mui/material/Button' {
     fab: true;
     /** Destructive action (delete, reset). */
     danger: true;
-    // MUI built-ins that FD never uses are turned off to keep one vocabulary.
+    // MUI built-ins the platform does not use are turned off to keep one vocabulary.
     contained: false;
     outlined: false;
   }

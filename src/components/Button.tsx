@@ -7,7 +7,7 @@ import { forwardRef } from 'react';
 import { colors, scales } from '../tokens/tokens';
 
 /**
- * FD button. Variants: primary | primaryDark | secondary | text | textDark | tertiary | default | fab.
+ * Button. Variants: primary | primaryDark | secondary | text | textDark | tertiary | default | fab.
  * Sizes: small | medium. Styling lives in the theme (MuiButton.variants).
  *
  * - Renders type="button" by default, so it never submits a form by accident; pass type="submit" explicitly.
@@ -22,7 +22,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 /** Icon-only buttons have no visible text, so an accessible name is required. */
 export type IconButtonProps = MuiIconButtonProps & ({ 'aria-label': string } | { 'aria-labelledby': string });
 
-/** Round icon-only button (FD "icon" variant). Pair with a Tooltip carrying the same text. */
+/** Round icon-only button (round "icon" variant). Pair with a Tooltip carrying the same text. */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(props, ref) {
   return <MuiIconButton ref={ref} {...props} />;
 });

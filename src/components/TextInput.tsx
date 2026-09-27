@@ -5,14 +5,14 @@ import { forwardRef, type ReactNode } from 'react';
 import { useFormField } from './FormField';
 
 export interface TextInputProps extends Omit<OutlinedInputProps, 'startAdornment' | 'endAdornment'> {
-  /** Text or node shown inside the field before the value (FD addonBefore). */
+  /** Text or node shown inside the field before the value (e.g. "$", an icon). */
   addonBefore?: ReactNode;
-  /** Unit or action after the value (FD addonAfter), e.g. "in", "mm", "lbs". */
+  /** Unit or action after the value, e.g. "in", "mm", "lbs". */
   addonAfter?: ReactNode;
 }
 
 /**
- * FD InputGroup: 40px field, muted ring, orange focus ring, red ring on error.
+ * Text field: 40px high, muted ring, orange focus ring, red ring on error.
  * Multi-line text: pass `multiline` and `minRows`. For numbers use NumberInput.
  * Inside a FormField, id, aria-describedby, aria-invalid and required are wired automatically.
  */

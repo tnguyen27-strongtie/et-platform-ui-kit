@@ -62,4 +62,4 @@ export const sampleReleases: ReleaseNote[] = [
 ];
 
 export const sampleIntro =
-  'Find strong and reliable fastening solutions for different regions using Fastener Designer. It includes calculations for the USA, Canada, and the EU, using their respective standards: NDS for the USA, CSA O86:19 for Canada, and EN 1995 for the EU.';
+  'Demo Calculator checks timber connections for different regions. It includes calculations for the USA, Canada, and the EU, using their respective standards: NDS for the USA, CSA O86:19 for Canada, and EN 1995 for the EU.';

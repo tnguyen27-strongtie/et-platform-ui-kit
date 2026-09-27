@@ -798,9 +798,9 @@ function ReleaseNotesFixture() {
       <ReleaseNotesDialog
         open={open}
         onClose={() => setOpen(false)}
-        appName="FD"
-        appTitle="Fastener Designer"
-        intro="Fastener Designer finds fastening solutions."
+        appName="DC"
+        appTitle="Demo Calculator"
+        intro="Demo Calculator checks timber connections."
         releases={releases}
         lastSeenVersion="2.4.1"
       />

@@ -8,7 +8,7 @@ export interface HelpPopoverProps {
   label?: string;
 }
 
-/** FD orange "?" help bubble. Same as <InfoTip> with the default trigger; kept for existing code. */
+/** Brand-colored "?" help bubble. Same as <InfoTip> with the default trigger; kept for existing code. */
 export function HelpPopover({ content, placement = 'top', label = 'More information' }: HelpPopoverProps) {
   return (
     <InfoTip label={label} placement={placement}>

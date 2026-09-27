@@ -31,7 +31,7 @@ type Point = { x: number; y: number };
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 
 /**
- * Pan/zoom image viewer for 2D drawings and illustrations (FD used @panzoom/panzoom).
+ * Pan/zoom image viewer for 2D drawings and illustrations, with no extra dependency.
  * Wheel or trackpad pinch zooms around the cursor, two-finger pinch zooms on touch screens,
  * drag pans, double-click resets. Call ref.reset() from a ResetViewButton.
  * A new `src` resets the view and shows the loading indicator until it has loaded.

@@ -39,8 +39,8 @@ function AppShellDemo() {
           seen.markSeen();
           setManual(false);
         }}
-        appName="FD"
-        appTitle="Fastener Designer"
+        appName="DC"
+        appTitle="Demo Calculator"
         intro={sampleIntro}
         releases={sampleReleases}
         lastSeenVersion={seen.lastSeenVersion}
@@ -83,11 +83,11 @@ export function Patterns() {
         id="release-notes"
         title="Release notes"
         description="&quot;What's new&quot; dialog: releases newest first by version (2.10 after 2.9), latest open, categories as badges, optional headings (regions) with bullets, links in items. useReleaseNotesSeen opens it once after an update (not on a first visit) and marks newer releases &quot;New&quot;. ReleaseNotes alone fits a help page. All text can be translated."
-        code={`const seen = useReleaseNotesSeen({ currentVersion: APP_VERSION, storageKey: 'fd:release-notes' });
+        code={`const seen = useReleaseNotesSeen({ currentVersion: APP_VERSION, storageKey: 'demo-calc:release-notes' });
 <ReleaseNotesDialog
   open={seen.shouldOpen || helpOpen}
   onClose={() => { seen.markSeen(); setHelpOpen(false); }}
-  appName="FD" appTitle="Fastener Designer" intro="…"
+  appName="DC" appTitle="Demo Calculator" intro="…"
   releases={releases}                     // from the app's release-notes JSON
   lastSeenVersion={seen.lastSeenVersion} />
 

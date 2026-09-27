@@ -47,7 +47,7 @@ export const THEME_CONFIG_VERSION = 1;
 export interface PlatformThemeConfig {
   /** Format version, for future migrations. */
   version?: typeof THEME_CONFIG_VERSION;
-  /** Human-readable name, e.g. "Fastener Designer". */
+  /** Human-readable name, e.g. "Demo Calculator". */
   name?: string;
   /** Only the roles you change. Brand shades are derived from `brand` unless given. */
   colors?: ColorConfig;

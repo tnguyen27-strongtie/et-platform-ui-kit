@@ -206,9 +206,9 @@ export function ReleaseNotes({
 export interface ReleaseNotesDialogProps extends ReleaseNotesProps {
   open: boolean;
   onClose: () => void;
-  /** Short product name in brand color, e.g. "FD". */
+  /** Short product name in brand color, e.g. "DC". */
   appName: ReactNode;
-  /** Full product name under it, e.g. "Fastener Designer". */
+  /** Full product name under it, e.g. "Demo Calculator". */
   appTitle?: ReactNode;
   /** Paragraph about the product above the releases. */
   intro?: ReactNode;

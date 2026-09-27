@@ -22,7 +22,7 @@ export interface ComboboxProps<V extends string | number> {
 const optionText = (o: SelectOption<string | number>) =>
   o.searchText ?? (typeof o.label === 'string' || typeof o.label === 'number' ? String(o.label) : String(o.value));
 
-/** FD searchable Dropdown (MUI Autocomplete). Give `searchText` to options whose label is not a string. */
+/** Searchable dropdown (MUI Autocomplete). Give `searchText` to options whose label is not a string. */
 export function Combobox<V extends string | number = string>({
   id,
   options,

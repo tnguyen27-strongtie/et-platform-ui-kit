@@ -15,8 +15,8 @@ export interface SectionLayoutProps {
   illustration: ReactNode;
   output: ReactNode;
   /**
-   * How Illustration and Output share the right side on desktop (FD "orientation" setting):
-   * 'rows' = stacked (FD default "horizontal"), 'columns' = side by side.
+   * How Illustration and Output share the right side on desktop (a user "orientation" setting):
+   * 'rows' = stacked (default), 'columns' = side by side.
    * Tablet always stacks them.
    */
   secondarySplit?: 'rows' | 'columns';
@@ -32,7 +32,7 @@ export interface SectionLayoutProps {
 
 const defaultLabels: Record<SectionId, ReactNode> = { input: 'Input', illustration: '3D', output: 'Output' };
 
-/** Pane minimum before collapsing, as in FD (content was hidden under 250px). */
+/** Pane minimum before collapsing: narrower than 250px, inputs are no longer usable. */
 const PANE_MIN = '250px';
 const RAIL = '2rem';
 
@@ -142,7 +142,7 @@ function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileA
   const tabs = mobileTabs ?? [
     { value: 'input', label: labels.input, content: input, keepMounted: true },
     { value: 'illustration', label: labels.illustration, content: illustration },
-    // Output stays mounted so result queries keep running while hidden (FD behaviour).
+    // Output stays mounted so result queries keep running while hidden.
     { value: 'output', label: labels.output, content: output, keepMounted: true },
   ];
   const [current, setCurrent] = useState(tabs[0]?.value ?? 'input');
@@ -168,7 +168,7 @@ function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileA
 }
 
 /**
- * FD three-section workspace.
+ * Three-section calculator workspace.
  * - Desktop (>= 992px): Input | (Illustration / Output), resizable, collapsible Input.
  * - Tablet (768-991px): same, Illustration and Output always stacked.
  * - Mobile (< 768px): one section at a time, switched by tabs.
@@ -185,7 +185,7 @@ export function SectionLayout({ secondarySplit = 'rows', labels: labelOverrides,
   return <DesktopLayout {...props} labels={labels} secondarySplit={isTablet ? 'rows' : secondarySplit} />;
 }
 
-/** Fills the viewport below the top nav (FD .workspace). */
+/** Fills the viewport below the top nav. */
 export function Workspace({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <main className={cn('relative h-[calc(var(--viewport-height)-var(--top-nav-height))] w-full overflow-hidden bg-surface-app', className)}>

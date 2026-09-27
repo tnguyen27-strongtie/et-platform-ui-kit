@@ -56,7 +56,7 @@ export interface InfoTipProps {
   label?: string;
   /**
    * Trigger:
-   * - 'help' (default): the FD orange "?" bubble, sized to sit next to a label
+   * - 'help' (default): the brand-colored "?" bubble, sized to sit next to a label
    * - 'info': an outlined "i" icon button
    * - an element, e.g. <Button variant="text">How is this calculated?</Button>
    */

@@ -32,10 +32,10 @@ describe('isValidColor', () => {
 
 describe('parseThemeConfig', () => {
   it('accepts a valid theme and keeps only known parts', () => {
-    const r = parseThemeConfig('{"version":1,"name":" FD ","colors":{"brand":"#1f5f99","nope":"#000"},"density":"expanded","extra":1}');
+    const r = parseThemeConfig('{"version":1,"name":" Demo ","colors":{"brand":"#1f5f99","nope":"#000"},"density":"expanded","extra":1}');
     assert.equal(r.ok, true);
     if (!r.ok) return;
-    assert.deepEqual(r.config, { version: 1, name: 'FD', colors: { brand: '#1f5f99' }, density: 'expanded' });
+    assert.deepEqual(r.config, { version: 1, name: 'Demo', colors: { brand: '#1f5f99' }, density: 'expanded' });
     assert.deepEqual(r.warnings, ['Unknown key "extra" ignored.', 'Unknown color role "nope" ignored.']);
   });
   it('reports invalid JSON, values and versions as errors', () => {
@@ -58,11 +58,11 @@ describe('export', () => {
     assert.equal(themeConfigToJson({}), '{\n  "version": 1\n}\n');
   });
   it('produces a theme.config.ts that round-trips', () => {
-    const ts = themeConfigToTs({ name: 'FD', colors: { brand: '#1f5f99' } });
+    const ts = themeConfigToTs({ name: 'Demo', colors: { brand: '#1f5f99' } });
     assert.match(ts, /import \{ definePlatformTheme \} from '@platform\/ui';/);
     assert.match(ts, /colors: \{\n\s+brand: "#1f5f99"/);
     const json = ts.slice(ts.indexOf('(') + 1, ts.lastIndexOf(')')).replace(/(\w+):/g, '"$1":');
-    assert.deepEqual(JSON.parse(json), { version: 1, name: 'FD', colors: { brand: '#1f5f99' } });
+    assert.deepEqual(JSON.parse(json), { version: 1, name: 'Demo', colors: { brand: '#1f5f99' } });
   });
 });
 

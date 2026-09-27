@@ -210,7 +210,7 @@ export function ThemeBuilder() {
           <FormField label="Theme name" htmlFor="theme-name" description="Stored in the file; optional.">
             <TextInput
               value={config.name ?? ''}
-              placeholder="e.g. Fastener Designer"
+              placeholder="e.g. Demo Calculator"
               onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value || undefined }))}
             />
           </FormField>
@@ -278,7 +278,7 @@ export function ThemeBuilder() {
       <DemoSection
         id="contrast"
         title="Contrast check"
-        description="WCAG 2.1 AA: text needs 4.5:1 against its background, UI parts such as borders and focus rings 3:1. Some FD defaults do not pass; fix them here if the product must meet AA."
+        description="WCAG 2.1 AA: text needs 4.5:1 against its background, UI parts such as borders and focus rings 3:1. Some default colors do not pass; fix them here if the product must meet AA."
       >
         <DataTable aria-label="Contrast results">
           <DataTable.Head>

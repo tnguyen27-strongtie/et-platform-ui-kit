@@ -55,7 +55,7 @@ export function Feedback() {
       <DemoSection
         id="loading"
         title="Spinner and LoadingIndicator"
-        description="Spinner: small, inline (a list loading, a button area). LoadingIndicator: FD &quot;Updating Results&quot; overlay covering a whole pane. Both are announced to screen readers."
+        description="Spinner: small, inline (a list loading, a button area). LoadingIndicator: &quot;Updating results&quot; overlay covering a whole pane. Both are announced to screen readers."
         code={`<Spinner size={16} label="Loading products" />
 <VisualizationStage loading={isRendering}>…</VisualizationStage>   // uses LoadingIndicator`}
       >

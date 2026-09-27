@@ -41,8 +41,8 @@ const headerClass = 'flex shrink-0 items-center border-b-2 border-true-gray-20 b
 const tabsSx = { flex: 1, border: 0, backgroundColor: 'transparent' } as const;
 
 /**
- * FD section panel (Input / Output / Illustration): gray tab bar on top, scrollable body.
- * A single-title section renders its title as the only tab, exactly like FD.
+ * Section panel (Input / Output / Illustration): gray tab bar on top, scrollable body.
+ * A single-title section renders its title as the only tab, so every section header looks the same.
  */
 export function Section<V extends string>(props: SectionProps<V>) {
   const { actions, className, bodyClassName } = props;
