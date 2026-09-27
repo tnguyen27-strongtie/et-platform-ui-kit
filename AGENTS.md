@@ -17,7 +17,7 @@ The repo also contains a **showcase** (`src/showcase/`, `pnpm dev`) that demos e
 | Fast checks (run before saying you are done) | `pnpm check` = lint + typecheck + unit tests + library build |
 | E2E (Playwright, starts its own server) | `pnpm test:e2e` (Chromium and WebKit, about 2 minutes); one file: `pnpm test:e2e tests/e2e/components/forms.spec.ts`; one browser: `--project desktop` or `--project safari` |
 | Regenerate token CSS after editing `tokens.ts` | `pnpm tokens` |
-| Package | `pnpm pack` |
+| Package | `pnpm pack`, then `scripts/verify-pack.sh <tgz>`. CI keeps a tarball per commit; tags `vX.Y.Z` create a GitHub Release |
 
 ## Map
 

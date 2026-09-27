@@ -37,9 +37,11 @@ pnpm dev   # showcase at http://localhost:5173
 | `pnpm check` | `lint` + `typecheck` + `test` + `build`, the same as the first CI job |
 | `pnpm build` | Library build to `dist/` (ESM + `.d.ts` + CSS) |
 | `pnpm build:showcase` | Showcase build to `dist-showcase/` |
-| `pnpm pack` | Tarball `platform-ui-x.y.z.tgz` (runs `build` first) |
+| `pnpm pack` | Tarball `platform-ui-x.y.z.tgz` (runs `build` first); check it with `scripts/verify-pack.sh <tgz>` |
 
-CI (`.github/workflows/ci.yml`) runs `lint`, `typecheck`, `test`, `build`, checks that `tokens.generated.css` is up to date, and runs the e2e suite in Chromium and WebKit (Safari's engine) as two parallel jobs on every pull request.
+CI (`.github/workflows/ci.yml`) runs `lint`, `typecheck`, `test`, `build`, checks that `tokens.generated.css` is up to date, and runs the e2e suite in Chromium and WebKit (Safari's engine) as two parallel jobs on every pull request. It also packs the kit, checks the tarball with `scripts/verify-pack.sh`, and keeps it for 30 days as an artifact named `platform-ui-<version>-<commit>` on the run's summary page, so a branch can be tried in an app without building it locally.
+
+Pushing a tag `vX.Y.Z` runs `.github/workflows/release.yml`: the same CI, a check that the tag matches `package.json`, then a GitHub Release with the CHANGELOG section as notes and that tarball attached.
 
 Keyboard tests that press Tab use `tabKey(browserName)` from `tests/e2e/helpers.ts`: Safari's default Tab skips buttons, checkboxes and links, and Option+Tab reaches them.
 

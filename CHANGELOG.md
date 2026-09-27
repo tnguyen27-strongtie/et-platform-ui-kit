@@ -16,6 +16,7 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 ### Changed
 
 - The e2e suite and CI also run in WebKit (Safari's engine), desktop and iPhone.
+- CI packs the kit on every push and keeps the tarball as a run artifact (`platform-ui-<version>-<commit>`, 30 days). Pushing a tag `vX.Y.Z` creates a GitHub Release with the tarball and the changelog section.
 
 ## [0.5.1] - 2026-09-27
 

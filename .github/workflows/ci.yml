@@ -4,6 +4,12 @@ on:
   pull_request:
   push:
     branches: [main]
+  # release.yml runs the same checks before publishing a tag
+  workflow_call:
+    outputs:
+      artifact:
+        description: Name of the artifact holding the packed .tgz
+        value: ${{ jobs.check.outputs.artifact }}
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,6 +18,8 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.pack.outputs.artifact }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
@@ -26,6 +34,19 @@ jobs:
       - run: pnpm build
       - name: Tokens file is up to date
         run: git diff --exit-code src/theme/tokens.generated.css
+      - name: Pack
+        id: pack
+        run: |
+          pnpm pack --pack-destination pack
+          scripts/verify-pack.sh pack/*.tgz
+          version=$(node -p "require('./package.json').version")
+          echo "artifact=platform-ui-${version}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pack.outputs.artifact }}
+          path: pack/*.tgz
+          if-no-files-found: error
+          retention-days: 30
 
   e2e:
     name: e2e (${{ matrix.browser }})
