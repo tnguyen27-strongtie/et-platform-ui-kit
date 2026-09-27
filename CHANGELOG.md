@@ -2,6 +2,14 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] - 2026-09-28
+
+### Added
+
+- `Accordion`: `help` and `helpLabel` add a "?" bubble right after the title, outside the header button (same behavior as `Checkbox help`): it is not part of the header's accessible name and opening it does not toggle the section.
+
+No breaking changes.
+
 ## [0.9.0] - 2026-09-28
 
 ### Added

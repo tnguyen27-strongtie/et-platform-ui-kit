@@ -9,6 +9,7 @@ import { type ReactNode, useCallback, useId, useMemo, useState } from 'react';
 
 import { useStableValue } from '../utils/useStableValue';
 import { IconButton } from './Button';
+import { InfoTip } from './InfoTip';
 
 export interface AccordionProps {
   title: ReactNode;
@@ -18,15 +19,47 @@ export interface AccordionProps {
   onChange?: (expanded: boolean) => void;
   /** Heading level wrapping the header button, to fit the page outline. Default h3. */
   headingLevel?: 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  /** Content of a "?" bubble right after the title, outside the header button (not part of its name). */
+  help?: ReactNode;
+  /** Accessible name of the "?" button, e.g. "About loads". Default "More information". */
+  helpLabel?: string;
   className?: string;
+}
+
+/**
+ * Header with a "?" bubble. A button cannot contain another button, so the "?" sits in a layer over the header: an
+ * invisible copy of the title (same font and padding as the summary, chevron width reserved) places it right after the
+ * text, and `relative` stacks the layer above the (positioned) summary button. MUI reads `id` and `aria-controls` from
+ * the accordion's first child to label its region, so this wrapper takes them like the summary itself.
+ */
+function HeaderWithHelp({ title, help, helpLabel, children }: { id: string; 'aria-controls': string; title: ReactNode; help: ReactNode; helpLabel?: string; children: ReactNode }) {
+  return (
+    <div className="grid">
+      {children}
+      <div className="pointer-events-none relative col-start-1 row-start-1 self-center py-2 pr-[calc(1rem+24px)] pl-2 text-sm font-bold">
+        <span aria-hidden className="invisible">
+          {title}
+        </span>
+        <span className="pointer-events-auto ml-1 inline-flex align-middle">
+          <InfoTip label={helpLabel}>{help}</InfoTip>
+        </span>
+      </div>
+    </div>
+  );
 }
 
 /**
  * Section accordion: light gray header, brand-colored chevron rotating 90deg when open.
  * The header is a button inside a heading (WAI-ARIA accordion pattern): Enter/Space toggle.
  */
-export function Accordion({ title, children, defaultExpanded = true, expanded, onChange, headingLevel = 'h3', className }: AccordionProps) {
+export function Accordion({ title, children, defaultExpanded = true, expanded, onChange, headingLevel = 'h3', help, helpLabel, className }: AccordionProps) {
   const id = useId();
+  const headerIds = { id: `${id}-header`, 'aria-controls': `${id}-content` };
+  const summary = (
+    <AccordionSummary expandIcon={<KeyboardArrowRightIcon />} {...headerIds} className={help ? 'col-start-1 row-start-1' : undefined}>
+      {title}
+    </AccordionSummary>
+  );
   return (
     <MuiAccordion
       slots={{ heading: headingLevel }}
@@ -37,9 +70,13 @@ export function Accordion({ title, children, defaultExpanded = true, expanded, o
       onChange={(_, isExpanded) => onChange?.(isExpanded)}
       className={className}
     >
-      <AccordionSummary expandIcon={<KeyboardArrowRightIcon />} aria-controls={`${id}-content`} id={`${id}-header`}>
-        {title}
-      </AccordionSummary>
+      {help ? (
+        <HeaderWithHelp {...headerIds} title={title} help={help} helpLabel={helpLabel}>
+          {summary}
+        </HeaderWithHelp>
+      ) : (
+        summary
+      )}
       {/* MUI gives the collapse region the id named by aria-controls; do not repeat it here. */}
       <AccordionDetails>{children}</AccordionDetails>
     </MuiAccordion>

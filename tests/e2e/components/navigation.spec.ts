@@ -55,6 +55,37 @@ test.describe('Accordion', () => {
     await openFixture(page, 'accordion');
   });
 
+  test('help: the "?" sits right after the title, outside the header button, and does not toggle it', async ({ page }) => {
+    const header = page.getByRole('button', { name: 'Section with help' });
+    await expect(header).toHaveAccessibleName('Section with help');
+    const help = page.getByRole('button', { name: 'About loads' });
+    // Right after the title text, well before the chevron at the far right.
+    // The text itself (its container stretches to the chevron), measured with a Range.
+    const title = await header.evaluate((el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const range = document.createRange();
+      range.selectNodeContents(walker.nextNode()!);
+      const r = range.getBoundingClientRect();
+      return { right: r.right, middle: r.top + r.height / 2 };
+    });
+    const helpBox = (await help.boundingBox())!;
+    expect(helpBox.x - title.right).toBeGreaterThanOrEqual(0);
+    expect(helpBox.x - title.right).toBeLessThan(12);
+    expect(Math.abs(helpBox.y + helpBox.height / 2 - title.middle)).toBeLessThan(4);
+
+    await help.click();
+    await expect(page.getByRole('dialog', { name: 'About loads' })).toContainText('Expand to enter the loads.');
+    await page.keyboard.press('Escape');
+    await expect(help).toBeFocused();
+    await expect(header).toHaveAttribute('aria-expanded', 'false');
+    await header.click();
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
+    // The region is still labelled by the header and named by its aria-controls.
+    await expect(page.getByRole('region', { name: 'Section with help' })).toContainText('Help body');
+    const regionId = await header.getAttribute('aria-controls');
+    await expect(page.locator(`[id="${regionId}"]`)).toHaveCount(1);
+  });
+
   test('exclusive group keeps at most one section open', async ({ page }) => {
     const x = page.getByRole('button', { name: 'Exclusive X' });
     const y = page.getByRole('button', { name: 'Exclusive Y' });

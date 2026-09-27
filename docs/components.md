@@ -451,6 +451,8 @@ const group = useAccordionGroup(['loads', 'members'] as const);
 | `defaultExpanded` | `boolean` | `true` | Uncontrolled initial state |
 | `expanded`, `onChange` | `boolean`, `(expanded: boolean) => void` | | Controlled state |
 | `headingLevel` | `'h2'`–`'h6'` | `'h3'` | The header sits inside a heading of this level |
+| `help` | `ReactNode` | | Content of a "?" bubble right after the title (an `InfoTip`). It sits outside the header button, so it is not part of the button's name and opening it does not toggle the section |
+| `helpLabel` | `string` | `'More information'` | Accessible name of the "?" button, e.g. "About loads" |
 
 `useAccordionGroup(keys, options?)` shares state across several accordions and returns `{ item(key), allExpanded, allCollapsed, expandAll, collapseAll, toggleAll }`. `ExpandCollapseAllButton` toggles the group: "Collapse all" while any section is open, otherwise "Expand all".
 

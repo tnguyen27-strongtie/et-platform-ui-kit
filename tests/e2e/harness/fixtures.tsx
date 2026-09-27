@@ -395,6 +395,9 @@ function AccordionFixture() {
       <Accordion title="Legacy Q" {...legacy.item('q')}>
         Q body
       </Accordion>
+      <Accordion title="Section with help" defaultExpanded={false} help="Expand to enter the loads." helpLabel="About loads">
+        Help body
+      </Accordion>
       <Out id="events" value={events} />
     </>
   );

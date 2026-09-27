@@ -77,10 +77,11 @@ export function Navigation() {
       <DemoSection
         id="accordion"
         title="Accordion"
-        description="Collapsible input groups. useAccordionGroup + ExpandCollapseAllButton give the Input panel its collapse-all button. exclusive keeps one section open at a time. headingLevel fits the page outline."
+        description="Collapsible input groups. useAccordionGroup + ExpandCollapseAllButton give the Input panel its collapse-all button. exclusive keeps one section open at a time. headingLevel fits the page outline. help adds a help bubble after the title."
         code={`const group = useAccordionGroup(['connection', 'loads'] as const);
 <Section title="Input" actions={<ExpandCollapseAllButton group={group} />}>
   <Accordion title="Connection" {...group.item('connection')}>…</Accordion>
+  <Accordion title="Loads" help="Expand to enter distributed or point loads." helpLabel="About loads" {...group.item('loads')}>…</Accordion>
 </Section>
 // One open at a time (no expand-all button)
 const single = useAccordionGroup(['seismic', 'wind'] as const, { exclusive: true, initial: { seismic: true } });`}
@@ -92,7 +93,7 @@ const single = useAccordionGroup(['seismic', 'wind'] as const, { exclusive: true
                 <TextInput defaultValue="Wood to wood" />
               </FormField>
             </Accordion>
-            <Accordion title="Loads" {...group.item('loads')}>
+            <Accordion title="Loads" help="Expand to enter distributed or point loads." helpLabel="About loads" {...group.item('loads')}>
               <p className="m-0 text-sm">Load inputs go here.</p>
             </Accordion>
             <Accordion title="Members" {...group.item('members')}>
