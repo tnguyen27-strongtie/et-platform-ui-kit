@@ -1,6 +1,6 @@
 # Contributing
 
-How to develop, test and release `@platform/ui`.
+How to develop, test and release `@platform/ui`. Coding agents: start with [AGENTS.md](AGENTS.md) and the skills in `.claude/skills/`.
 
 - [Development setup](#development-setup)
 - [Scripts](#scripts)

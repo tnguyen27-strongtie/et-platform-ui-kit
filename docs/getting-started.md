@@ -6,6 +6,7 @@
 - [What the provider does](#what-the-provider-does)
 - [Imports](#imports)
 - [The showcase](#the-showcase)
+- [Working with AI agents](#working-with-ai-agents)
 
 ## Installation
 
@@ -140,3 +141,14 @@ pnpm dev   # http://localhost:5173
 | Full-screen workspace | `/#workspace`, `/#workspace-columns` | Complete calculator layout, stacked or side by side |
 
 Each demo has a direct link: `/#/<page>/<id>`, for example `/#/data/grid-view`. The brand picker in the top bar previews other brand colors across every page.
+
+## Working with AI agents
+
+The kit repository includes a skill that teaches coding agents (Claude Code and others that read `SKILL.md` files) how to build app screens with the kit: which component to pick, form and validation patterns, theming rules, and a pre-finish checklist. Copy it into the app repository:
+
+```bash
+mkdir -p .claude/skills
+cp -r ../et-platform-ui-kit/.claude/skills/platform-ui-app .claude/skills/
+```
+
+The skill points agents to the docs shipped in `node_modules/@platform/ui/docs/`, so it stays accurate as the kit is upgraded. For agents without skill support, reference the file from the app's `AGENTS.md` or `CLAUDE.md`.

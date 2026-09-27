@@ -123,6 +123,10 @@ pnpm dev   # http://localhost:5173
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, project structure, testing and release process.
 
+## AI agents
+
+[AGENTS.md](AGENTS.md) gives coding agents the context of this repository, and `.claude/skills/` holds step-by-step skills for changing the kit (`platform-ui-component`), releasing it (`platform-ui-release`) and building app screens with it (`platform-ui-app`; [copy it into app repositories](docs/getting-started.md#working-with-ai-agents)).
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
