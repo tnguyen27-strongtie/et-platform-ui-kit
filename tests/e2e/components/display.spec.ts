@@ -165,8 +165,23 @@ test.describe('Section footer', () => {
     expect(restart.x).toBeLessThan(calc.x); // footerAlign="between": primary last, at the right
     const last = page.getByRole('textbox', { name: 'Field 8' });
     await last.focus();
-    const field = (await last.boundingBox())!;
-    expect(field.y + field.height).toBeLessThanOrEqual(calc.y);
+    // The footer is outside the scroll area, so the two never overlap, and the focused field
+    // (scrolled into view by the browser; how far is up to the engine) is not under anything.
+    const layout = await last.evaluate((el) => {
+      const body = el.closest('.overflow-auto')!;
+      const footer = body.nextElementSibling!;
+      const r = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return {
+        bodyBottom: body.getBoundingClientRect().bottom,
+        footerTop: footer.getBoundingClientRect().top,
+        footerHasCalculate: footer.textContent?.includes('Calculate') ?? false,
+        centerIsField: hit === el,
+      };
+    });
+    expect(layout.footerHasCalculate).toBe(true);
+    expect(layout.bodyBottom).toBeLessThanOrEqual(layout.footerTop);
+    expect(layout.centerIsField).toBe(true);
     await calculate.click();
     await expectOut(page, 'runs', 1);
   });
