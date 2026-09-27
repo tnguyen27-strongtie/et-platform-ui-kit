@@ -1,60 +1,12 @@
 /*
- * Brand fonts. Files are copied from the Blueprint repo by scripts/copy-assets.sh
- * into public/fonts/. Helvetica Neue LT Std is a licensed font: confirm the licence
- * covers the new product before shipping.
+ * Brand font: Inter (SIL Open Font License 1.1, https://rsms.me/inter), variable weight 100-900.
+ * Shipped with the kit through @fontsource-variable/inter, so apps copy no font files.
  *
- * Metric overrides: the LT Std files set ascent = cap height (714/1000) with a 286 descent
- * and a 200 line gap, so glyphs sit ~0.14em above the middle of their line box and look
- * misaligned next to icons (checkbox, radio, switch, button icons, select chevrons).
- * Overriding to Helvetica/Arial proportions centers the text in its box, so every
- * flex `align-items: center` pairing lines up without per-component nudges.
+ * Split by unicode-range (Latin, Latin Extended, Vietnamese, Cyrillic, Greek): the browser
+ * downloads only the subsets the page actually shows. Scripts Inter does not cover (CJK, Thai,
+ * Arabic...) fall back per glyph to the system fonts listed after it in --font-sans.
+ *
+ * No metric overrides needed: Inter's ascent/descent put the cap height in the middle of the
+ * line box, so text and icons paired with `align-items: center` line up as they are.
  */
-@font-face {
-  font-family: 'HelveticaNeueLTStd';
-  font-weight: 300;
-  font-display: swap;
-  ascent-override: 90.5%;
-  descent-override: 21.2%;
-  line-gap-override: 0%;
-  src: url('/fonts/HelveticaNeueLTStd-Lt.otf') format('opentype');
-}
-
-@font-face {
-  font-family: 'HelveticaNeueLTStd';
-  font-weight: 400;
-  font-display: swap;
-  ascent-override: 90.5%;
-  descent-override: 21.2%;
-  line-gap-override: 0%;
-  src: url('/fonts/HelveticaNeueLTStd-Roman.otf') format('opentype');
-}
-
-@font-face {
-  font-family: 'HelveticaNeueLTStd';
-  font-weight: 500;
-  font-display: swap;
-  ascent-override: 90.5%;
-  descent-override: 21.2%;
-  line-gap-override: 0%;
-  src: url('/fonts/HelveticaNeueLTStd-Md.otf') format('opentype');
-}
-
-@font-face {
-  font-family: 'HelveticaNeueLTStd';
-  font-weight: 700;
-  font-display: swap;
-  ascent-override: 90.5%;
-  descent-override: 21.2%;
-  line-gap-override: 0%;
-  src: url('/fonts/HelveticaNeueLTStd-Bd.otf') format('opentype');
-}
-
-@font-face {
-  font-family: 'HelveticaNeueLTStd';
-  font-weight: 800;
-  font-display: swap;
-  ascent-override: 90.5%;
-  descent-override: 21.2%;
-  line-gap-override: 0%;
-  src: url('/fonts/HelveticaNeueLTStd-Hv.otf') format('opentype');
-}
+@import '@fontsource-variable/inter/wght.css';

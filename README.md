@@ -20,9 +20,10 @@ Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (l
 12. [Đưa vào Nx workspace](#đưa-vào-nx-workspace)
 13. [Khác biệt so với FD](#khác-biệt-so-với-fd)
 14. [Chưa có trong kit](#chưa-có-trong-kit)
-15. [Thay đổi ở 0.4](#thay-đổi-ở-04)
-16. [Thay đổi ở 0.3](#thay-đổi-ở-03)
-17. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
+15. [Thay đổi ở 0.5](#thay-đổi-ở-05)
+16. [Thay đổi ở 0.4](#thay-đổi-ở-04)
+17. [Thay đổi ở 0.3](#thay-đổi-ở-03)
+18. [Thay đổi so với 0.1](#thay-đổi-so-với-01)
 
 ## Yêu cầu
 
@@ -38,6 +39,7 @@ Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (l
 | `react-toastify` | 11 |
 | `@tanstack/react-table` | 9.2 (logic của GridView, không kèm giao diện) |
 | `clsx`, `tailwind-merge` | 2.1, 3.7 |
+| `@fontsource-variable/inter` | 5.x (font Inter, SIL OFL 1.1, đi kèm kit) |
 | TypeScript / Vite | 6.0 / 8.3 |
 
 ## Bắt đầu nhanh
@@ -45,7 +47,7 @@ Trạng thái: ESLint và `tsc` strict pass, library build pass, 40 unit test (l
 ```bash
 pnpm install
 pnpm tokens                             # sinh src/theme/tokens.generated.css từ tokens.ts
-scripts/copy-assets.sh ../et-blueprint  # chép font Helvetica Neue + logo từ repo Blueprint vào public/
+scripts/copy-assets.sh ../et-blueprint  # chép logo từ repo Blueprint vào public/images (font đã đi kèm kit)
 pnpm dev                                # showcase: http://localhost:5173
 ```
 
@@ -96,7 +98,7 @@ src/
 │   ├── PlatformThemeProvider.tsx  # CSS layer + ThemeProvider + CssBaseline + density + màu
 │   ├── theme.css                  # Tailwind 4: thứ tự layer, animation, utility, variant
 │   ├── tokens.generated.css       # sinh từ tokens.ts, KHÔNG sửa tay
-│   └── fonts.css                  # @font-face Helvetica Neue LT Std
+│   └── fonts.css                  # font Inter (mã nguồn mở) từ @fontsource-variable/inter
 ├── components/                    # component cơ bản
 │   └── workspace/                 # bố cục 3 section: SectionLayout, Section, VisualizationStage, ImageViewer
 ├── utils/cn.ts                    # cn() = twMerge(clsx(...))
@@ -109,7 +111,7 @@ src/
     └── pages/                     # mỗi nhóm một trang
 scripts/
 ├── build-tokens.ts                # tokens.ts → tokens.generated.css
-└── copy-assets.sh                 # font + logo từ repo Blueprint
+└── copy-assets.sh                 # logo từ repo Blueprint
 tests/
 ├── unit/                          # node --test
 └── e2e/
@@ -122,7 +124,6 @@ tsconfig.node.json                 # typecheck tests/unit và scripts (code Node
 eslint.config.js                   # ESLint
 .github/workflows/ci.yml           # CI: lint, typecheck, unit test, build, e2e
 public/
-├── fonts/                         # font có license, nằm trong .gitignore
 └── images/                        # logo SST, bản vẽ mẫu cho showcase
 ```
 
@@ -132,7 +133,7 @@ Package tên `@platform/ui`. Để `private: true` nên không bao giờ bị pu
 
 | Cách | Lệnh trong app | Khi nào |
 | --- | --- | --- |
-| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.4.0.tgz` | App ở repo khác, muốn khóa phiên bản |
+| Tarball | `pnpm pack` trong kit, rồi `pnpm add ./path/platform-ui-0.5.0.tgz` | App ở repo khác, muốn khóa phiên bản |
 | Link thư mục | `pnpm add link:../et-platform-ui-kit` (chạy `pnpm build` trong kit trước) | Sửa kit và app cùng lúc |
 | Registry nội bộ | Bỏ `private`, thêm `publishConfig.registry`, rồi `pnpm publish` | Nhiều team dùng chung |
 
@@ -506,7 +507,7 @@ Kit đã áp dụng sẵn các quy tắc dưới đây. Component mới cũng ph
 | Thứ bậc chữ nhất quán | Tiêu đề (Card, Dialog, Accordion, EmptyState, Alert, đầu bảng, `Typography h1–h6`) = **bold**; label = medium; nội dung = regular. `h1`–`h6` theo thang gọn cho app công cụ (24 → 12px), không dùng thang mặc định 96px của MUI |
 | Khoảng cách theo nhịp 8px | Padding của Card, Dialog, Accordion, ô bảng đều 0.5rem; khoảng cách giữa các field 0.5–0.75rem |
 | Kích thước menu thống nhất | Menu hành động (DropdownMenu, NavMenu, MUI `Menu`) rộng 160–320px (`layout.menuMinWidth/MaxWidth`); nhãn dài xuống dòng, không bị cắt. Item cao tối thiểu 36px, 48px trên màn hình cảm ứng. Dropdown của Select rộng bằng ô Select |
-| Chữ và icon thẳng hàng | `fonts.css` ghi đè vertical metrics của Helvetica Neue LT Std, nên chữ nằm đúng giữa hộp dòng; mọi cặp icon + chữ căn `center` là thẳng hàng |
+| Chữ và icon thẳng hàng | Inter có ascent/descent cân đối nên chữ hoa nằm đúng giữa hộp dòng; mọi cặp icon + chữ căn `center` (checkbox, radio, switch, icon trong nút) là thẳng hàng mà không cần chỉnh riêng |
 
 ### Test hành vi
 
@@ -632,7 +633,7 @@ Mọi giá trị nằm trong `src/tokens/tokens.ts`, gồm cả thang màu đầ
 | Nền app / nền trắng / nền xám nhạt | `surfaceApp` / `surface` / `surfaceSubtle` | `#f4f4f4` / `#fff` / `#fafafa` |
 | Viền input / viền mặc định | `borderInput` / `border` | `#d9d9d9` / `#f0f0f0` |
 | Lỗi / cảnh báo / thành công | `danger` / `warning` / `success` | `#b32c06` / `#db9f24` / `#789048` |
-| Font | `typography.fontFamily.sans` | Helvetica Neue LT Std |
+| Font | `typography.fontFamily.sans` | Inter (variable, 100–900), sau đó là font hệ thống |
 | Density | `standard` / `expanded` | 14px/17.5px, 16px/24px |
 | Bo góc | `radius.sm` / `md` / `lg` / `xl` | 0.125 / 0.25 / 0.5 / 1rem |
 | Breakpoint | `sm` / `md` / `lg` / `xl` | 640 / 768 / 992 / 1280px |
@@ -672,7 +673,7 @@ Không sửa tay `tokens.generated.css`, và không viết mã hex trong compone
 | `src/tokens/`, `scripts/build-tokens.ts` | `libs/ui/tokens` | `type:ui` |
 | `src/theme/`, `src/components/`, `src/utils/`, `src/index.ts` | `libs/ui/components` (package `@platform/ui`) | `type:ui` |
 | `tests/` | `libs/ui/components/tests` | — |
-| `public/fonts`, `public/images` | `libs/ui/assets`; app copy vào `public/` lúc build | — |
+| `public/images` | `libs/ui/assets`; app copy vào `public/` lúc build | — |
 | `src/showcase/` | Không copy; chuyển thành story của Storybook | — |
 
 - `package.json` của kit đã khai báo sẵn `exports` (`"."`, `"./theme.css"`, `"./tokens"`) và `peerDependencies`. Khi đưa vào Nx, giữ nguyên hai phần này.
@@ -687,7 +688,7 @@ Các điểm dưới đây khác FD có chủ ý: để sửa lỗi của FD ho�
 - **Focus dùng `:focus-visible`** thay vì `:focus`, để nút không giữ màu active sau khi click chuột. Mọi control có viền focus rõ ràng; FD dựa vào ripple nên checkbox/radio/switch/tab không hiện focus.
 - **Nút primary khi disabled** mờ đi thay vì chuyển sang nâu đậm (FD làm nút disabled trông nổi hơn nút đang bật).
 - **Alert cảnh báo** dùng chữ `warningText` (nâu) thay vì vàng, cho đủ tương phản.
-- **Căn chữ**: file font LT Std có ascent bằng đúng chiều cao chữ hoa, nên chữ bị đẩy lên khoảng 2px so với checkbox, radio, switch và icon trong nút. `fonts.css` dùng `ascent-override: 90.5%; descent-override: 21.2%; line-gap-override: 0%` (tỉ lệ của Helvetica/Arial) để sửa tận gốc.
+- **Font Inter thay cho Helvetica Neue LT Std** (từ 0.5). Helvetica Neue là font thương mại (Monotype); đưa file font lên web cần license web font riêng. Inter dùng license SIL OFL 1.1: miễn phí, kể cả thương mại, được đóng gói kèm. Inter có đủ chữ tiếng Việt, Latin mở rộng, Cyrillic, Greek; bản LT Std thiếu các chữ này nên trình duyệt phải mượn font khác giữa chừng. Cỡ chữ giữ nguyên; Inter rộng hơn khoảng 5–8%, nên dòng dài có thể xuống dòng sớm hơn.
 - **Tiêu đề in đậm**: tiêu đề Accordion và Dialog dùng bold (FD dùng medium), để tách rõ với label của field.
 - **Release notes** là component dùng chung của kit (FD tự làm riêng): app chỉ cung cấp dữ liệu.
 - **Toast** dừng khi rê chuột; toast lỗi không tự đóng. FD tự đóng sau 5s kể cả khi đang đọc.
@@ -711,6 +712,13 @@ Các điểm dưới đây khác FD có chủ ý: để sửa lỗi của FD ho�
 - Dark mode: token đã là biến CSS nên có thể thêm bằng cách truyền bộ `colors` tối. Chưa làm vì FD không có.
 - Tương phản màu FD: chữ xám `textMuted` trên nền xám và cam trên trắng chưa đạt 4.5:1 ở vài chỗ. Test axe đang tắt rule `color-contrast`; nếu cần đạt WCAG AA thì chỉnh bằng `colors`.
 - ESLint của kit chỉ kiểm tra code của kit. Chặn import `@mui/*` và mã hex trong app nên cấu hình ở cấp workspace.
+
+## Thay đổi ở 0.5
+
+- **Font đổi sang Inter** (mã nguồn mở, SIL OFL 1.1) thay cho Helvetica Neue LT Std (thương mại). Kit tự mang font theo, app không cần chép file font và không cần license font riêng. Hỗ trợ tiếng Việt, Latin mở rộng, Cyrillic, Greek.
+- API không đổi. Giao diện thay đổi nhẹ: chữ rộng hơn khoảng 5–8%; nên xem lại các chỗ có chiều rộng cố định (nút, nhãn, cột bảng).
+- `scripts/copy-assets.sh` chỉ còn chép logo.
+- Nút "?" của `InfoTip` dùng font chung của kit.
 
 ## Thay đổi ở 0.4
 
@@ -749,6 +757,8 @@ Những điểm có thể làm vỡ code đang dùng 0.1:
 
 ## License
 
-Helvetica Neue LT Std là font thương mại. `public/fonts` nằm trong `.gitignore` và được chép bằng `scripts/copy-assets.sh`. Package không chứa file font, chỉ chứa `fonts.css` trỏ tới `/fonts/…` trong `public/` của app. Với Vite, đường dẫn này tự thêm `base` khi app chạy dưới thư mục con (ví dụ `base: '/calc/'` cho ra `/calc/fonts/…`). Bundler khác không làm việc này: app tự khai báo `@font-face` với đường dẫn của mình. Trên CI không có font, nên test e2e bỏ qua lỗi 404 của `/fonts/`. Cần xác nhận license cho sản phẩm mới trước khi phát hành.
+Kit không chứa font thương mại. Font Inter (https://rsms.me/inter) dùng SIL Open Font License 1.1 và được đóng gói qua `@fontsource-variable/inter`: dùng, nhúng và phân phối trong sản phẩm thương mại đều được, chỉ không được bán riêng file font. Khi app build, Vite chép các file `.woff2` vào thư mục output; `base` của app (ví dụ `/calc/`) được áp dụng tự động.
 
-Lưu ý: bản 0.1 đã commit file font vào git. Commit gỡ font chỉ bỏ chúng khỏi các commit sau; font vẫn còn trong lịch sử. Nếu repo được chia sẻ ra ngoài, cần viết lại lịch sử (ví dụ `git filter-repo --path public/fonts --path dist --invert-paths`).
+Font chia theo `unicode-range` (Latin, Latin mở rộng, tiếng Việt, Cyrillic, Greek), nên trình duyệt chỉ tải phần mà trang dùng tới. Chữ Inter không có (Trung, Nhật, Hàn, Thái, Ả Rập…) được hiển thị bằng font hệ thống đứng sau trong `--font-sans`.
+
+Đến 0.4, kit dùng Helvetica Neue LT Std chép từ repo Blueprint vào `public/fonts`. Các file đó không còn được dùng và đã được xóa khỏi toàn bộ lịch sử git; nếu máy bạn còn thư mục `public/fonts` thì có thể xóa (nó vẫn nằm trong `.gitignore`). Font serif `'Clarendon'` trong token chỉ là tên font để trình duyệt tìm trên máy; kit không kèm file, nên không phát sinh license.

@@ -38,13 +38,10 @@ export async function expectOut(page: Page, id: string, value: unknown) {
   await expect(page.getByTestId(id)).toHaveText(JSON.stringify(value));
 }
 
-/**
- * Collects console errors and uncaught exceptions for the rest of the test.
- * Missing brand fonts are ignored: they are licensed, not in git, so CI runs without them.
- */
+/** Collects console errors and uncaught exceptions for the rest of the test. */
 export function collectErrors(page: Page) {
   const errors: string[] = [];
-  page.on('console', (m) => m.type() === 'error' && !m.location().url.includes('/fonts/') && errors.push(m.text()));
+  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   page.on('pageerror', (e) => errors.push(e.message));
   return errors;
 }

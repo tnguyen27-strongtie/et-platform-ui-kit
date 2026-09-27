@@ -29,7 +29,7 @@ const HelpTrigger = styled('button')({
   fontSize: '0.75rem',
   fontWeight: 700,
   lineHeight: 1,
-  fontFamily: 'Helvetica, Arial, sans-serif',
+  fontFamily: 'inherit',
   color: colors.textOnBrand,
   backgroundColor: colors.accent,
   transition: 'background-color 250ms',

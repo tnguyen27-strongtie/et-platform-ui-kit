@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Copies brand assets (fonts, logos) from the Blueprint repo into public/.
+# Copies brand logos from the Blueprint repo into public/images/.
+# Fonts are no longer copied: the kit ships Inter (open source) through @fontsource-variable/inter.
 # Usage: scripts/copy-assets.sh [path-to-et-blueprint]
 set -euo pipefail
 
@@ -11,14 +12,10 @@ if [ ! -d "$SRC" ]; then
   exit 1
 fi
 
-mkdir -p "$DEST/fonts" "$DEST/images"
-
-for f in Lt Roman Md Bd Hv; do
-  cp "$SRC/fonts/HelveticaNeueLTStd-$f.otf" "$DEST/fonts/"
-done
+mkdir -p "$DEST/images"
 
 for f in sst-logo-noborder-color.svg sst-logo-black-orange.svg sst-logo-noborder-fff.svg; do
   cp "$SRC/images/$f" "$DEST/images/"
 done
 
-echo "Copied fonts and logos to $DEST"
+echo "Copied logos to $DEST/images"

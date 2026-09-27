@@ -3,7 +3,7 @@ dist/
 *.tsbuildinfo
 .DS_Store
 
-# Licensed fonts: copy with scripts/copy-assets.sh, never commit
+# Old licensed Helvetica files (kit <= 0.4) may still sit here locally: never commit them
 public/fonts/
 
 # Playwright

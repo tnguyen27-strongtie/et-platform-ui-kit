@@ -154,7 +154,7 @@ export const colors = Object.fromEntries(
 
 export const typography = {
   fontFamily: {
-    sans: "'HelveticaNeueLTStd', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    sans: "'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
     serif: "'Clarendon', Georgia, serif",
   },
   /** FD "density" setting: html font-size and line-height. */
