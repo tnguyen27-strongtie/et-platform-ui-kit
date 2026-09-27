@@ -2,11 +2,13 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.6.1] - 2026-09-27
 
 ### Fixed
 
-- STIX Two Math did not load in apps: `fonts.css` pointed at the font with a bare `url('@fontsource/stix-two-math/…')`, which the app's Vite build left unresolved, so MathML formulas fell back to another font. The kit now imports the package's `latin-400.css` (no `unicode-range`, so the face still covers every glyph). No change needed in apps beyond updating the kit.
+- STIX Two Math did not load in apps: `fonts.css` pointed at the font with a bare `url('@fontsource/stix-two-math/…')`, which the app's Vite build left unresolved, so MathML formulas fell back to another font. The kit now imports the package's `latin-400.css` (no `unicode-range`, so the face still covers every glyph).
+
+No API changes. Apps only need to update the kit.
 
 ## [0.6.0] - 2026-09-27
 
