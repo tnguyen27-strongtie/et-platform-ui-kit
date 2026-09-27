@@ -33,6 +33,13 @@ export async function openFixture(page: Page, name: FixtureName) {
   await expect(page.locator('main').first()).not.toContainText('Unknown fixture');
 }
 
+/**
+ * Key that moves focus to the next focusable element. Safari's default Tab reaches only text
+ * fields and selects; Option+Tab also reaches buttons, checkboxes and links, like Tab elsewhere.
+ */
+export const tabKey = (browserName: string, shift = false) =>
+  `${browserName === 'webkit' ? 'Alt+' : ''}${shift ? 'Shift+' : ''}Tab`;
+
 /** Asserts what a fixture's callback received, value and type (2 vs "2"). */
 export async function expectOut(page: Page, id: string, value: unknown) {
   await expect(page.getByTestId(id)).toHaveText(JSON.stringify(value));

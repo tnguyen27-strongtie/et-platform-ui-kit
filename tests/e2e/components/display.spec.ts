@@ -124,7 +124,7 @@ test.describe('ImageViewer', () => {
     await zoomOut.click();
     await expect.poll(() => scaleOf(img)).toBe(0.5);
     await expect(zoomOut).toBeDisabled();
-    expect(await translateOf(img)).toBe('0px, 0px');
+    expect(await translateOf(img)).toMatch(/^0px(, 0px)?$/); // WebKit shortens translate(0px, 0px) to translate(0px)
   });
 
   test('a new image resets the view', async ({ page }) => {

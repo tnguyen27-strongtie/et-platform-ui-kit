@@ -15,7 +15,7 @@ The repo also contains a **showcase** (`src/showcase/`, `pnpm dev`) that demos e
 | Install | `pnpm install` (pnpm 12, Node ≥ 22.18) |
 | Showcase | `pnpm dev` → http://localhost:5173 |
 | Fast checks (run before saying you are done) | `pnpm check` = lint + typecheck + unit tests + library build |
-| E2E (Playwright, starts its own server) | `pnpm test:e2e` (about 1 minute); one file: `pnpm test:e2e tests/e2e/components/forms.spec.ts` |
+| E2E (Playwright, starts its own server) | `pnpm test:e2e` (Chromium and WebKit, about 2 minutes); one file: `pnpm test:e2e tests/e2e/components/forms.spec.ts`; one browser: `--project desktop` or `--project safari` |
 | Regenerate token CSS after editing `tokens.ts` | `pnpm tokens` |
 | Package | `pnpm pack` |
 

@@ -5,7 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 import { catalog } from '../../src/showcase/catalog';
-import { collectErrors } from './helpers';
+import { collectErrors, tabKey } from './helpers';
 
 // ---------- Coverage: every public export is demonstrated somewhere ----------
 
@@ -179,15 +179,15 @@ test.describe('Forms page', () => {
     await expect(page.getByRole('checkbox', { name: 'Side member' })).not.toBeChecked();
   });
 
-  test('keyboard focus is visible on checkbox and switch', async ({ page }) => {
+  test('keyboard focus is visible on checkbox and switch', async ({ page, browserName }) => {
     for (const [role, name] of [
       ['checkbox', 'Show notes'],
       ['switch', 'Metric units'],
     ] as const) {
       const control = page.getByRole(role, { name });
       await control.focus();
-      await page.keyboard.press('Shift+Tab');
-      await page.keyboard.press('Tab');
+      await page.keyboard.press(tabKey(browserName, true));
+      await page.keyboard.press(tabKey(browserName));
       const outlined = await control.evaluate((el) => {
         const root = el.closest('.MuiCheckbox-root, .MuiSwitch-root');
         const target = root?.classList.contains('MuiSwitch-root') ? root.querySelector('.MuiSwitch-track') : root;

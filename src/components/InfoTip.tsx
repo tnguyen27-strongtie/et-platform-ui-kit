@@ -83,6 +83,8 @@ export function InfoTip({ children, title, label = 'More information', trigger =
   const toggle = (e: MouseEvent<HTMLElement>) => {
     // Inside a <label> (FormField), do not also focus/toggle the labelled control.
     e.preventDefault();
+    // Safari does not focus buttons on click; focus the trigger so closing returns focus to it.
+    if (!open) e.currentTarget.focus({ preventScroll: true });
     setAnchor(open ? null : e.currentTarget);
   };
   const a11y = {

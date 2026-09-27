@@ -9,6 +9,14 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 - **Math font: STIX Two Math** (SIL Open Font License 1.1), bundled through `@fontsource/stix-two-math`. MathML `<math>` elements use it automatically, and the `font-math` class applies it to symbols in plain text. New token `typography.fontFamily.math` (`--font-math`). The font file is downloaded only by pages that show math.
 - Showcase: Foundations → Math formulas, with display formulas (fractions, roots, sums, integrals, matrices, piecewise), inline formulas, a calculator that substitutes its inputs into the formula, and formulas in a table.
 
+### Fixed
+
+- `InfoTip` / `HelpPopover` / `FormField help`: in Safari, closing the popover (Escape, click outside, X) now returns focus to the "?" or "i" trigger after it was opened with the mouse. Safari does not focus buttons on click, so focus used to fall back to the page.
+
+### Changed
+
+- The e2e suite and CI also run in WebKit (Safari's engine), desktop and iPhone.
+
 ## [0.5.1] - 2026-09-27
 
 ### Changed

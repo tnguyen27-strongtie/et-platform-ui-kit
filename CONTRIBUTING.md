@@ -33,13 +33,15 @@ pnpm dev   # showcase at http://localhost:5173
 | `pnpm lint` | ESLint: typescript-eslint, react-hooks, no hex colors in components |
 | `pnpm typecheck` | Strict `tsc`, including `tests/unit` and `scripts` (`tsconfig.node.json`) |
 | `pnpm test` | Unit tests for pure logic (`node --test`, no extra dependencies) |
-| `pnpm test:e2e` | Playwright: component behavior, keyboard, axe, theming. Starts the dev server itself |
+| `pnpm test:e2e` | Playwright in Chromium and WebKit: component behavior, keyboard, axe, theming. Starts the dev server itself. `--project desktop` or `--project safari` runs one browser |
 | `pnpm check` | `lint` + `typecheck` + `test` + `build`, the same as the first CI job |
 | `pnpm build` | Library build to `dist/` (ESM + `.d.ts` + CSS) |
 | `pnpm build:showcase` | Showcase build to `dist-showcase/` |
 | `pnpm pack` | Tarball `platform-ui-x.y.z.tgz` (runs `build` first) |
 
-CI (`.github/workflows/ci.yml`) runs `lint`, `typecheck`, `test`, `build`, checks that `tokens.generated.css` is up to date, and runs the e2e suite in Chromium on every pull request.
+CI (`.github/workflows/ci.yml`) runs `lint`, `typecheck`, `test`, `build`, checks that `tokens.generated.css` is up to date, and runs the e2e suite in Chromium and WebKit (Safari's engine) as two parallel jobs on every pull request.
+
+Keyboard tests that press Tab use `tabKey(browserName)` from `tests/e2e/helpers.ts`: Safari's default Tab skips buttons, checkboxes and links, and Option+Tab reaches them.
 
 ## Project structure
 

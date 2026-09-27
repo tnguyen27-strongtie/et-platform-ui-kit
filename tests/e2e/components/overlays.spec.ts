@@ -1,6 +1,6 @@
 import { expect, type Page, test } from '@playwright/test';
 
-import { expectOut, openFixture } from '../helpers';
+import { expectOut, openFixture, tabKey } from '../helpers';
 
 /** Clicks the backdrop well away from the dialog paper. */
 const clickBackdrop = (page: Page) => page.mouse.click(8, page.viewportSize()!.height - 8);
@@ -215,7 +215,7 @@ test.describe('InfoTip (click, long explanation)', () => {
     await expect(page.getByRole('button', { name: 'About capacity', includeHidden: true })).toHaveAttribute('aria-expanded', 'true');
   });
 
-  test('keyboard: Enter opens, focus moves inside so links are reachable, Escape returns focus', async ({ page }) => {
+  test('keyboard: Enter opens, focus moves inside so links are reachable, Escape returns focus', async ({ page, browserName }) => {
     const trigger = page.getByRole('button', { name: 'About capacity' });
     await trigger.focus();
     await page.keyboard.press('Enter');
@@ -224,7 +224,7 @@ test.describe('InfoTip (click, long explanation)', () => {
     expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true);
     let reachedLink = false;
     for (let i = 0; i < 4 && !reachedLink; i++) {
-      await page.keyboard.press('Tab');
+      await page.keyboard.press(tabKey(browserName));
       reachedLink = await dialog.getByRole('link', { name: 'design guide' }).evaluate((el) => el === document.activeElement);
     }
     expect(reachedLink).toBe(true);

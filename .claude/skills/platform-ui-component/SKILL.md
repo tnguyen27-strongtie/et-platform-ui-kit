@@ -56,7 +56,8 @@ Specs test behavior through a harness fixture, not the showcase.
 1. Add a fixture component to `tests/e2e/harness/fixtures.tsx`. Print what callbacks receive with `<Out id="..." value={...} />`, so specs can assert value *and* type.
 2. Register it in the `fixtures` map and add the name to `fixtureNames` in `tests/e2e/helpers.ts`. The smoke spec then checks it renders without console errors and passes axe automatically.
 3. Write the spec in the matching `tests/e2e/components/*.spec.ts`: query by role and accessible name (`getByRole('button', { name: 'Save' })`), cover mouse, keyboard, disabled, and the edge case that motivated the change. Use `expectOut(page, id, value)` for callback results.
-4. If you changed an existing behavior, update the spec that asserted the old behavior instead of deleting it.
+4. Keyboard steps that press Tab use `tabKey(browserName)` from `tests/e2e/helpers.ts`; Safari's plain Tab skips buttons, checkboxes and links, so a bare `'Tab'` fails in WebKit.
+5. If you changed an existing behavior, update the spec that asserted the old behavior instead of deleting it.
 
 Pure logic gets a `tests/unit/*.test.ts` (`node:test` + `node:assert/strict`, imports with `.ts` extensions).
 
@@ -70,7 +71,7 @@ Pure logic gets a `tests/unit/*.test.ts` (`node:test` + `node:assert/strict`, im
 
 ```bash
 pnpm check                                   # lint, typecheck, unit tests, build
-pnpm test:e2e                                # full suite, ~1 min; or pass one spec file while iterating
+pnpm test:e2e                                # full suite in Chromium + WebKit, ~2 min; pass one spec file or --project desktop while iterating
 ```
 
 For visual changes, run `pnpm dev` and look at the demo and the fixture (`/tests/e2e/harness/index.html#<fixture>`); a Playwright screenshot before and after is the quickest honest check. Finish by reporting what passed, what you looked at, and anything you did not verify.

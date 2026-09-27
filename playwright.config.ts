@@ -13,6 +13,8 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, grep: /@mobile/ },
+    { name: 'safari', use: { ...devices['Desktop Safari'] } },
+    { name: 'safari-mobile', use: { ...devices['iPhone 15'] }, grep: /@mobile/ },
   ],
   webServer: {
     command: `pnpm dev --port ${port} --strictPort`,
