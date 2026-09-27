@@ -12,12 +12,14 @@ export type SectionId = 'input' | 'illustration' | 'output';
 
 export interface SectionLayoutProps {
   input: ReactNode;
-  illustration: ReactNode;
-  output: ReactNode;
+  /** Drawing, 3D view or image. Omit (or pass null) for an app without one: the other pane takes the right side. */
+  illustration?: ReactNode;
+  /** Results. Omit (or pass null) for an app without one: the other pane takes the right side. */
+  output?: ReactNode;
   /**
    * How Illustration and Output share the right side on desktop (a user "orientation" setting):
    * 'rows' = stacked (default), 'columns' = side by side.
-   * Tablet always stacks them.
+   * Tablet always stacks them. Ignored when only one of them is given.
    */
   secondarySplit?: 'rows' | 'columns';
   /** Persists panel sizes in localStorage under this key. Omit to disable. */
@@ -92,11 +94,22 @@ function useCollapsed(collapsedPx: number) {
   return [collapsed, onResize] as const;
 }
 
-function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, labels }: Required<Pick<SectionLayoutProps, 'input' | 'illustration' | 'output' | 'secondarySplit'>> & Pick<SectionLayoutProps, 'layoutId'> & { labels: Record<SectionId, ReactNode> }) {
+/** A section is left out when the app passes nothing for it (undefined, null or false). */
+const isPresent = (node: ReactNode) => node !== undefined && node !== null && node !== false;
+
+type DesktopLayoutProps = Pick<SectionLayoutProps, 'input' | 'illustration' | 'output' | 'layoutId'> &
+  Required<Pick<SectionLayoutProps, 'secondarySplit'>> & { labels: Record<SectionId, ReactNode> };
+
+function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, labels }: DesktopLayoutProps) {
   const inputRef = usePanelRef();
   const [inputCollapsed, onInputResize] = useCollapsed(32);
   const primary = useDefaultLayout({ id: `${layoutId ?? 'layout'}-primary`, storage: layoutId ? safeStorage : undefined });
   const secondary = useDefaultLayout({ id: `${layoutId ?? 'layout'}-secondary-${secondarySplit}`, storage: layoutId ? safeStorage : undefined });
+  const hasIllustration = isPresent(illustration);
+  const hasOutput = isPresent(output);
+
+  // Input only: nothing to resize against.
+  if (!hasIllustration && !hasOutput) return <div className="size-full">{input}</div>;
 
   return (
     <Group
@@ -118,21 +131,28 @@ function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, 
         {inputCollapsed ? <CollapsedRail label={labels.input} onExpand={() => inputRef.current?.expand()} /> : input}
       </Panel>
       <ResizeHandle direction="columns" />
-      <Panel id="secondary" minSize={PANE_MIN} className="h-full">
-        <Group
-          orientation={secondarySplit === 'columns' ? 'horizontal' : 'vertical'}
-          className="size-full"
-          defaultLayout={layoutId ? secondary.defaultLayout : undefined}
-          onLayoutChanged={layoutId ? secondary.onLayoutChanged : undefined}
-        >
-          <Panel id="illustration" defaultSize="50%" minSize={`${layout.tabHeight}px`} className="h-full overflow-hidden">
-            {illustration}
-          </Panel>
-          <ResizeHandle direction={secondarySplit} />
-          <Panel id="output" minSize={`${layout.tabHeight}px`} className="h-full overflow-hidden">
-            {output}
-          </Panel>
-        </Group>
+      {/* Same panel id with one or two sections, so a saved Input width still applies. */}
+      <Panel id="secondary" minSize={PANE_MIN} className="h-full overflow-hidden">
+        {hasIllustration && hasOutput ? (
+          <Group
+            orientation={secondarySplit === 'columns' ? 'horizontal' : 'vertical'}
+            className="size-full"
+            defaultLayout={layoutId ? secondary.defaultLayout : undefined}
+            onLayoutChanged={layoutId ? secondary.onLayoutChanged : undefined}
+          >
+            <Panel id="illustration" defaultSize="50%" minSize={`${layout.tabHeight}px`} className="h-full overflow-hidden">
+              {illustration}
+            </Panel>
+            <ResizeHandle direction={secondarySplit} />
+            <Panel id="output" minSize={`${layout.tabHeight}px`} className="h-full overflow-hidden">
+              {output}
+            </Panel>
+          </Group>
+        ) : hasIllustration ? (
+          illustration
+        ) : (
+          output
+        )}
       </Panel>
     </Group>
   );
@@ -141,9 +161,9 @@ function DesktopLayout({ input, illustration, output, secondarySplit, layoutId, 
 function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileActions }: SectionLayoutProps & { labels: Record<SectionId, ReactNode> }) {
   const tabs = mobileTabs ?? [
     { value: 'input', label: labels.input, content: input, keepMounted: true },
-    { value: 'illustration', label: labels.illustration, content: illustration },
+    ...(isPresent(illustration) ? [{ value: 'illustration', label: labels.illustration, content: illustration }] : []),
     // Output stays mounted so result queries keep running while hidden.
-    { value: 'output', label: labels.output, content: output, keepMounted: true },
+    ...(isPresent(output) ? [{ value: 'output', label: labels.output, content: output, keepMounted: true }] : []),
   ];
   const [current, setCurrent] = useState(tabs[0]?.value ?? 'input');
   const tabsId = useId();
@@ -168,7 +188,8 @@ function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileA
 }
 
 /**
- * Three-section calculator workspace.
+ * Calculator workspace: Input plus Illustration and/or Output. Leave out a section the app does
+ * not have; the layout adapts (Input | Output, Input | Illustration, or Input alone).
  * - Desktop (>= 992px): Input | (Illustration / Output), resizable, collapsible Input.
  * - Tablet (768-991px): same, Illustration and Output always stacked.
  * - Mobile (< 768px): one section at a time, switched by tabs.

@@ -20,6 +20,7 @@ export const fixtureNames = [
   'error-boundary',
   'image-viewer',
   'layout',
+  'layout-flex',
   'density',
   'grid',
   'grid-labels',

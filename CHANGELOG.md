@@ -2,6 +2,14 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `SectionLayout`: `illustration` and `output` are optional. An app passes only the sections it has and the layout adapts: Input | Output, Input | Illustration, or Input alone on desktop and tablet, and only those tabs on mobile. The saved Input width is shared by all variants. See `docs/workspace-layout.md` → "Choosing the sections".
+
+No breaking changes: apps that pass all three sections look and behave as before.
+
 ## [0.7.0] - 2026-09-27
 
 ### Added

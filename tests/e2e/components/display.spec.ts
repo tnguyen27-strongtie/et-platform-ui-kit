@@ -166,22 +166,25 @@ test.describe('Section footer', () => {
     const last = page.getByRole('textbox', { name: 'Field 8' });
     await last.focus();
     // The footer is outside the scroll area, so the two never overlap, and the focused field
-    // (scrolled into view by the browser; how far is up to the engine) is not under anything.
-    const layout = await last.evaluate((el) => {
-      const body = el.closest('.overflow-auto')!;
-      const footer = body.nextElementSibling!;
-      const r = el.getBoundingClientRect();
-      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-      return {
-        bodyBottom: body.getBoundingClientRect().bottom,
-        footerTop: footer.getBoundingClientRect().top,
-        footerHasCalculate: footer.textContent?.includes('Calculate') ?? false,
-        centerIsField: hit === el,
-      };
-    });
+    // (scrolled into view by the browser; how far and when is up to the engine) is not under anything.
+    const measure = () =>
+      last.evaluate((el) => {
+        const body = el.closest('.overflow-auto')!;
+        const footer = body.nextElementSibling!;
+        const r = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return {
+          bodyBottom: body.getBoundingClientRect().bottom,
+          footerTop: footer.getBoundingClientRect().top,
+          footerHasCalculate: footer.textContent?.includes('Calculate') ?? false,
+          centerIsField: hit === el,
+        };
+      });
+    // WebKit may finish the focus scroll a frame later.
+    await expect.poll(async () => (await measure()).centerIsField).toBe(true);
+    const layout = await measure();
     expect(layout.footerHasCalculate).toBe(true);
     expect(layout.bodyBottom).toBeLessThanOrEqual(layout.footerTop);
-    expect(layout.centerIsField).toBe(true);
     await calculate.click();
     await expectOut(page, 'runs', 1);
   });
@@ -348,6 +351,72 @@ test.describe('SectionLayout (mobile) @mobile', () => {
     await expect(page.getByRole('textbox', { name: 'Layout input' })).toBeHidden();
     await tabs.filter({ hasText: 'Input' }).click();
     await expect(page.getByRole('textbox', { name: 'Layout input' })).toHaveValue('12');
+  });
+});
+
+test.describe('SectionLayout with optional sections (desktop)', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'layout-flex');
+  });
+
+  test('Input | Output: one divider, Output fills the whole right side', async ({ page }) => {
+    await expect(page.getByText('Flex output')).toBeVisible();
+    await expect(page.getByText('Flex drawing')).toHaveCount(0);
+    await expect(page.getByRole('separator')).toHaveCount(1);
+    const root = (await page.getByTestId('layout-root').boundingBox())!;
+    const divider = (await page.getByRole('separator').boundingBox())!;
+    const output = (await page.getByText('Flex output').boundingBox())!;
+    expect(output.x).toBeGreaterThan(divider.x);
+    // Full height: the Output header tab sits at the top of the layout, not halfway down.
+    const outputTab = (await page.getByRole('tab', { name: 'Output' }).boundingBox())!;
+    expect(outputTab.y - root.y).toBeLessThan(4);
+  });
+
+  test('Input | Illustration, Input alone, and back to all three', async ({ page }) => {
+    await page.getByRole('button', { name: 'Mode input-illustration' }).click();
+    await expect(page.getByText('Flex drawing')).toBeVisible();
+    await expect(page.getByText('Flex output')).toHaveCount(0);
+    await expect(page.getByRole('separator')).toHaveCount(1);
+
+    await page.getByRole('button', { name: 'Mode input', exact: true }).click();
+    await expect(page.getByRole('separator')).toHaveCount(0);
+    const root = (await page.getByTestId('layout-root').boundingBox())!;
+    const input = (await page.getByRole('textbox', { name: 'Flex input' }).boundingBox())!;
+    expect(input.width).toBeGreaterThan(root.width * 0.8);
+
+    await page.getByRole('button', { name: 'Mode all' }).click();
+    await expect(page.getByRole('separator')).toHaveCount(2);
+    await expect(page.getByText('Flex drawing')).toBeVisible();
+    await expect(page.getByText('Flex output')).toBeVisible();
+  });
+
+  test('with two sections, Input still collapses to a rail and re-opens', async ({ page }) => {
+    const handle = page.getByRole('separator').first();
+    const box = (await handle.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x - 600, box.y + box.height / 2, { steps: 10 });
+    await page.mouse.up();
+    const rail = page.getByRole('button', { name: 'Expand Input' });
+    await expect(rail).toBeVisible();
+    await rail.click();
+    await expect(page.getByRole('textbox', { name: 'Flex input' })).toBeVisible();
+  });
+});
+
+test.describe('SectionLayout with optional sections (mobile) @mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('only the given sections get a tab', async ({ page }) => {
+    await openFixture(page, 'layout-flex');
+    const tabs = page.getByRole('tablist').first().getByRole('tab');
+    await expect(tabs).toHaveText(['Input', 'Output']);
+    await page.getByRole('button', { name: 'Mode input-illustration' }).click();
+    await expect(tabs).toHaveText(['Input', '3D']);
+    await page.getByRole('button', { name: 'Mode input', exact: true }).click();
+    await expect(tabs).toHaveText(['Input']);
   });
 });
 

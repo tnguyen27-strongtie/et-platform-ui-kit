@@ -47,7 +47,7 @@ The kit already solves layout, styling, accessibility and the tricky input behav
 | Nothing to show yet | `EmptyState` | blank space |
 | Loading inline / a whole pane | `Spinner` / `LoadingIndicator` or `VisualizationStage loading` | |
 | Icon-only button | `IconButton aria-label="…"` + `Tooltip` with the same text | `Button` with only an icon |
-| Calculator page layout | `Workspace` + `SectionLayout` + `Section` | custom split panes |
+| Calculator page layout (3 sections, or only Input + Output) | `Workspace` + `SectionLayout` + `Section` | custom split panes, empty sections |
 | Drawing with zoom | `ImageViewer` in `VisualizationStage` | |
 | "What's new" | `ReleaseNotesDialog` + `useReleaseNotesSeen` | custom modal |
 | Formula or equation | MathML `<math>` (see "Math formulas") | images of formulas, KaTeX/MathJax, hand-built `<sup>`/`<sub>` fractions |
@@ -103,6 +103,8 @@ const thicknessError =
 ```
 
 Use `mobileTabs` to give mobile a single flat tab bar, and `keepMounted` on tabs whose state or queries must survive being hidden.
+
+Only `input` is required. An app without a drawing leaves out `illustration` (Input | Output); an app whose results live in the drawing leaves out `output` (Input | Illustration). Do not pass an empty `<Section>` or build a two-column layout by hand: the layout adapts the panes, the resize handles and the mobile tabs to the sections it gets.
 
 ## Math formulas
 

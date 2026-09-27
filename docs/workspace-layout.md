@@ -1,8 +1,9 @@
 # Workspace layout
 
-The standard layout of a calculator app: **Input** on the left, **Illustration** (3D, 2D drawing, image) and **Output** on the right.
+The standard layout of a calculator app: **Input** on the left, **Illustration** (3D, 2D drawing, image) and **Output** on the right. Apps without a drawing or without a separate result pane leave that section out.
 
 - [Example](#example)
+- [Choosing the sections](#choosing-the-sections)
 - [Responsive behavior](#responsive-behavior)
 - [SectionLayout](#sectionlayout)
 - [Section](#section)
@@ -38,6 +39,28 @@ The standard layout of a calculator app: **Input** on the left, **Illustration**
 </Workspace>
 ```
 
+## Choosing the sections
+
+`input` is required; `illustration` and `output` are optional. Pass only the sections the app has, and the layout adapts on every screen size:
+
+| Sections given | Desktop and tablet | Mobile tabs |
+| --- | --- | --- |
+| `input`, `illustration`, `output` | Input \| (Illustration / Output) | Input, 3D, Output |
+| `input`, `output` | Input \| Output | Input, Output |
+| `input`, `illustration` | Input \| Illustration | Input, 3D |
+| `input` | Input fills the workspace | Input |
+
+```tsx
+// A calculator without a drawing
+<SectionLayout
+  layoutId="my-calc"
+  input={<Section title="Input"><InputForm /></Section>}
+  output={<Section title="Output"><Results /></Section>}
+/>
+```
+
+A section counts as left out when its prop is `undefined`, `null` or `false`, so it can depend on app state (`illustration={hasDrawing && <DrawingSection />}`). The saved Input width (`layoutId`) is shared by all variants. With one section on the right, `secondarySplit` has no effect. A custom `mobileTabs` list replaces the default tabs as before.
+
 ## Responsive behavior
 
 | Screen | Behavior |
@@ -52,7 +75,8 @@ With `layoutId`, panel sizes are saved in localStorage. If the browser blocks st
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `input`, `illustration`, `output` | `ReactNode` | | Section contents (usually `<Section>`s) |
+| `input` | `ReactNode` | | Input section (usually a `<Section>`) |
+| `illustration`, `output` | `ReactNode` | | Optional sections. Leave one out and the other takes the right side; see [Choosing the sections](#choosing-the-sections) |
 | `secondarySplit` | `'rows' \| 'columns'` | `'rows'` | How Illustration and Output share the right side on desktop |
 | `layoutId` | `string` | | localStorage key prefix for panel sizes |
 | `labels` | `Partial<Record<'input' \| 'illustration' \| 'output', ReactNode>>` | `Input`, `3D`, `Output` | Collapsed rail and mobile tab labels |

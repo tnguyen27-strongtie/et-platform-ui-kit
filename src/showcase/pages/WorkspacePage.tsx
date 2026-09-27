@@ -9,6 +9,7 @@ import {
   ImageViewer,
   type ImageViewerHandle,
   notify,
+  RadioGroup,
   ResetViewButton,
   Section,
   SectionLayout,
@@ -22,6 +23,7 @@ import { DemoGrid, DemoPage, DemoSection, Variants } from '../layout';
 
 export function WorkspacePage() {
   const [tab, setTab] = useState<'3d' | '2d'>('2d');
+  const [sections, setSections] = useState<'all' | 'input-output' | 'input-illustration'>('all');
   const [loading, setLoading] = useState(false);
   const [empty, setEmpty] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -41,13 +43,16 @@ export function WorkspacePage() {
       <DemoSection
         id="section-layout"
         title="SectionLayout"
-        description="Input left (36%), Illustration and Output right. Drag the 5px handles to resize; drag Input below 250px to collapse it to a rail. Tablet stacks the right side; mobile shows one section at a time with tabs."
+        description="Input left (36%), Illustration and Output right. Drag the 5px handles to resize; drag Input below 250px to collapse it to a rail. Tablet stacks the right side; mobile shows one section at a time with tabs. Leave out illustration or output when the app has none: the other one takes the right side."
         code={`<Workspace>
   <SectionLayout layoutId="app" secondarySplit="rows"
     input={<Section title="Input">…</Section>}
     illustration={<Section tabs={…} value={tab} onChange={setTab} />}
     output={<Section title="Output">…</Section>} />
-</Workspace>`}
+</Workspace>
+
+// An app without a drawing: Input | Output
+<SectionLayout layoutId="app" input={…} output={…} />`}
       >
         <Variants>
           <Button variant="primary" href="#workspace">
@@ -55,6 +60,17 @@ export function WorkspacePage() {
           </Button>
           <Button href="#workspace-columns">Open full screen (side by side)</Button>
         </Variants>
+        <RadioGroup
+          aria-label="Sections"
+          name="layout-sections"
+          value={sections}
+          onChange={setSections}
+          options={[
+            { value: 'all', label: 'Input, Illustration, Output' },
+            { value: 'input-output', label: 'Input and Output' },
+            { value: 'input-illustration', label: 'Input and Illustration' },
+          ]}
+        />
         <div className="h-[28rem] overflow-hidden rounded-sm border border-border">
           <SectionLayout
             input={
@@ -63,14 +79,18 @@ export function WorkspacePage() {
               </Section>
             }
             illustration={
-              <Section title="Illustration">
-                <p className="m-0 p-3 text-sm">3D / 2D viewer</p>
-              </Section>
+              sections !== 'input-output' && (
+                <Section title="Illustration">
+                  <p className="m-0 p-3 text-sm">3D / 2D viewer</p>
+                </Section>
+              )
             }
             output={
-              <Section title="Output">
-                <p className="m-0 p-3 text-sm">Results</p>
-              </Section>
+              sections !== 'input-illustration' && (
+                <Section title="Output">
+                  <p className="m-0 p-3 text-sm">Results</p>
+                </Section>
+              )
             }
           />
         </div>

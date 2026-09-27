@@ -705,6 +705,39 @@ function LayoutFixture() {
   );
 }
 
+// ---------- SectionLayout with optional sections ----------
+type LayoutMode = 'all' | 'input-output' | 'input-illustration' | 'input';
+
+function FlexibleLayoutFixture() {
+  const [mode, setMode] = useState<LayoutMode>('input-output');
+  const modes: LayoutMode[] = ['all', 'input-output', 'input-illustration', 'input'];
+  return (
+    <>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {modes.map((m) => (
+          <Button key={m} onClick={() => setMode(m)}>
+            {`Mode ${m}`}
+          </Button>
+        ))}
+      </div>
+      <div data-testid="layout-root" style={{ height: 560, width: '100%' }}>
+        <SectionLayout
+          layoutId="harness-flex"
+          input={
+            <Section title="Input">
+              <FormField label="Flex input" htmlFor="flex-input">
+                <TextInput />
+              </FormField>
+            </Section>
+          }
+          illustration={mode === 'all' || mode === 'input-illustration' ? <Section title="Illustration">Flex drawing</Section> : null}
+          output={mode === 'all' || mode === 'input-output' ? <Section title="Output">Flex output</Section> : undefined}
+        />
+      </div>
+    </>
+  );
+}
+
 // ---------- Density ----------
 function DensityFixture() {
   const [density, setDensity] = useState<Density>('standard');
@@ -1010,6 +1043,7 @@ export const fixtures: Record<string, ComponentType> = {
   'error-boundary': ErrorBoundaryFixture,
   'image-viewer': ImageViewerFixture,
   layout: LayoutFixture,
+  'layout-flex': FlexibleLayoutFixture,
   density: DensityFixture,
   grid: GridFixture,
   'grid-labels': GridLabelsFixture,
