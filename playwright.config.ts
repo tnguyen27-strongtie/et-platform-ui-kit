@@ -17,7 +17,9 @@ export default defineConfig({
     { name: 'safari-mobile', use: { ...devices['iPhone 15'] }, grep: /@mobile/ },
   ],
   webServer: {
-    command: `pnpm dev --port ${port} --strictPort`,
+    // Start vite directly: through `pnpm dev`, pnpm 12's native launcher does not pass the
+    // shutdown on to vite, so vite outlives the run and Playwright waits for it forever.
+    command: `node_modules/.bin/vite --port ${port} --strictPort`,
     url: `http://localhost:${port}`,
     reuseExistingServer: !ci,
   },
