@@ -605,6 +605,9 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
             root: {
               minHeight: 'auto',
               padding: '0.5rem',
+              // A <button>: without this the title takes the browser's button font (Arial, system-ui), not the kit's.
+              fontFamily: 'inherit',
+              letterSpacing: 'inherit',
               backgroundColor: colors.surfaceSubtle,
               borderBottom: `1px solid ${colors.borderInput}`,
               '&.Mui-expanded': { minHeight: 'auto' },

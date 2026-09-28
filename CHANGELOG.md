@@ -2,6 +2,12 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- `Accordion`: the header title uses the kit font. It used the browser's default button font (Arial in Chrome, the system font in Safari), which also made the `help` "?" overlap the title in some browsers.
+
 ## [0.10.0] - 2026-09-28
 
 ### Added
