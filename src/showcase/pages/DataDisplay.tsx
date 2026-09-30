@@ -16,7 +16,7 @@ import {
   notify,
   NumberInput,
 } from '../../index';
-import { fastenerColumns, fastenerPresets, fasteners } from '../data';
+import { fastenerColumns, fastenerPresets, fasteners, sampleDrawing } from '../data';
 import { Code, DemoGrid, DemoPage, DemoSection } from '../layout';
 
 export function DataDisplay() {
@@ -185,7 +185,7 @@ export function DataDisplay() {
             <DataTable.Row>
               <DataTable.Cell>GridImageCell</DataTable.Cell>
               <DataTable.Cell>
-                <GridImageCell src="/images/sample-drawing.svg" text="SDWS22400" subtext="Timber screw, 0.22 x 4&quot;" />
+                <GridImageCell src={sampleDrawing} text="SDWS22400" subtext="Timber screw, 0.22 x 4&quot;" />
               </DataTable.Cell>
             </DataTable.Row>
             <DataTable.Row>

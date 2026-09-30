@@ -22,6 +22,7 @@ import {
   VisualizationStage,
   Workspace,
 } from '../index';
+import { sampleDrawing } from './data';
 
 /** Stand-in for the app's own 3D viewer (a web component, a Three.js canvas...). */
 function Fake3DViewer() {
@@ -135,7 +136,7 @@ function DrawingBody() {
         </ViewControls>
       }
     >
-      <ImageViewer ref={imageRef} src="/images/sample-drawing.svg" alt="Connection section drawing" />
+      <ImageViewer ref={imageRef} src={sampleDrawing} alt="Connection section drawing" />
     </VisualizationStage>
   );
 }

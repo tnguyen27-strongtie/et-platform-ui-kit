@@ -13,6 +13,7 @@ import {
   TextInput,
   useFormField,
 } from '../../index';
+import { sampleDrawing } from '../data';
 import { DemoGrid, DemoPage, DemoSection } from '../layout';
 
 /** A custom control wired to its FormField with useFormField (label, hint, error reach it). */
@@ -46,9 +47,9 @@ const connectionOptions = [
 ];
 
 const productOptions = [
-  { value: 'sd9', label: 'SD9112 Strong-Drive screw', image: '/images/sample-drawing.svg' },
-  { value: 'sdws', label: 'SDWS22400 timber screw', image: '/images/sample-drawing.svg' },
-  { value: 'sdwc', label: 'SDWC15600 truss screw', image: '/images/sample-drawing.svg' },
+  { value: 'sd9', label: 'SD9112 Strong-Drive screw', image: sampleDrawing },
+  { value: 'sdws', label: 'SDWS22400 timber screw', image: sampleDrawing },
+  { value: 'sdwc', label: 'SDWC15600 truss screw', image: sampleDrawing },
 ];
 
 export function Forms() {
@@ -285,13 +286,13 @@ export function Forms() {
               value: 'single',
               label: 'Single shear',
               description: 'One shear plane: the fastener joins two members.',
-              image: <img src="/images/sample-drawing.svg" alt="" className="h-12 w-20 object-contain" />,
+              image: <img src={sampleDrawing} alt="" className="h-12 w-20 object-contain" />,
             },
             {
               value: 'double',
               label: 'Double shear',
               description: 'Two shear planes: a main member between two side members.',
-              image: <img src="/images/sample-drawing.svg" alt="" className="h-12 w-20 object-contain" />,
+              image: <img src={sampleDrawing} alt="" className="h-12 w-20 object-contain" />,
             },
             { value: 'none', label: 'Unavailable', disabled: true, image: <div className="h-12 w-20 rounded-sm bg-true-gray-10" /> },
           ]}

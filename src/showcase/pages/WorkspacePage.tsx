@@ -19,6 +19,7 @@ import {
   ViewControlsGroup,
   VisualizationStage,
 } from '../../index';
+import { sampleDrawing } from '../data';
 import { DemoGrid, DemoPage, DemoSection, Variants } from '../layout';
 
 export function WorkspacePage() {
@@ -174,7 +175,7 @@ export function WorkspacePage() {
               </ViewControls>
             }
           >
-            <ImageViewer ref={viewer} src="/images/sample-drawing.svg" alt="Connection drawing" />
+            <ImageViewer ref={viewer} src={sampleDrawing} alt="Connection drawing" />
           </VisualizationStage>
         </div>
       </DemoSection>

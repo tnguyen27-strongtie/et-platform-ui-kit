@@ -11,7 +11,9 @@ export interface Fastener {
   image: string;
 }
 
-const img = '/images/sample-drawing.svg';
+// Through BASE_URL so it also loads when the showcase is served from a sub-path (GitHub Pages).
+export const sampleDrawing = `${import.meta.env.BASE_URL}images/sample-drawing.svg`;
+const img = sampleDrawing;
 
 export const fasteners: Fastener[] = [
   { id: 'f1', model: 'SDWS22400', description: 'Timber screw, 0.22 x 4"', material: 'Wood', capacity: 1450, qty: 4, status: 'OK', image: img },
