@@ -17,7 +17,13 @@ import {
   matchesText,
   normalizeText,
   parseNumber,
+  adaptBrandForDark,
+  contrast,
+  mix,
+  readableOn,
   resolveColors,
+  resolveSchemeColors,
+  usePlatformColorScheme,
   roundTo,
   stepNumber,
   TextInput,
@@ -150,6 +156,54 @@ cn('px-2', isActive && 'bg-brand')                                  // class mer
           <Code>{JSON.stringify(colorCssVars(resolved), null, 2)}</Code>
         </details>
       </DemoSection>
+
+      <SchemeColorsDemo brand={validHex ? brand : undefined} />
     </DemoPage>
+  );
+}
+
+/** Real colors for the scheme on screen, e.g. for a chart library that cannot read CSS variables. */
+function SchemeColorsDemo({ brand }: { brand: string | undefined }) {
+  const scheme = usePlatformColorScheme();
+  const colors = brand ? { brand } : undefined;
+  const light = resolveSchemeColors('light', { colors });
+  const dark = resolveSchemeColors('dark', { colors });
+  const current = scheme === 'dark' ? dark : light;
+  const ratio = contrast(current.textOnBrand, current.brand);
+  return (
+    <DemoSection
+      id="scheme-colors"
+      title="Color scheme helpers"
+      description="usePlatformColorScheme gives the scheme in effect (light or dark, with 'system' resolved); resolveSchemeColors gives real color values for it. In dark, the light brand is lightened until it reads on dark surfaces (adaptBrandForDark) and its text color is picked by contrast (readableOn)."
+      code={`const scheme = usePlatformColorScheme();              // 'light' | 'dark'
+const c = resolveSchemeColors(scheme, { colors: theme.colors, darkColors: theme.darkColors });
+chart.setOption({ color: [c.brand, c.info, c.success] });
+contrast(c.textOnBrand, c.brand)                        // WCAG ratio
+mix(c.brand, c.surface, 0.14)                           // opaque tint`}
+    >
+      <p className="m-0 text-sm">
+        Scheme in effect: <strong data-testid="scheme-in-effect">{scheme}</strong> (switch it in the top bar).
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {([['light', light], ['dark', dark]] as const).map(([name, c]) => (
+          <div key={name} className="flex flex-col gap-2 rounded-sm border border-border p-3 text-xs" style={{ background: c.surface, color: c.text }}>
+            <strong>{name}</strong>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-sm px-2 py-1" style={{ background: c.brand, color: c.textOnBrand }}>
+                brand {c.brand}
+              </span>
+              <span className="rounded-sm px-2 py-1" style={{ background: c.brandSubtle }}>
+                subtle
+              </span>
+              <span style={{ color: c.link }}>link</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="m-0 text-xs text-text-muted">
+        Button text on brand ({scheme}): {ratio ? `${ratio.toFixed(2)}:1` : 'n/a'}; readableOn(brand) = {readableOn(current.brand)}; adaptBrandForDark = {adaptBrandForDark(brand ?? light.brand, dark.surface)};
+        mix = {mix(current.brand, current.surface, 0.14)}.
+      </p>
+    </DemoSection>
   );
 }

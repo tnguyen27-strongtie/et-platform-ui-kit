@@ -500,7 +500,7 @@ export function GridView<T extends RowData>({
   return (
     // contain: inline-size: the grid takes its width from its parent, never from the table, so a
     // wide table scrolls inside instead of stretching a CSS grid/flex parent (and the page).
-    <div className={cn('flex w-full min-w-0 flex-col overflow-hidden rounded-panel border border-border-strong material-panel shadow-(--shadow-panel) [contain:inline-size]', className)}>
+    <div className={cn('flex w-full min-w-0 flex-col overflow-hidden rounded-panel border border-border-strong material-panel shadow-panel [contain:inline-size]', className)}>
       {/* Toolbar: master search, presets, count, clear, columns, app actions */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border-input bg-surface-subtle p-2">
         {search !== false && (

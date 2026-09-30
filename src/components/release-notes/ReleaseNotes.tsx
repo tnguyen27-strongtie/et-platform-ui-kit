@@ -77,12 +77,12 @@ export const defaultReleaseNotesLabels: ReleaseNotesLabels = {
 
 // Badge colors come from role tokens (so they follow the app theme) with text chosen for contrast.
 const categoryStyle: Record<ReleaseCategory, { bg: string; fg: string; icon: ReactNode }> = {
-  feature: { bg: colors.successStrong, fg: '#fff', icon: <StarBorderIcon /> },
-  improvement: { bg: colors.info, fg: '#fff', icon: <EditIcon /> },
-  fix: { bg: colors.neutral, fg: '#fff', icon: <BugReportIcon /> },
+  feature: { bg: colors.successStrong, fg: colors.textOnColor, icon: <StarBorderIcon /> },
+  improvement: { bg: colors.info, fg: colors.textOnColor, icon: <EditIcon /> },
+  fix: { bg: colors.neutral, fg: colors.textOnColor, icon: <BugReportIcon /> },
   maintenance: { bg: colors.warning, fg: colors.text, icon: <SettingsIcon /> },
-  security: { bg: colors.danger, fg: '#fff', icon: <SecurityIcon /> },
-  deprecation: { bg: colors.textMuted, fg: '#fff', icon: <ArchiveIcon /> },
+  security: { bg: colors.danger, fg: colors.textOnColor, icon: <SecurityIcon /> },
+  deprecation: { bg: colors.textMuted, fg: colors.textOnColor, icon: <ArchiveIcon /> },
 };
 
 // ---------------------------------------------------------------------------------------------

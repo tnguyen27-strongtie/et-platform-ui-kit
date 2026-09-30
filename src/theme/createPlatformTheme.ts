@@ -1,10 +1,10 @@
 import type { Shadows, ThemeOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 
-import type { ColorConfig, Density } from '../tokens/tokens';
+import type { ColorConfig, ColorScheme, Density } from '../tokens/tokens';
 import { colors, elevation, layout, material, radius, scales, shape, tokens, typography } from '../tokens/tokens';
 import { type AppearanceName, type PlatformAppearance, resolveAppearance } from './appearance';
-import { resolveColors } from './colors';
+import { resolveSchemeColors } from './colors';
 
 /**
  * MUI theme of the platform. Every MUI component used by the kit gets its platform
@@ -70,6 +70,10 @@ export interface PlatformThemeOptions {
   density?: Density;
   /** Role colors to override, e.g. { brand: '#1565c0' }. Brand shades are derived. */
   colors?: ColorConfig;
+  /** Role colors of the dark scheme (see PlatformThemeProvider `darkColors`). */
+  darkColors?: ColorConfig;
+  /** Color scheme the palette is built for. Default 'light'. */
+  colorScheme?: ColorScheme;
   /**
    * Appearance whose colors feed the MUI palette. Shape, shadows and materials are CSS variables
    * that PlatformThemeProvider sets; without the provider, set them with appearanceCssVars().
@@ -78,9 +82,16 @@ export interface PlatformThemeOptions {
   overrides?: ThemeOptions;
 }
 
-export function createPlatformTheme({ density = 'standard', colors: colorConfig, appearance, overrides }: PlatformThemeOptions = {}) {
+export function createPlatformTheme({
+  density = 'standard',
+  colors: colorConfig,
+  darkColors,
+  colorScheme = 'light',
+  appearance,
+  overrides,
+}: PlatformThemeOptions = {}) {
   const { fontSize, lineHeight } = typography.density[density];
-  const v = resolveColors(colorConfig, resolveAppearance(appearance).colors);
+  const v = resolveSchemeColors(colorScheme, { colors: colorConfig, darkColors, appearance: resolveAppearance(appearance) });
 
   return createTheme(
     {
@@ -93,13 +104,14 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
         values: { xs: 0, sm: 640, md: 768, lg: 992, xl: 1280 },
       },
       palette: {
+        mode: colorScheme,
         primary: {
           main: v.brand,
           light: v.brandHover,
           dark: v.brandActive,
           contrastText: v.textOnBrand,
         },
-        secondary: { main: v.neutral, contrastText: '#fff' },
+        secondary: { main: v.neutral, contrastText: v.textOnColor },
         error: { main: v.danger },
         warning: { main: v.warning, dark: v.warningText },
         success: { main: v.success, dark: v.successStrong },
@@ -146,8 +158,8 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           styleOverrides: {
             html: { color: colors.text, scrollbarWidth: 'thin', scrollbarColor: `${colors.scrollbarThumb} transparent` },
             'html, body, #root': { height: '100%' },
-            body: { background: material.app, backgroundAttachment: 'fixed' },
-            '::selection': { backgroundColor: colors.selection, color: '#fff', textShadow: 'none' },
+            body: { color: colors.text, background: material.app, backgroundAttachment: 'fixed' },
+            '::selection': { backgroundColor: colors.selection, color: colors.textOnBrand, textShadow: 'none' },
             '::-webkit-scrollbar': { width: '10px', height: '10px' },
             '::-webkit-scrollbar-thumb': { backgroundColor: colors.scrollbarThumb, borderRadius: 0 },
             '@keyframes platform-modal-show': {
@@ -200,25 +212,25 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               props: { variant: 'primaryDark' },
               style: {
                 backgroundColor: colors.brandDark,
-                color: '#fff',
+                color: colors.textOnBrand,
                 fontWeight: typography.weight.bold,
                 '&:hover': { backgroundColor: colors.brandActive },
-                '&.Mui-disabled': { backgroundColor: colors.brandDark, color: '#fff' },
+                '&.Mui-disabled': { backgroundColor: colors.brandDark, color: colors.textOnBrand },
               },
             },
             {
               props: { variant: 'secondary' },
               style: {
                 backgroundColor: colors.neutral,
-                color: '#fff',
-                '&.Mui-disabled': { color: '#fff' },
+                color: colors.textOnColor,
+                '&.Mui-disabled': { color: colors.textOnColor },
               },
             },
             {
               props: { variant: 'text' },
               style: {
                 backgroundColor: 'transparent',
-                color: '#000',
+                color: colors.textStrong,
                 boxShadow: 'none',
                 '&:hover, &:focus-visible, &:active': {
                   backgroundColor: colors.brandActive,
@@ -244,7 +256,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
             {
               props: { variant: 'tertiary' },
               style: {
-                color: '#000',
+                color: colors.textStrong,
                 fontWeight: typography.weight.medium,
                 ...frosted(material.control),
                 '&.Mui-disabled': { backgroundColor: colors.surfaceDisabled, color: colors.text },
@@ -253,7 +265,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
             {
               props: { variant: 'default' },
               style: {
-                color: '#000',
+                color: colors.textStrong,
                 fontWeight: typography.weight.medium,
                 ...frosted(material.control),
                 border: `1px solid ${colors.borderInput}`,
@@ -264,11 +276,11 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               props: { variant: 'danger' },
               style: {
                 backgroundColor: colors.danger,
-                color: '#fff',
+                color: colors.textOnColor,
                 fontWeight: typography.weight.medium,
                 '&:hover': { backgroundColor: colors.danger, filter: 'brightness(1.1)' },
-                '&.Mui-disabled': { backgroundColor: colors.danger, color: '#fff' },
-                '& .MuiButton-loadingIndicator': { color: '#fff' },
+                '&.Mui-disabled': { backgroundColor: colors.danger, color: colors.textOnColor },
+                '& .MuiButton-loadingIndicator': { color: colors.textOnColor },
               },
             },
             {
@@ -367,7 +379,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               padding: '0 1.5rem 0 0.5rem',
               boxSizing: 'border-box',
             },
-            icon: { fontSize: '1rem', color: '#000', right: '0.375rem' },
+            icon: { fontSize: '1rem', color: colors.textStrong, right: '0.375rem' },
           },
         },
         MuiMenu: {
@@ -411,7 +423,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               padding: '0 1.5rem 0 0.5rem',
               '& .MuiAutocomplete-input': { padding: 0 },
             },
-            popupIndicator: { color: '#000', '& svg': { fontSize: '1rem' } },
+            popupIndicator: { color: colors.textStrong, '& svg': { fontSize: '1rem' } },
             clearIndicator: { '& svg': { fontSize: '1rem' } },
             paper: { borderRadius: shape.overlay, boxShadow: elevation.popover, ...frosted(material.overlay) },
             listbox: { padding: 0, maxHeight: '24rem', ...thinMenuScrollbar },
@@ -492,7 +504,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
                 '& + .MuiSwitch-track': { backgroundColor: colors.brand, opacity: 1 },
                 '&:hover + .MuiSwitch-track': { backgroundColor: colors.brandActive },
               },
-              '&:hover + .MuiSwitch-track': { backgroundColor: scales.trueGray[50] },
+              '&:hover + .MuiSwitch-track': { backgroundColor: 'var(--color-true-gray-50)' },
               '&.Mui-focusVisible + .MuiSwitch-track': focusOutline,
               '&.Mui-disabled + .MuiSwitch-track': { opacity: 0.5 },
               '&.Mui-disabled': { cursor: 'not-allowed', color: '#fff' },
@@ -501,7 +513,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
             track: {
               borderRadius: radius.full,
               opacity: 1,
-              backgroundColor: scales.trueGray[30],
+              backgroundColor: 'var(--color-true-gray-30)',
               transition: 'background-color 0.15s',
             },
           },
@@ -549,7 +561,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           styleOverrides: {
             tooltip: {
               backgroundColor: colors.text,
-              color: '#fff',
+              color: colors.surface,
               padding: '0.5rem 0.375rem',
               // Short text: large overlay radii would turn it into a pill, so cap the rounding.
               borderRadius: `min(${shape.overlay}, 0.5rem)`,

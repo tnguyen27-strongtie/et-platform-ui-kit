@@ -26,7 +26,7 @@ Components use colors by **role**, never by value. Each role has three forms:
 | `defaultColors` | `defaultColors.brand` → `'#a8671d'` | The kit's default value |
 | `colorVar(role)` | `colorVar('brand')` → `'--color-brand'` | The CSS variable name |
 
-For the value after the app's theme is applied, use `resolveColors(config)` ([Theming](theming.md#api-reference)).
+For the value after the app's theme is applied, use `resolveSchemeColors(scheme, { colors, darkColors })` ([Theming](theming.md#api-reference)). The dark scheme's defaults are in `defaultDarkColors` ([Color scheme](theming.md#color-scheme-dark-mode)); `darkTrueGray` is the reversed neutral scale it uses.
 
 | Role | Default | Used for |
 | --- | --- | --- |
@@ -37,6 +37,7 @@ For the value after the app's theme is applied, use `resolveColors(config)` ([Th
 | `accent` | `#b26d1f` | Accents: help bubble, top nav underline, selected option card, toast actions |
 | `selection` | `#ff5308` | Text selection |
 | `text` / `textMuted` / `textNav` / `textOnBrand` | `#343434` / `#686868` / `#757575` / `#f4f4f4` | Body text, secondary text, navigation labels, text on brand |
+| `textStrong` / `textOnColor` | `#000000` / `#ffffff` | Strongest text (default and text buttons, select arrows); text on filled status and neutral colors (danger and secondary buttons, badges) |
 | `surface` / `surfaceApp` / `surfaceSubtle` | `#ffffff` / `#f4f4f4` / `#fafafa` | Panels, app background, headers |
 | `surfaceDisabled` / `surfaceHover` | `#f5f5f5` / `#f5f5f5` | Disabled fields, row hover |
 | `border` / `borderInput` / `borderStrong` / `borderTabs` | `#f0f0f0` / `#d9d9d9` / `#cacaca` / `#cacaca` | Dividers, inputs, card and table outlines, tab bars |
@@ -108,11 +109,11 @@ Headings `h1`–`h6` in MUI `Typography` use a compact scale for tool apps (24px
 | Token | Values |
 | --- | --- |
 | `radius` | `none` 0, `sm` 0.125rem (inputs, menus, dialogs, tooltips), `md` 0.25rem (buttons), `lg` 0.5rem (option cards), `xl` 1rem (alerts), `full` |
-| `shadows` | Default values of `popover`, `dropdownItem`, `modal`, `button`, `raised`, `alert`, `panel` (`none`) |
-| `elevation` | The same shadows as CSS variable references (`var(--shadow-popover)`): they follow the [appearance](theming.md#appearance) |
+| `shadows` | Default values of `popover`, `dropdownItem`, `modal`, `button`, `raised`, `alert`, `panel` (`none`). `defaultDarkShadows` holds the dark scheme's |
+| `elevation` | The same shadows as CSS variable references (`var(--shadow-popover)`): they follow the [appearance](theming.md#appearance) and the dark scheme. The value lives in `--elevation-*` (`elevationVar`), and `--shadow-*` points at it, so Tailwind `shadow-popover` follows too |
 | `defaultShape` / `shape` | Radius by role, default values / `var(--radius-*)` references: `control` 0.25rem (buttons), `field` 0.125rem (inputs), `overlay` 0.125rem (menus, popovers, tooltips), `dialog` 0.125rem, `panel` 0.125rem (Card, GridView), `option` 0.5rem (option cards), `alert` 1rem, `section` 0 (workspace sections) |
-| `defaultMaterial` / `material` | Surface materials, default values / `var(--material-*)` references: `app`, `panel`, `header`, `nav`, `overlay`, `control`, `splitter` (backgrounds) and `filter`, `scrimFilter` (backdrop filters, `none` by default) |
-| `shapeVar`, `shadowVar`, `materialVar` | CSS variable names, e.g. `shapeVar('panel')` = `--radius-panel` |
+| `defaultMaterial` / `material` | Surface materials, default values / `var(--material-*)` references: `app`, `panel`, `header`, `nav`, `overlay`, `control`, `splitter`, `canvas` (backgrounds; `canvas` is the white drawing surface) and `filter`, `scrimFilter` (backdrop filters, `none` by default). `defaultDarkMaterial` holds the dark scheme's differences |
+| `shapeVar`, `shadowVar`, `elevationVar`, `materialVar` | CSS variable names, e.g. `shapeVar('panel')` = `--radius-panel` |
 | `spacingUnit` | `4` (px). `theme.spacing(2)` and Tailwind `p-2` are both 0.5rem |
 
 Components use the role tokens (`shape`, `elevation`, `material`), not the size steps in `radius`, so an appearance can round a button differently from a dialog.
@@ -141,7 +142,7 @@ Components use the role tokens (`shape`, `elevation`, `material`), not the size 
 Tokens become Tailwind theme values with kebab-case names:
 
 ```tsx
-<div className="bg-surface-app text-text border border-border-input rounded-panel shadow-(--shadow-popover)" />
+<div className="bg-surface-app text-text border border-border-input rounded-panel shadow-popover" />
 <span className="text-danger bg-pumpkin-orange-10" />
 <header className="z-(--z-top-nav) h-(--top-nav-height)" />
 ```

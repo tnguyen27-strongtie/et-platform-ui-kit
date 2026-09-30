@@ -68,7 +68,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
   if (props.tabs) {
     const { tabs, value, onChange } = props;
     return (
-      <div className={cn('flex h-full min-h-0 flex-col overflow-hidden rounded-section material-panel shadow-(--shadow-panel)', className)}>
+      <div className={cn('flex h-full min-h-0 flex-col overflow-hidden rounded-section material-panel shadow-panel', className)}>
         <div className={headerClass}>
           <Tabs id={tabsId} value={value} onChange={onChange} sx={tabsSx}>
             {tabs.map((t) => (
@@ -88,7 +88,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
   }
 
   return (
-    <div className={cn('flex h-full min-h-0 flex-col overflow-hidden rounded-section material-panel shadow-(--shadow-panel)', className)}>
+    <div className={cn('flex h-full min-h-0 flex-col overflow-hidden rounded-section material-panel shadow-panel', className)}>
       <div className={headerClass}>
         <Tabs value="only" onChange={() => undefined} sx={tabsSx}>
           <Tab value="only" label={props.title} />

@@ -63,7 +63,7 @@ export function Card({
     <Root
       role={role}
       aria-labelledby={labelledBy}
-      className={cn('flex min-w-0 flex-col overflow-hidden rounded-panel border border-border-strong material-panel shadow-(--shadow-panel)', className)}
+      className={cn('flex min-w-0 flex-col overflow-hidden rounded-panel border border-border-strong material-panel shadow-panel', className)}
     >
       {(title || actions) && (
         <header className="flex min-h-10 items-center justify-between gap-2 border-b border-border-input bg-surface-subtle px-2 py-1">

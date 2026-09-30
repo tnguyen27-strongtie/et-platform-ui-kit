@@ -41,9 +41,10 @@ for (const [name, value] of Object.entries(tokens.shape)) {
   push(`radius-${kebab(name)}`, value);
 }
 
-lines.push('  /* Shadows */');
+lines.push('  /* Shadows: values in --elevation-* (set per appearance), utilities read them through --shadow-* */');
 for (const [name, value] of Object.entries(tokens.shadows)) {
-  push(`shadow-${kebab(name)}`, value);
+  push(`elevation-${kebab(name)}`, value);
+  push(`shadow-${kebab(name)}`, `var(--elevation-${kebab(name)})`);
 }
 
 lines.push('  /* Materials (appearance) */');

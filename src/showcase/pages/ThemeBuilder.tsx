@@ -14,6 +14,7 @@ import {
   Checkbox,
   Chip,
   type ColorRole,
+  type ColorSchemeSetting,
   contrastRatio,
   DataTable,
   defaultColors,
@@ -28,7 +29,7 @@ import {
   parseThemeConfig,
   RadioGroup,
   resolveAppearance,
-  resolveColors,
+  resolveSchemeColors,
   Select,
   Switch,
   Tab,
@@ -38,13 +39,14 @@ import {
   themeConfigToJson,
   themeConfigToTs,
   Tooltip,
+  usePlatformColorScheme,
 } from '../../index';
 import { Code, DemoGrid, DemoPage, DemoSection, useShowcase } from '../layout';
 
 const roleGroups: Array<{ title: string; hint: string; roles: ColorRole[] }> = [
   // `brand` itself is edited in the section above.
   { title: 'Brand shades', hint: 'Derived from brand unless you set them.', roles: ['brandHover', 'brandActive', 'brandDark', 'brandSubtle', 'brandSelected', 'focusRing', 'accent', 'selection'] },
-  { title: 'Text', hint: '', roles: ['text', 'textMuted', 'textNav', 'textOnBrand', 'link'] },
+  { title: 'Text', hint: '', roles: ['text', 'textMuted', 'textNav', 'textOnBrand', 'textStrong', 'textOnColor', 'link'] },
   { title: 'Surfaces and borders', hint: '', roles: ['surface', 'surfaceApp', 'surfaceSubtle', 'surfaceDisabled', 'surfaceHover', 'border', 'borderInput', 'borderStrong', 'borderTabs', 'neutral'] },
   { title: 'Status', hint: '', roles: ['danger', 'warning', 'warningText', 'success', 'successStrong', 'info'] },
   { title: 'Other', hint: '', roles: ['scrollbarThumb', 'scrollbarThumbMenu', 'overlay'] },
@@ -132,7 +134,7 @@ const pairs: Pair[] = [
   { label: 'Muted text on app background', fg: 'textMuted', bg: 'surfaceApp', min: 4.5, note: 'Text' },
   { label: 'Links', fg: 'link', bg: 'surface', min: 4.5, note: 'Text' },
   { label: 'Error messages', fg: 'danger', bg: 'surface', min: 4.5, note: 'Text' },
-  { label: 'Danger button text', fg: '#ffffff', bg: 'danger', min: 4.5, note: 'Text' },
+  { label: 'Danger button text', fg: 'textOnColor', bg: 'danger', min: 4.5, note: 'Text' },
   { label: 'Warning alert text', fg: 'warningText', bg: 'surface', min: 4.5, note: 'Text' },
   { label: 'Selected option', fg: 'text', bg: 'brandSelected', min: 4.5, note: 'Text' },
   { label: 'Focus ring, checked controls', fg: 'brand', bg: 'surface', min: 3, note: 'UI component' },
@@ -197,8 +199,13 @@ async function copy(text: string, what: string) {
 
 export function ThemeBuilder() {
   const { config, setConfig } = useShowcase();
-  const resolved = resolveColors(config.colors);
-  const overrides = config.colors ?? {};
+  // The role editor and contrast check work on the scheme on screen: dark shows and edits darkColors.
+  const scheme = usePlatformColorScheme();
+  const colorKey = scheme === 'dark' ? 'darkColors' : 'colors';
+  const resolved = resolveSchemeColors(scheme, { colors: config.colors, darkColors: config.darkColors, appearance: resolveAppearance(config.appearance) });
+  const overrides = config[colorKey] ?? {};
+  // In the dark scheme the brand (made readable on dark surfaces) and its shades derive from the light brand too.
+  const brandGiven = Boolean(overrides.brand || (scheme === 'dark' && config.colors?.brand));
   const [showAll, setShowAll] = useState(false);
   const [format, setFormat] = useState<'json' | 'ts'>('json');
   const [importText, setImportText] = useState('');
@@ -207,14 +214,18 @@ export function ThemeBuilder() {
 
   const setRole = (role: ColorRole, value: string | undefined) =>
     setConfig((c) => {
-      const colors = { ...c.colors };
+      const colors = { ...c[colorKey] };
       if (value === undefined) delete colors[role];
       else colors[role] = value;
-      return { ...c, colors: Object.keys(colors).length ? colors : undefined };
+      return { ...c, [colorKey]: Object.keys(colors).length ? colors : undefined };
     });
 
   const originOf = (role: ColorRole): ColorFieldProps['origin'] =>
-    overrides[role] ? 'custom' : overrides.brand && derivedFromBrand.has(role) ? 'derived' : 'default';
+    overrides[role]
+      ? 'custom'
+      : brandGiven && (derivedFromBrand.has(role) || (scheme === 'dark' && (role === 'brand' || role === 'textOnBrand')))
+        ? 'derived'
+        : 'default';
 
   const json = themeConfigToJson(config);
   const ts = themeConfigToTs(config);
@@ -269,6 +280,22 @@ export function ThemeBuilder() {
         <p className="m-0 text-sm text-text-muted">
           {resolveAppearance(config.appearance).description} Users who turn on the system&apos;s reduce-transparency setting get solid surfaces.
         </p>
+        <FormField
+          label="Color scheme"
+          htmlFor="theme-color-scheme"
+          description="Works with every appearance. System follows the operating system setting and its changes. Dark derives a readable brand from the light one unless you set dark colors below."
+        >
+          <RadioGroup<ColorSchemeSetting>
+            name="theme-color-scheme"
+            value={config.colorScheme ?? 'light'}
+            onChange={(colorScheme) => setConfig((c) => ({ ...c, colorScheme: colorScheme === 'light' ? undefined : colorScheme }))}
+            options={[
+              { value: 'light', label: 'Light' },
+              { value: 'dark', label: 'Dark' },
+              { value: 'system', label: 'System' },
+            ]}
+          />
+        </FormField>
       </DemoSection>
 
       <DemoSection
@@ -304,7 +331,7 @@ export function ThemeBuilder() {
                 </Tooltip>
               ))}
             </div>
-            <Button startIcon={<RestartAltIcon />} onClick={() => setConfig({})} disabled={!customCount && !config.density && !config.name && !config.appearance}>
+            <Button startIcon={<RestartAltIcon />} onClick={() => setConfig({})} disabled={!config.colors && !config.darkColors && !config.density && !config.name && !config.appearance && !config.colorScheme}>
               Reset to kit defaults
             </Button>
           </div>
@@ -324,7 +351,7 @@ export function ThemeBuilder() {
       <DemoSection
         id="roles"
         title="Color roles"
-        description={`${customCount} role${customCount === 1 ? '' : 's'} customized. Leave a field empty to use the default; only valid colors are applied.`}
+        description={`Editing the ${scheme} color scheme (switch it in the top bar or under Appearance): ${customCount} role${customCount === 1 ? '' : 's'} customized. Leave a field empty to use the default; only valid colors are applied.`}
       >
         <Checkbox label="Show all roles (advanced)" checked={showAll} onChange={setShowAll} />
         {roleGroups

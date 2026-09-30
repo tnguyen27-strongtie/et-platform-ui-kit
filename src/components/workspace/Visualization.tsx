@@ -27,11 +27,11 @@ export interface VisualizationStageProps {
  */
 export function VisualizationStage({ children, controls, note, loading, loadingText, empty, className }: VisualizationStageProps) {
   return (
-    <div className={cn('relative flex size-full flex-col overflow-auto bg-white md:block md:overflow-hidden', className)}>
+    <div data-surface="canvas" className={cn('relative flex size-full flex-col overflow-auto bg-(--material-canvas) md:block md:overflow-hidden', className)}>
       <div className="relative min-h-64 flex-1 md:absolute md:inset-0">{empty ?? children}</div>
 
       {controls && (
-        <div className="z-10 flex flex-col p-2 md:absolute md:top-2 md:right-2 md:rounded-sm md:bg-white/85 md:p-4">
+        <div className="z-10 flex flex-col p-2 md:absolute md:top-2 md:right-2 md:rounded-sm md:bg-(--material-canvas)/85 md:p-4">
           {controls}
         </div>
       )}
@@ -80,7 +80,7 @@ export function ResetViewButton({ onClick, label = 'Reset view' }: { onClick: ()
 /** Dashed overlay shown while a file is dragged over a section (e.g. dropping a saved input JSON file). */
 export function DropOverlay({ children }: { children: ReactNode }) {
   return (
-    <div className="pointer-events-none absolute inset-1 z-40 flex items-center justify-center rounded-sm border-4 border-dashed border-true-gray-30 bg-white/60 text-4xl font-bold text-true-gray-30">
+    <div className="pointer-events-none absolute inset-1 z-40 flex items-center justify-center rounded-sm border-4 border-dashed border-true-gray-30 bg-(--material-canvas)/60 text-4xl font-bold text-true-gray-30">
       {children}
     </div>
   );

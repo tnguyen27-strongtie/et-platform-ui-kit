@@ -48,6 +48,7 @@ import {
   Select,
   Spinner,
   Switch,
+  VisualizationStage,
   Tab,
   TabPanel,
   Tabs,
@@ -57,8 +58,10 @@ import {
   useAccordionGroup,
   useAgreementAccepted,
   useReleaseNotesSeen,
+  type ColorSchemeSetting,
   type Density,
   defineAppearance,
+  usePlatformColorScheme,
 } from '../../../src/index';
 
 /** Prints a callback value as JSON so specs can check both value and type. */
@@ -769,11 +772,38 @@ function DensityFixture() {
 // ---------- Appearance ----------
 const narrowGlass = defineAppearance({ name: 'narrow-glass', shape: { control: '3px' } }, 'glass');
 
+function SchemeReadout() {
+  return <Out id="scheme" value={usePlatformColorScheme()} />;
+}
+
 function AppearanceFixture() {
   const [choice, setChoice] = useState<'classic' | 'glass' | 'custom'>('classic');
+  const [scheme, setScheme] = useState<ColorSchemeSetting>('light');
   const [open, setOpen] = useState(false);
   return (
-    <PlatformThemeProvider appearance={choice === 'custom' ? narrowGlass : choice}>
+    <PlatformThemeProvider appearance={choice === 'custom' ? narrowGlass : choice} colorScheme={scheme}>
+      <FormField label="Color scheme" htmlFor="scheme-choice">
+        <RadioGroup<ColorSchemeSetting>
+          name="scheme-choice"
+          value={scheme}
+          onChange={setScheme}
+          options={[
+            { value: 'light', label: 'Light' },
+            { value: 'dark', label: 'Dark' },
+            { value: 'system', label: 'System' },
+          ]}
+        />
+      </FormField>
+      <SchemeReadout />
+      {/* App-style Tailwind classes that should follow the appearance without code changes. */}
+      <div data-testid="app-classes" className="rounded-sm p-2 shadow-popover">
+        App classes
+      </div>
+      <div className="h-24">
+        <VisualizationStage note={<span data-testid="canvas-note">Not to scale</span>}>
+          <span>Drawing</span>
+        </VisualizationStage>
+      </div>
       <FormField label="Appearance" htmlFor="appearance-choice">
         <RadioGroup<'classic' | 'glass' | 'custom'>
           name="appearance-choice"

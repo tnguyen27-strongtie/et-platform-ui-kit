@@ -2,9 +2,11 @@
 
 Every color in the kit is a **role** (`brand`, `danger`, `surfaceApp`…) backed by a CSS variable. An app changes roles at runtime; MUI styles, Tailwind classes and `sx` values all update together, with no rebuild.
 
-The same applies to the **appearance**: the shape, depth, surface material and font of every component. Brand colors say *whose* app it is; the appearance says *what style* it is built in. The two are independent.
+The same applies to the **appearance**: the shape, depth, surface material and font of every component. Brand colors say *whose* app it is; the appearance says *what style* it is built in. The **color scheme** (light or dark) is a third, independent choice: Classic and Glass both come in light and dark.
 
 - [Appearance](#appearance)
+- [Color scheme (dark mode)](#color-scheme-dark-mode)
+- [Making app code follow the theme](#making-app-code-follow-the-theme)
 - [Brand color in one line](#brand-color-in-one-line)
 - [Theme builder](#theme-builder)
 - [Theme files](#theme-files)
@@ -35,7 +37,9 @@ What an appearance controls:
 | `shadows` | `button`, `popover`, `dropdownItem`, `modal`, `raised`, `alert`, `panel` | Same components |
 | `material` | `app`, `panel`, `header`, `nav`, `overlay`, `control`, `splitter`, `filter`, `scrimFilter` | Page background, panels, tab bars, TopNav, floating layers, default buttons, resize handles, backdrop filters |
 | `colors` | Any role, usually neutrals | Surfaces and borders the style needs. Colors the app passes still win |
+| `radius` | `sm`, `md`, `lg`, `xl` | The size steps behind Tailwind `rounded-sm`…`rounded-xl`, so app code using them follows too |
 | `fontFamily`, `workspaceGap` | | Text font; space around and between workspace sections |
+| `dark` | `colors`, `shadows`, `material` | What changes in the [dark scheme](#color-scheme-dark-mode) |
 | `reducedTransparency` | Material roles | Values used when the user turns on the system's *reduce transparency* setting |
 
 Data stays readable in every appearance: grid rows, table cells and inputs keep solid surfaces; only the layers around them (panels, bars, menus, dialogs) become translucent in Glass. Glass sets solid surfaces for users with `prefers-reduced-transparency: reduce`.
@@ -69,11 +73,63 @@ The `platform-ui-theme` skill (in the kit repository's `.claude/skills/`, [copy 
 node .claude/skills/platform-ui-theme/scripts/theme-tool.mjs draft.json --write src/theme.config.ts
 ```
 
-### App styles per appearance
+## Color scheme (dark mode)
 
-- Use the role tokens in app code and it follows the appearance: Tailwind `rounded-panel`, `rounded-control`, `material-panel`, `material-overlay`, `shadow-(--shadow-panel)`; in `sx`, `shape.panel`, `material.overlay`, `elevation.popover`.
-- Tailwind's `shadow-popover`-style utilities bake the default value in at build time. Use `shadow-(--shadow-popover)` to follow the appearance.
-- The provider sets `<body data-appearance="glass">` for the rare style that must differ: `[data-appearance='glass'] .my-chart-legend { … }`.
+```tsx
+<PlatformThemeProvider config={theme} colorScheme="system">   // 'light' (default) | 'dark' | 'system'
+```
+
+`system` follows the operating system setting and switches live when the user changes it. A user setting usually overrides the theme file: `colorScheme={userSettings.colorScheme ?? 'system'}`.
+
+What happens in the dark scheme:
+
+- Every role color switches to `defaultDarkColors`: dark surfaces, light text, lighter status colors (they carry dark `textOnColor`), and borders that still reach 3:1. The kit's unit tests check the defaults against WCAG AA.
+- The **brand needs no second value.** The light `brand` is lightened until it reaches 4.5:1 on the dark surface, its shades are mixed into the dark surface, and `textOnBrand` becomes white or near-black, whichever reads better. Set `darkColors.brand` to choose it yourself.
+- Only `brand` carries over from `colors`: other light roles were picked for light surfaces. Override dark roles in `darkColors`:
+
+  ```ts
+  definePlatformTheme({
+    colors: { brand: '#1f5f99' },
+    darkColors: { brand: '#7fb2e5', surfaceApp: '#0d1117' },   // optional
+    colorScheme: 'system',
+  });
+  ```
+
+- The neutral scale is reversed (`true-gray-0` becomes the darkest step), so `bg-true-gray-10` and similar classes adapt by themselves.
+- MUI gets `palette.mode: 'dark'`, the page gets `color-scheme: dark` (native scrollbars and form controls) and `<html data-color-scheme="dark">`.
+- Tailwind's `dark:` variant follows the provider (not only the OS): `className="bg-surface dark:bg-surface-subtle"`.
+- Drawing surfaces stay white (`material.canvas`): drawings and product images usually assume it. Controls and notes on a white canvas keep light colors so they stay readable. If your drawings work on dark, set `material.canvas` in the appearance's `dark.material`.
+
+Real colors for charts or canvas code: `resolveSchemeColors(usePlatformColorScheme(), { colors: theme.colors, darkColors: theme.darkColors })`.
+
+An appearance can adjust the dark scheme through `dark: { colors, shadows, material }`; Glass uses it for darker translucent layers and softer highlights.
+
+## Making app code follow the theme
+
+What follows the appearance and the color scheme **without code changes**:
+
+| In app code | Follows |
+| --- | --- |
+| Role classes (`bg-surface`, `text-text-muted`, `border-border-input`, `bg-brand`…) and `colors.*` | Brand, appearance colors, dark scheme |
+| `rounded-sm` … `rounded-xl` | Appearance (`radius` steps) |
+| `shadow-popover`, `shadow-raised`, `shadow-panel`… (the kit's shadow names) | Appearance and dark scheme |
+| `bg-true-gray-*`, `text-true-gray-*` | Dark scheme (reversed scale) |
+| `dark:` variant | The provider's color scheme |
+| Role tokens: `rounded-panel`, `material-panel`, `shape.*`, `elevation.*`, `material.*` | Appearance and dark scheme |
+
+What **does not** follow and needs a change: `bg-white`, `text-black`, hex colors (in classes, `sx`, `style` or CSS), Tailwind's default palette (`text-gray-500`, `bg-blue-100`…), Tailwind's default shadows (`shadow-lg`), the brand scales (`bg-pumpkin-orange-10`), and the raw token values `radius.*` / `shadows.*` in `sx`.
+
+The `platform-ui-app` skill includes an audit script that lists all of these with a suggested role, and fixes the safe ones:
+
+```bash
+node .claude/skills/platform-ui-app/scripts/audit-styles.mjs src          # report
+node .claude/skills/platform-ui-app/scripts/audit-styles.mjs src --fix    # bg-white → bg-surface, text-black → text-text-strong
+node .claude/skills/platform-ui-app/scripts/audit-styles.mjs src --strict # exit 1 on findings (CI)
+```
+
+Mark an intentional exception (a logo that must stay white) with a `platform-ui-audit-ignore` comment on the line.
+
+For the rare style that must differ per appearance or scheme, the provider sets `<body data-appearance="glass">` and `<html data-color-scheme="dark">`: `[data-appearance='glass'] .my-chart-legend { … }`.
 
 ## Brand color in one line
 
@@ -184,24 +240,27 @@ The provider puts `density-standard` or `density-expanded` on `<body>`, not `<ht
 
 | Export | Description |
 | --- | --- |
-| `PlatformThemeProvider` | Applies the theme. Props: `config`, `colors`, `density`, `appearance`, `overrides` ([details](getting-started.md#what-the-provider-does)) |
-| `PlatformThemeConfig` | `{ version?: 1; name?: string; colors?: ColorConfig; density?: Density; appearance?: AppearanceName \| PlatformAppearance }` |
-| `PlatformAppearance` | `{ name; label?; description?; colors?; shape?; shadows?; material?; fontFamily?; workspaceGap?; reducedTransparency? }` |
+| `PlatformThemeProvider` | Applies the theme. Props: `config`, `colors`, `darkColors`, `colorScheme`, `density`, `appearance`, `overrides` ([details](getting-started.md#what-the-provider-does)) |
+| `PlatformThemeConfig` | `{ version?: 1; name?: string; colors?: ColorConfig; darkColors?: ColorConfig; colorScheme?: 'light' \| 'dark' \| 'system'; density?: Density; appearance?: AppearanceName \| PlatformAppearance }` |
+| `PlatformAppearance` | `{ name; label?; description?; colors?; shape?; radius?; shadows?; material?; fontFamily?; workspaceGap?; reducedTransparency?; dark?: { colors?; shadows?; material? } }` |
 | `APPEARANCES`, `APPEARANCE_NAMES` | Built-in appearances by name (`classic`, `glass`) and their names in display order |
 | `classicAppearance`, `glassAppearance` | The built-in appearance objects |
 | `defineAppearance(appearance, base?)` | Builds an appearance over `base` (a name or object, default `'classic'`), merging each part key by key |
 | `resolveAppearance(value?)` | A name or object to an appearance object; unknown names and `undefined` give Classic |
 | `isAppearanceName(value)` | `true` for a built-in name |
-| `appearanceCssVars(appearance?)` | `{ '--radius-panel': '1.25rem', '--material-filter': …, '--font-sans': … }`, defaults filled in (for setups without the provider) |
+| `appearanceCssVars(appearance?, scheme?)` | `{ '--radius-panel': '1.25rem', '--elevation-popover': …, '--material-filter': …, '--font-sans': … }`, defaults (and dark defaults) filled in, for setups without the provider |
 | `definePlatformTheme(config)` | Identity function that type-checks a `theme.config.ts` |
 | `parseThemeConfig(input)` | Validates untrusted input (a JSON string or an object). Returns `{ ok: true, config, warnings }` or `{ ok: false, errors, warnings }` |
 | `normalizeThemeConfig(config)` | Drops empty parts, so exported files contain only what changed |
 | `themeConfigToJson(config)`, `themeConfigToTs(config)` | Serialize a theme file |
 | `THEME_CONFIG_VERSION` | Current theme file version (`1`) |
 | `COLOR_ROLES` | Every role name, in display order |
-| `resolveColors(config?, base?)` | Resolved values of every role: defaults, then `base` (an appearance's colors), then shades derived from `brand`, then given values |
+| `resolveColors(config?, base?)` | Light-scheme values of every role: defaults, then `base` (an appearance's colors), then shades derived from `brand`, then given values |
+| `resolveSchemeColors(scheme, { colors?, darkColors?, appearance? })` | Every role for `'light'` or `'dark'`, resolved exactly as the provider does |
+| `usePlatformColorScheme()` | The scheme in effect, `'light'` or `'dark'` (`'system'` resolved) |
+| `adaptBrandForDark(brand, surface, min?)`, `readableOn(background, candidates?)`, `contrast(fg, bg)`, `mix(color, base, weight)` | Color helpers behind the dark scheme; `contrast` is unrounded (see `contrastRatio`) |
 | `colorCssVars(values)` | `{ '--color-brand': '#a8671d', … }` for resolved values |
-| `createPlatformTheme({ density?, colors?, appearance?, overrides? })` | Builds the MUI theme without the provider (for tests or custom setups) |
+| `createPlatformTheme({ density?, colors?, darkColors?, colorScheme?, appearance?, overrides? })` | Builds the MUI theme without the provider (for tests or custom setups) |
 | `contrastRatio(fg, bg)` | WCAG contrast ratio (1–21) of two hex or `rgb()` colors, or `null` if a color cannot be parsed |
 | `isValidColor(value)` | `true` for hex, `rgb()`/`rgba()` and `hsl()`/`hsla()`; named colors and `var()` are rejected |
 | `parseRgb(color)` | `[r, g, b]` from a hex or `rgb()` color, else `null` |

@@ -19,6 +19,8 @@
 /* Density (text size) classes, applied by PlatformThemeProvider on <body>. */
 @custom-variant standard (.density-standard &);
 @custom-variant expanded (.density-expanded &);
+/* dark: follows the provider's color scheme (<html data-color-scheme="dark">), not only the OS setting. */
+@custom-variant dark (&:where([data-color-scheme='dark'], [data-color-scheme='dark'] *));
 /* Style MUI SVG icons inside an element: icon:text-brand */
 @custom-variant icon (& .MuiSvgIcon-root);
 
@@ -81,7 +83,7 @@
     50% { opacity: 0; }
   }
   @keyframes border-highlight {
-    0%, 100% { border-color: #000; box-shadow: 0 0 0 0 transparent; }
+    0%, 100% { border-color: var(--color-text-strong); box-shadow: 0 0 0 0 transparent; }
     40%, 60% {
       border-color: var(--color-accent);
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 85%, transparent), 0 0 12px color-mix(in srgb, var(--color-accent) 70%, transparent);

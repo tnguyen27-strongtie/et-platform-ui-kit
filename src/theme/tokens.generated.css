@@ -75,6 +75,8 @@
   --color-text-muted: #686868;
   --color-text-nav: #757575;
   --color-text-on-brand: #f4f4f4;
+  --color-text-strong: #000000;
+  --color-text-on-color: #ffffff;
   --color-surface: #ffffff;
   --color-surface-app: #f4f4f4;
   --color-surface-subtle: #fafafa;
@@ -115,22 +117,30 @@
   --radius-option: 0.5rem;
   --radius-alert: 1rem;
   --radius-section: 0;
-  /* Shadows */
-  --shadow-popover: 0 1.5px 4px rgba(0,0,0,.24), 0 1.5px 6px rgba(0,0,0,.12);
-  --shadow-dropdown-item: 0 3px 4px rgba(0,0,0,.2);
-  --shadow-modal: 0 6px 12px rgba(0,0,0,.23), 0 10px 40px rgba(0,0,0,.19);
-  --shadow-button: 0 2px 0 0 rgba(0,0,0,.04);
-  --shadow-raised: 0 3px 12px rgba(0,0,0,.23), 0 3px 12px rgba(0,0,0,.16);
-  --shadow-alert: 0 6px 7px 3px rgba(0,0,0,.15), 0 3px 3px 0 rgba(0,0,0,.25);
-  --shadow-panel: none;
+  /* Shadows: values in --elevation-* (set per appearance), utilities read them through --shadow-* */
+  --elevation-popover: 0 1.5px 4px rgba(0,0,0,.24), 0 1.5px 6px rgba(0,0,0,.12);
+  --shadow-popover: var(--elevation-popover);
+  --elevation-dropdown-item: 0 3px 4px rgba(0,0,0,.2);
+  --shadow-dropdown-item: var(--elevation-dropdown-item);
+  --elevation-modal: 0 6px 12px rgba(0,0,0,.23), 0 10px 40px rgba(0,0,0,.19);
+  --shadow-modal: var(--elevation-modal);
+  --elevation-button: 0 2px 0 0 rgba(0,0,0,.04);
+  --shadow-button: var(--elevation-button);
+  --elevation-raised: 0 3px 12px rgba(0,0,0,.23), 0 3px 12px rgba(0,0,0,.16);
+  --shadow-raised: var(--elevation-raised);
+  --elevation-alert: 0 6px 7px 3px rgba(0,0,0,.15), 0 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-alert: var(--elevation-alert);
+  --elevation-panel: none;
+  --shadow-panel: var(--elevation-panel);
   /* Materials (appearance) */
   --material-app: var(--color-surface-app);
   --material-panel: var(--color-surface);
-  --material-header: #e2e2e2;
-  --material-nav: #f4f4f4;
+  --material-header: var(--color-true-gray-10);
+  --material-nav: var(--color-true-gray-0);
   --material-overlay: var(--color-surface);
   --material-control: #fff;
-  --material-splitter: #aeaeae;
+  --material-splitter: var(--color-true-gray-30);
+  --material-canvas: #ffffff;
   --material-filter: none;
   --material-scrim-filter: none;
   /* Layout (appearance) */

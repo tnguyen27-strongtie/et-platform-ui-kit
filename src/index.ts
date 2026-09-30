@@ -14,11 +14,19 @@ export {
   glassAppearance,
   isAppearanceName,
   type PlatformAppearance,
+  type PlatformAppearanceDark,
   resolveAppearance,
 } from './theme/appearance';
-export { appearanceCssVars, colorCssVars, resolveColors } from './theme/colors';
+export {
+  appearanceCssVars,
+  colorCssVars,
+  resolveColors,
+  resolveSchemeColors,
+  type SchemeColorOptions,
+} from './theme/colors';
+export { adaptBrandForDark, contrast, mix, readableOn } from './theme/colorMath';
 export { createPlatformTheme, type PlatformTheme, type PlatformThemeOptions } from './theme/createPlatformTheme';
-export { PlatformThemeProvider, type PlatformThemeProviderProps } from './theme/PlatformThemeProvider';
+export { PlatformThemeProvider, type PlatformThemeProviderProps, usePlatformColorScheme } from './theme/PlatformThemeProvider';
 export {
   COLOR_ROLES,
   contrastRatio,

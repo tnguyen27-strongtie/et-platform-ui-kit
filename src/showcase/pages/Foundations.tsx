@@ -19,11 +19,12 @@ import {
   radius,
   resolveAppearance,
   shape,
-  resolveColors,
+  resolveSchemeColors,
   scales,
   shadows,
   Stack,
   Typography,
+  usePlatformColorScheme,
 } from '../../index';
 import { DemoPage, DemoSection, useShowcase } from '../layout';
 
@@ -35,8 +36,9 @@ const colorGroups: Array<{ title: string; roles: ColorRole[] }> = [
 ];
 
 function ColorsSection() {
-  const { colors: config } = useShowcase();
-  const values = resolveColors(config);
+  const { config } = useShowcase();
+  const scheme = usePlatformColorScheme();
+  const values = resolveSchemeColors(scheme, { colors: config.colors, darkColors: config.darkColors, appearance: resolveAppearance(config.appearance) });
   const grouped = new Set(colorGroups.flatMap((g) => g.roles));
   const others = (Object.keys(defaultColors) as ColorRole[]).filter((r) => !grouped.has(r));
   return (

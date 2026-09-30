@@ -26,6 +26,23 @@ export default tseslint.config(
           selector: 'Literal[value=/^#(?!(fff|ffffff|000|000000)$)[0-9a-fA-F]{3,8}$/i]',
           message: 'Use a token from tokens.ts instead of a hex color.',
         },
+        // Appearance and dark scheme: fixed white/black classes and raw radius/shadow values do not follow them.
+        {
+          selector: 'Literal[value=/(^|[\\s:])(bg|text|border)-(white|black)(\\/\\d+)?(\\s|$)/]',
+          message: 'Use a role class (bg-surface, text-text-strong, border-border…) or bg-(--material-canvas); white/black do not follow the dark scheme.',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/(^|[\\s:])(bg|text|border)-(white|black)(\\/\\d+)?(\\s|$)/]',
+          message: 'Use a role class (bg-surface, text-text-strong, border-border…) or bg-(--material-canvas); white/black do not follow the dark scheme.',
+        },
+        {
+          selector: "MemberExpression[object.name='shadows']",
+          message: 'Use elevation.* so shadows follow the appearance and the dark scheme.',
+        },
+        {
+          selector: "MemberExpression[object.name='radius'][property.name=/^(sm|md|lg|xl)$/]",
+          message: 'Use shape.* (radius by role) so corners follow the appearance.',
+        },
       ],
     },
   },

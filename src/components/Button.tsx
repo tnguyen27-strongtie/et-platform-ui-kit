@@ -4,7 +4,7 @@ import MuiIconButton, { type IconButtonProps as MuiIconButtonProps } from '@mui/
 import { styled } from '@mui/material/styles';
 import { forwardRef } from 'react';
 
-import { colors, scales } from '../tokens/tokens';
+import { colors } from '../tokens/tokens';
 
 /**
  * Button. Variants: primary | primaryDark | secondary | text | textDark | tertiary | default | fab.
@@ -34,7 +34,7 @@ const StyledClose = styled(MuiIconButton)({
   borderRadius: '9999px',
   color: colors.text,
   '&:hover': { backgroundColor: colors.surfaceHover, transform: 'scale(1.05)' },
-  '&:active': { backgroundColor: scales.trueGray[10] },
+  '&:active': { backgroundColor: 'var(--color-true-gray-10)' },
   '& svg': { fontSize: '1.5rem' },
 });
 

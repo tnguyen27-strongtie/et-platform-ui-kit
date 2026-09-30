@@ -42,7 +42,7 @@ export const catalog: CatalogPage[] = [
       { id: 'colors', title: 'Colors', exports: ['colors', 'defaultColors', 'scales'] },
       { id: 'typography', title: 'Typography', exports: ['Typography', 'typography'] },
       { id: 'math', title: 'Math formulas', exports: ['MathVar', 'MathSub'] },
-      { id: 'tokens', title: 'Radius, shadow, spacing', exports: ['radius', 'shadows', 'spacingUnit', 'layout', 'breakpoints', 'defaultShape', 'shape', 'shapeVar', 'elevation', 'shadowVar', 'defaultMaterial', 'material', 'materialVar'] },
+      { id: 'tokens', title: 'Radius, shadow, spacing', exports: ['radius', 'shadows', 'spacingUnit', 'layout', 'breakpoints', 'defaultShape', 'shape', 'shapeVar', 'elevation', 'shadowVar', 'defaultMaterial', 'material', 'materialVar', 'elevationVar'] },
       { id: 'layout-primitives', title: 'Box and Stack', exports: ['Box', 'Stack'] },
     ],
   },
@@ -150,6 +150,11 @@ export const catalog: CatalogPage[] = [
       { id: 'number-helpers', title: 'Number helpers', exports: ['parseNumber', 'isPartialNumber', 'roundTo', 'stepNumber', 'formatNumber', 'formatDisplayNumber', 'formatFraction', 'clamp', 'decimalsOf', 'isInRange'] },
       { id: 'search-helpers', title: 'Search and filter helpers', exports: ['normalizeText', 'matchesText', 'matchesSearch', 'matchesNumberRange', 'matchesSelect', 'isEmptyFilter'] },
       { id: 'theme-helpers', title: 'Theme helpers', exports: ['resolveColors', 'colorCssVars', 'createPlatformTheme', 'PlatformThemeProvider', 'cn'] },
+      {
+        id: 'scheme-colors',
+        title: 'Color scheme helpers',
+        exports: ['usePlatformColorScheme', 'resolveSchemeColors', 'adaptBrandForDark', 'readableOn', 'contrast', 'mix', 'defaultDarkColors', 'darkTrueGray', 'defaultDarkShadows', 'defaultDarkMaterial'],
+      },
     ],
   },
 ];

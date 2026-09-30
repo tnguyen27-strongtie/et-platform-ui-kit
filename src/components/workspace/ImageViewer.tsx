@@ -101,7 +101,8 @@ export const ImageViewer = forwardRef<ImageViewerHandle, ImageViewerProps>(funct
   return (
     <div
       ref={containerRef}
-      className="relative size-full touch-none overflow-hidden bg-white select-none"
+      className="relative size-full touch-none overflow-hidden bg-(--material-canvas) select-none"
+      data-surface="canvas"
       onDoubleClick={reset}
       onPointerDown={(e) => {
         pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -152,7 +153,7 @@ export const ImageViewer = forwardRef<ImageViewerHandle, ImageViewerProps>(funct
         // Keep pointer and double-click events on the buttons: otherwise the pan handler captures the
         // pointer (the click never reaches the button) and quick repeated clicks reset the view.
         <div
-          className="absolute right-2 bottom-2 z-10 flex flex-col rounded-overlay material-overlay shadow-(--shadow-popover)"
+          className="absolute right-2 bottom-2 z-10 flex flex-col rounded-overlay material-overlay shadow-popover"
           onPointerDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
         >

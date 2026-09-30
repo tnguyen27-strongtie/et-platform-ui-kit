@@ -101,6 +101,10 @@ export const defaultColors = {
   textMuted: scales.trueGray[60],
   textNav: '#757575',
   textOnBrand: scales.trueGray[0],
+  /** Strongest text: default and text buttons, select arrows (black in light schemes, white in dark). */
+  textStrong: '#000000',
+  /** Text and icons on filled status or neutral colors (danger and secondary buttons, badges). */
+  textOnColor: '#ffffff',
 
   surface: '#ffffff',
   surfaceApp: scales.trueGray[0],
@@ -128,6 +132,62 @@ export const defaultColors = {
 } as const;
 
 export type ColorRole = keyof typeof defaultColors;
+
+/**
+ * Role colors of the dark color scheme (`colorScheme="dark"`). Brand shades are derived from the
+ * brand for dark surfaces (see resolveSchemeColors); status colors are lighter so they read on dark
+ * surfaces and carry dark `textOnColor`.
+ */
+export const defaultDarkColors: Record<ColorRole, string> = {
+  brand: '#e0973f',
+  brandHover: '#e6a75b',
+  brandActive: '#c27b26',
+  brandDark: '#efbf85',
+  brandSubtle: '#322a22',
+  brandSelected: '#4a3823',
+  focusRing: '#b27a38',
+  accent: '#e0973f',
+  selection: '#e0973f',
+
+  text: '#e8e8e8',
+  textMuted: '#a6a6a6',
+  textNav: '#b3b3b3',
+  textOnBrand: '#1d1d1d',
+  textStrong: '#ffffff',
+  textOnColor: '#121212',
+
+  surface: '#1e1e1e',
+  surfaceApp: '#121212',
+  surfaceSubtle: '#262626',
+  surfaceDisabled: '#2b2b2b',
+  surfaceHover: '#2b2b2b',
+
+  border: '#2e2e2e',
+  borderInput: '#707070',
+  borderStrong: '#3d3d3d',
+  borderTabs: '#3d3d3d',
+
+  neutral: '#a3a3a3',
+
+  danger: '#ff8a70',
+  warning: '#e8b04b',
+  warningText: '#f0c36d',
+  success: '#a3c26e',
+  successStrong: '#62c290',
+  info: '#8eb3d9',
+  link: '#6cb4ff',
+  scrollbarThumb: 'rgba(224, 151, 63, 0.5)',
+  scrollbarThumbMenu: '#8a8f98',
+  overlay: 'rgba(0, 0, 0, 0.6)',
+};
+
+/**
+ * Neutral scale of the dark scheme: the trueGray steps in reverse, so step 0 stays the one closest
+ * to the background. Tailwind classes such as bg-true-gray-10 or text-true-gray-40 adapt by themselves.
+ */
+export const darkTrueGray = Object.fromEntries(
+  Object.entries(scales.trueGray).map(([step, value]) => [step, step === 'base' ? value : scales.trueGray[(100 - Number(step)) as keyof typeof scales.trueGray]]),
+) as Record<keyof typeof scales.trueGray, string>;
 /** Resolved color values (hex/rgba), e.g. for MUI palette computations. */
 export type ColorValues = Record<ColorRole, string>;
 /** App-level color config: any subset of role colors. */
@@ -196,6 +256,18 @@ export const shadows = {
 
 export type ShadowRole = keyof typeof shadows;
 
+/** Shadows of the dark scheme: deeper, with a faint light edge so layers separate from dark surfaces. */
+export const defaultDarkShadows: Partial<Record<ShadowRole, string>> = {
+  popover: '0 0 0 1px rgba(255,255,255,.08), 0 4px 14px rgba(0,0,0,.55)',
+  dropdownItem: 'none',
+  modal: '0 0 0 1px rgba(255,255,255,.08), 0 16px 48px rgba(0,0,0,.6)',
+  raised: '0 0 0 1px rgba(255,255,255,.1), 0 6px 18px rgba(0,0,0,.5)',
+  alert: '0 0 0 1px rgba(255,255,255,.08), 0 6px 18px rgba(0,0,0,.5)',
+};
+
+/** Size steps of `radius` that an appearance may rescale (Tailwind rounded-sm … rounded-xl). */
+export type RadiusStep = 'sm' | 'md' | 'lg' | 'xl';
+
 /**
  * Corner radius by role. Components use these (`shape.*` = var(--radius-*)) instead of the
  * size steps in `radius`, so an appearance can round a button differently from a dialog.
@@ -233,15 +305,20 @@ export const defaultMaterial = {
   /** Resting panels: Card, GridView, workspace sections. */
   panel: 'var(--color-surface)',
   /** Tab bars and section headers. */
-  header: scales.trueGray[10],
+  header: 'var(--color-true-gray-10)',
   /** Top navigation bar. */
-  nav: scales.trueGray[0],
+  nav: 'var(--color-true-gray-0)',
   /** Floating layers: menus, popovers, dialogs. */
   overlay: 'var(--color-surface)',
   /** Default and tertiary buttons. */
   control: '#fff',
   /** Resize handles between workspace panes. */
-  splitter: scales.trueGray[30],
+  splitter: 'var(--color-true-gray-30)',
+  /**
+   * Drawing surfaces: VisualizationStage, ImageViewer. White in both color schemes because drawings
+   * and product images usually assume it; a theme with dark-ready drawings can change it.
+   */
+  canvas: '#ffffff',
   /** `backdrop-filter` of panels, bars, overlays and controls; `none` keeps them solid. */
   filter: 'none',
   /** `backdrop-filter` of the dim layer behind dialogs. */
@@ -250,10 +327,25 @@ export const defaultMaterial = {
 
 export type MaterialRole = keyof typeof defaultMaterial;
 
+/** Materials that differ in the dark scheme (the others reference role colors and follow them). */
+export const defaultDarkMaterial: Partial<Record<MaterialRole, string>> = {
+  control: 'var(--color-surface-subtle)',
+};
+
+/** Color scheme: light, dark, or follow the operating system. */
+export type ColorScheme = 'light' | 'dark';
+export type ColorSchemeSetting = ColorScheme | 'system';
+
 /** CSS custom property name of a radius role, e.g. panel -> --radius-panel. */
 export const shapeVar = (role: ShapeRole) => `--radius-${kebab(role)}`;
-/** CSS custom property name of a shadow, e.g. dropdownItem -> --shadow-dropdown-item. */
+/**
+ * CSS custom property name of a shadow, e.g. dropdownItem -> --shadow-dropdown-item. It points at
+ * `elevationVar(role)`, where the value lives, so Tailwind's shadow-popover utilities (which copy
+ * the theme value at build time) still follow the appearance.
+ */
 export const shadowVar = (role: ShadowRole) => `--shadow-${kebab(role)}`;
+/** CSS custom property that holds a shadow's value, e.g. popover -> --elevation-popover. Set by the provider. */
+export const elevationVar = (role: ShadowRole) => `--elevation-${kebab(role)}`;
 /** CSS custom property name of a material, e.g. scrimFilter -> --material-scrim-filter. */
 export const materialVar = (role: MaterialRole) => `--material-${kebab(role)}`;
 
@@ -320,6 +412,7 @@ export const tokens = {
   shape: defaultShape,
   shadows,
   material: defaultMaterial,
+  dark: { colors: defaultDarkColors, trueGray: darkTrueGray, shadows: defaultDarkShadows, material: defaultDarkMaterial },
   spacingUnit,
   breakpoints,
   layout,

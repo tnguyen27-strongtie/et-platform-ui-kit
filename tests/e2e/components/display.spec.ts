@@ -489,3 +489,71 @@ test.describe('Appearance', () => {
     expect(css).toContain('--material-filter:none;');
   });
 });
+
+test.describe('Color scheme', () => {
+  test('dark switches role colors, MUI styles and the neutral scale', async ({ page }) => {
+    await openFixture(page, 'appearance');
+    const html = page.locator('html');
+    const panel = page.locator('section').filter({ hasText: 'Panel' }).first();
+    await expect(html).toHaveAttribute('data-color-scheme', 'light');
+    await expect(panel).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+
+    await page.getByRole('radio', { name: 'Dark' }).check();
+    await expect(html).toHaveAttribute('data-color-scheme', 'dark');
+    await expectOut(page, 'scheme', 'dark');
+    await expect(panel).toHaveCSS('background-color', 'rgb(30, 30, 30)');
+    await expect(page.locator('body')).toHaveCSS('color', 'rgb(232, 232, 232)');
+    await expect(html).toHaveCSS('color-scheme', 'dark');
+    // Primary button: dark brand with the more readable text on it.
+    await expect(page.getByRole('button', { name: 'Save' })).toHaveCSS('background-color', 'rgb(224, 151, 63)');
+    await expect(page.getByRole('button', { name: 'Save' })).toHaveCSS('color', 'rgb(29, 29, 29)');
+    const gray10 = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--color-true-gray-10').trim());
+    expect(gray10).toBe('#343434');
+  });
+
+  test('system follows the operating system setting live', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await openFixture(page, 'appearance');
+    await page.getByRole('radio', { name: 'System' }).check();
+    await expectOut(page, 'scheme', 'light');
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await expectOut(page, 'scheme', 'dark');
+    await expect(page.locator('html')).toHaveAttribute('data-color-scheme', 'dark');
+    await page.emulateMedia({ colorScheme: 'light' });
+    await expectOut(page, 'scheme', 'light');
+  });
+
+  test('content on a light canvas stays readable in the dark scheme', async ({ page }) => {
+    await openFixture(page, 'appearance');
+    await page.getByRole('radio', { name: 'Dark' }).check();
+    await expect(page.getByTestId('canvas-note')).toHaveCSS('color', 'rgb(52, 52, 52)');
+  });
+
+  test('works with Glass', async ({ page }) => {
+    await openFixture(page, 'appearance');
+    await page.getByRole('radio', { name: 'Glass' }).check();
+    await page.getByRole('radio', { name: 'Dark' }).check();
+    const panel = page.locator('section').filter({ hasText: 'Panel' }).first();
+    await expect(panel).toHaveCSS('backdrop-filter', /blur/);
+    // Glass dark surface #1c1f25 at 58%, over whatever is behind: translucent.
+    await expect(panel).toHaveCSS('background-color', /color\(srgb|rgba\(28, 31, 37/);
+  });
+});
+
+test.describe('App Tailwind classes follow the appearance', () => {
+  test('rounded-sm and shadow-popover change with Glass and the dark scheme', async ({ page }) => {
+    await openFixture(page, 'appearance');
+    const el = page.getByTestId('app-classes');
+    await expect(el).toHaveCSS('border-top-left-radius', '2px');
+    const classicShadow = await el.evaluate((e) => getComputedStyle(e).boxShadow);
+    expect(classicShadow).toContain('rgba(0, 0, 0, 0.24)');
+
+    await page.getByRole('radio', { name: 'Glass' }).check();
+    await expect(el).toHaveCSS('border-top-left-radius', '6px');
+    await expect(el).toHaveCSS('box-shadow', /inset/);
+
+    await page.getByRole('radio', { name: 'Classic' }).check();
+    await page.getByRole('radio', { name: 'Dark' }).check();
+    await expect(el).toHaveCSS('box-shadow', /rgba\(0, 0, 0, 0\.55\)/);
+  });
+});

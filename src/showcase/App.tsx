@@ -4,6 +4,7 @@ import {
   APPEARANCE_NAMES,
   APPEARANCES,
   type ColorConfig,
+  type ColorSchemeSetting,
   isAppearanceName,
   parseThemeConfig,
   type PlatformThemeConfig,
@@ -128,6 +129,18 @@ export function App() {
           value={appearance}
           options={APPEARANCE_NAMES.map((name) => ({ value: name, label: APPEARANCES[name].label ?? name }))}
           onChange={(value) => setConfig((c) => ({ ...c, appearance: value === 'classic' ? undefined : value }))}
+        />
+      </div>
+      <div className="hidden w-28 md:block">
+        <Select<ColorSchemeSetting>
+          aria-label="Color scheme"
+          value={config.colorScheme ?? 'light'}
+          options={[
+            { value: 'light', label: 'Light' },
+            { value: 'dark', label: 'Dark' },
+            { value: 'system', label: 'System' },
+          ]}
+          onChange={(value) => setConfig((c) => ({ ...c, colorScheme: value === 'light' ? undefined : value }))}
         />
       </div>
       <div className="w-44">

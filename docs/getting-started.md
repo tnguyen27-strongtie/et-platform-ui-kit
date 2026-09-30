@@ -90,12 +90,15 @@ See [Theming](theming.md).
 2. Provides the MUI theme and `CssBaseline`.
 3. Writes the color variables (`--color-*`) for the current `colors` / `config`.
 4. Adds `density-standard` or `density-expanded` to `<body>` (14px or 16px body text).
-5. Writes the appearance variables (`--radius-*`, `--shadow-*`, `--material-*`, `--font-sans`, `--workspace-gap`) and sets `<body data-appearance="…">`.
+5. Writes the appearance variables (`--radius-*`, `--elevation-*`, `--material-*`, `--font-sans`, `--workspace-gap`) and sets `<body data-appearance="…">`.
+6. Applies the color scheme: dark role colors and neutral scale, MUI `palette.mode`, `color-scheme`, and `<html data-color-scheme="light|dark">` (`'system'` follows the OS live).
 
 | Prop | Type | Description |
 | --- | --- | --- |
 | `config` | `PlatformThemeConfig` | Theme file exported from the theme builder |
 | `colors` | `ColorConfig` | Role colors, e.g. `{ brand: '#1565c0' }`. Overrides `config.colors` |
+| `darkColors` | `ColorConfig` | Role colors of the dark scheme. Overrides `config.darkColors`. Without it, the light brand is adapted for dark surfaces |
+| `colorScheme` | `'light' \| 'dark' \| 'system'` | [Dark mode](theming.md#color-scheme-dark-mode). Overrides `config.colorScheme`. Default `'light'` |
 | `density` | `'standard' \| 'expanded'` | Text size setting. Overrides `config.density`. Default `'standard'` |
 | `appearance` | `'classic' \| 'glass' \| PlatformAppearance` | Visual style of every component ([Appearance](theming.md#appearance)). Overrides `config.appearance`. Default `'classic'` |
 | `overrides` | `ThemeOptions` | MUI theme additions merged over the platform theme. May be passed inline |

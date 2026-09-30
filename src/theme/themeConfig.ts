@@ -3,7 +3,7 @@
  * Pure (no React/MUI) so it is unit tested directly (tests/unit/themeConfig.test.ts).
  */
 // Type-only import: this file has no runtime imports so Node can run its unit tests directly.
-import type { ColorConfig, ColorRole, Density } from '../tokens/tokens';
+import type { ColorConfig, ColorRole, ColorSchemeSetting, Density } from '../tokens/tokens';
 import type { AppearanceName, PlatformAppearance } from './appearance';
 
 /** Every role in defaultColors (tests/unit/themeConfig.test.ts checks they stay in sync). */
@@ -21,6 +21,8 @@ export const COLOR_ROLES: readonly ColorRole[] = [
   'textMuted',
   'textNav',
   'textOnBrand',
+  'textStrong',
+  'textOnColor',
   'surface',
   'surfaceApp',
   'surfaceSubtle',
@@ -55,6 +57,13 @@ export interface PlatformThemeConfig {
   name?: string;
   /** Only the roles you change. Brand shades are derived from `brand` unless given. */
   colors?: ColorConfig;
+  /**
+   * Roles for the dark color scheme. Without them the dark scheme uses the kit's dark colors and the
+   * light `brand`, lightened until it reads on dark surfaces.
+   */
+  darkColors?: ColorConfig;
+  /** 'light' (default), 'dark', or 'system' to follow the operating system setting. */
+  colorScheme?: ColorSchemeSetting;
   /** Default text size. */
   density?: Density;
   /**
@@ -107,7 +116,7 @@ export function parseThemeConfig(input: unknown): ParseThemeResult {
   const raw = data as Record<string, unknown>;
   const config: PlatformThemeConfig = {};
   for (const key of Object.keys(raw)) {
-    if (!['version', 'name', 'colors', 'density', 'appearance', '$schema'].includes(key)) warnings.push(`Unknown key "${key}" ignored.`);
+    if (!['version', 'name', 'colors', 'darkColors', 'colorScheme', 'density', 'appearance', '$schema'].includes(key)) warnings.push(`Unknown key "${key}" ignored.`);
   }
 
   if (raw.version !== undefined) {
@@ -129,22 +138,31 @@ export function parseThemeConfig(input: unknown): ParseThemeResult {
       config.appearance = raw.appearance as AppearanceName;
     }
   }
-  if (raw.colors !== undefined) {
-    if (typeof raw.colors !== 'object' || raw.colors === null || Array.isArray(raw.colors)) {
-      errors.push('"colors" must be an object of role → color.');
+  if (raw.colorScheme !== undefined) {
+    if (raw.colorScheme !== 'light' && raw.colorScheme !== 'dark' && raw.colorScheme !== 'system') {
+      errors.push('"colorScheme" must be "light", "dark" or "system".');
     } else {
-      const colors: ColorConfig = {};
-      for (const [role, value] of Object.entries(raw.colors as Record<string, unknown>)) {
-        if (!(COLOR_ROLES as readonly string[]).includes(role)) {
-          warnings.push(`Unknown color role "${role}" ignored.`);
-        } else if (!isValidColor(value)) {
-          errors.push(`colors.${role}: "${String(value)}" is not a color (use #rrggbb, rgb() or hsl()).`);
-        } else {
-          colors[role as ColorRole] = value.trim();
-        }
-      }
-      if (Object.keys(colors).length) config.colors = colors;
+      config.colorScheme = raw.colorScheme;
     }
+  }
+  for (const key of ['colors', 'darkColors'] as const) {
+    const value = raw[key];
+    if (value === undefined) continue;
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      errors.push(`"${key}" must be an object of role → color.`);
+      continue;
+    }
+    const colors: ColorConfig = {};
+    for (const [role, color] of Object.entries(value as Record<string, unknown>)) {
+      if (!(COLOR_ROLES as readonly string[]).includes(role)) {
+        warnings.push(`Unknown color role "${role}" ignored.`);
+      } else if (!isValidColor(color)) {
+        errors.push(`${key}.${role}: "${String(color)}" is not a color (use #rrggbb, rgb() or hsl()).`);
+      } else {
+        colors[role as ColorRole] = color.trim();
+      }
+    }
+    if (Object.keys(colors).length) config[key] = colors;
   }
 
   return errors.length ? { ok: false, errors, warnings } : { ok: true, config, warnings };
@@ -154,8 +172,11 @@ export function parseThemeConfig(input: unknown): ParseThemeResult {
 export function normalizeThemeConfig(config: PlatformThemeConfig): PlatformThemeConfig {
   const out: PlatformThemeConfig = { version: THEME_CONFIG_VERSION };
   if (config.name?.trim()) out.name = config.name.trim();
-  const colors = Object.fromEntries(Object.entries(config.colors ?? {}).filter(([, v]) => typeof v === 'string' && v.trim())) as ColorConfig;
-  if (Object.keys(colors).length) out.colors = colors;
+  for (const key of ['colors', 'darkColors'] as const) {
+    const colors = Object.fromEntries(Object.entries(config[key] ?? {}).filter(([, v]) => typeof v === 'string' && v.trim())) as ColorConfig;
+    if (Object.keys(colors).length) out[key] = colors;
+  }
+  if (config.colorScheme && config.colorScheme !== 'light') out.colorScheme = config.colorScheme;
   if (config.density && config.density !== 'standard') out.density = config.density;
   if (config.appearance && config.appearance !== 'classic') out.appearance = config.appearance;
   return out;

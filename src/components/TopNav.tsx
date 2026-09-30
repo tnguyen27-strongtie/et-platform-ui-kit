@@ -2,6 +2,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { type ReactNode, useId, useState } from 'react';
 
+import { colors } from '../tokens/tokens';
 import { cn } from '../utils/cn';
 
 /**
@@ -54,7 +55,7 @@ export function NavMenu({ label, items }: { label: ReactNode; items: NavMenuItem
         anchorEl={anchor}
         open={!!anchor}
         onClose={() => setAnchor(null)}
-        slotProps={{ paper: { sx: { border: '1px solid rgba(0,0,0,.176)', py: 2, boxShadow: 'none' } } }}
+        slotProps={{ paper: { sx: { border: `1px solid color-mix(in srgb, ${colors.textStrong} 17.6%, transparent)`, py: 2, boxShadow: 'none' } } }}
       >
         {items.map((item) => (
           <MenuItem
@@ -64,7 +65,7 @@ export function NavMenu({ label, items }: { label: ReactNode; items: NavMenuItem
               setAnchor(null);
               item.onSelect();
             }}
-            sx={{ fontSize: '0.875rem', color: '#000', '&:hover': { boxShadow: 'none' } }}
+            sx={{ fontSize: '0.875rem', color: colors.textStrong, '&:hover': { boxShadow: 'none' } }}
           >
             {item.icon}
             {item.label}
