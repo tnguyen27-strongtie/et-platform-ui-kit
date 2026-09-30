@@ -2,6 +2,23 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Appearances**: one prop changes the visual style of every component while the brand colors and component APIs stay the same. `<PlatformThemeProvider appearance="glass">` (or `appearance` in the theme file) switches to Glass: frosted translucent panels, bars, menus and dialogs over a brand-tinted backdrop, capsule buttons, large rounded overlays and floating workspace sections. `classic` (default) is the existing look. Glass turns solid for users with the system's reduce-transparency setting. See `docs/theming.md` → "Appearance".
+- Custom appearances: `defineAppearance(overrides, base)`, plus `APPEARANCES`, `APPEARANCE_NAMES`, `classicAppearance`, `glassAppearance`, `resolveAppearance`, `isAppearanceName`, `appearanceCssVars` and the `PlatformAppearance` / `AppearanceName` types.
+- Role tokens that follow the appearance: `shape` / `defaultShape` (radius by role: control, field, overlay, dialog, panel, option, alert, section), `elevation` (shadows as CSS variables, new `shadows.panel`), `material` / `defaultMaterial` (surface backgrounds and backdrop filters), `layout.workspaceGap`, `shapeVar` / `shadowVar` / `materialVar`. Tailwind: `rounded-panel`…, `material-panel`…
+- Theme builder: an Appearance section with previews; the showcase top bar has an appearance switch.
+
+### Changed
+
+- `resolveColors(config, base?)` takes an optional base (an appearance's colors) under the app config. `createPlatformTheme` accepts `appearance`.
+- Components read radius, shadows and backgrounds from the role tokens instead of fixed values, and `Section`, `SectionLayout`, `TopNav` and `Tabs` no longer hard-code gray scale backgrounds. With the default Classic appearance the result looks the same, with one exception: `Popover` paper (HelpPopover, InfoTip) now has the same 0.125rem corners as menus instead of square corners.
+- The theme uses `var(--font-sans)` for text, so the font follows the appearance.
+
+No breaking changes.
+
 ## [0.11.0] - 2026-09-28
 
 ### Fixed

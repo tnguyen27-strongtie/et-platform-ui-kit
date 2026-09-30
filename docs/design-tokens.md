@@ -108,8 +108,14 @@ Headings `h1`–`h6` in MUI `Typography` use a compact scale for tool apps (24px
 | Token | Values |
 | --- | --- |
 | `radius` | `none` 0, `sm` 0.125rem (inputs, menus, dialogs, tooltips), `md` 0.25rem (buttons), `lg` 0.5rem (option cards), `xl` 1rem (alerts), `full` |
-| `shadows` | `popover`, `dropdownItem`, `modal`, `button`, `raised`, `alert` |
+| `shadows` | Default values of `popover`, `dropdownItem`, `modal`, `button`, `raised`, `alert`, `panel` (`none`) |
+| `elevation` | The same shadows as CSS variable references (`var(--shadow-popover)`): they follow the [appearance](theming.md#appearance) |
+| `defaultShape` / `shape` | Radius by role, default values / `var(--radius-*)` references: `control` 0.25rem (buttons), `field` 0.125rem (inputs), `overlay` 0.125rem (menus, popovers, tooltips), `dialog` 0.125rem, `panel` 0.125rem (Card, GridView), `option` 0.5rem (option cards), `alert` 1rem, `section` 0 (workspace sections) |
+| `defaultMaterial` / `material` | Surface materials, default values / `var(--material-*)` references: `app`, `panel`, `header`, `nav`, `overlay`, `control`, `splitter` (backgrounds) and `filter`, `scrimFilter` (backdrop filters, `none` by default) |
+| `shapeVar`, `shadowVar`, `materialVar` | CSS variable names, e.g. `shapeVar('panel')` = `--radius-panel` |
 | `spacingUnit` | `4` (px). `theme.spacing(2)` and Tailwind `p-2` are both 0.5rem |
+
+Components use the role tokens (`shape`, `elevation`, `material`), not the size steps in `radius`, so an appearance can round a button differently from a dialog.
 
 ## Breakpoints and layout
 
@@ -121,6 +127,7 @@ Headings `h1`–`h6` in MUI `Typography` use a compact scale for tool apps (24px
 | `layout.dialogWidth` / `layout.dialogMaxWidth` | 572px / 1536px |
 | `layout.menuMinWidth` / `layout.menuMaxWidth` | 160px / 320px (every action menu) |
 | `layout.menuItemMinHeight` / `layout.menuItemMinHeightTouch` | 36px / 48px (touch target size on coarse pointers) |
+| `layout.workspaceGap` | `0px` (`--workspace-gap`; Glass uses 0.5rem) |
 
 ## Z-index and motion
 
@@ -134,7 +141,7 @@ Headings `h1`–`h6` in MUI `Typography` use a compact scale for tool apps (24px
 Tokens become Tailwind theme values with kebab-case names:
 
 ```tsx
-<div className="bg-surface-app text-text border border-border-input rounded-sm shadow-popover" />
+<div className="bg-surface-app text-text border border-border-input rounded-panel shadow-(--shadow-popover)" />
 <span className="text-danger bg-pumpkin-orange-10" />
 <header className="z-(--z-top-nav) h-(--top-nav-height)" />
 ```
@@ -147,6 +154,8 @@ The stylesheet also defines:
 | `icon:` | Styles MUI icons inside an element, e.g. `icon:text-brand` |
 | `flex-center` | `display: flex` centered on both axes |
 | `no-scrollbar` | Hides the scrollbar, keeps scrolling |
+| `material-panel`, `material-overlay`, `material-nav`, `material-header`, `material-app` | Background (and backdrop filter) of the appearance's material |
+| `rounded-control`, `rounded-field`, `rounded-overlay`, `rounded-dialog`, `rounded-panel`, `rounded-option`, `rounded-alert`, `rounded-section` | Radius by role |
 | `animate-modal-show`, `animate-loading-pulse`, `animate-border-highlight`, `animate-jump` | Kit animations |
 
 ## Using tokens in MUI

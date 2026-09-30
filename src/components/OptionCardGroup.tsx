@@ -4,7 +4,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { type ReactNode, useId } from 'react';
 
-import { colors, radius, shadows } from '../tokens/tokens';
+import { colors, elevation, shape } from '../tokens/tokens';
 import { Tooltip } from './Tooltip';
 
 const Group = styled(ToggleButtonGroup)({
@@ -24,11 +24,11 @@ const Card = styled(ToggleButton, { shouldForwardProp: (p) => p !== 'showCheck' 
     padding: '0.5rem',
     margin: 0,
     border: '1px solid transparent',
-    borderRadius: `${radius.lg} !important`,
+    borderRadius: `${shape.option} !important`,
     color: 'inherit',
     textTransform: 'none',
     boxShadow: 'none',
-    '&:hover': { backgroundColor: colors.brandSubtle, boxShadow: shadows.raised },
+    '&:hover': { backgroundColor: colors.brandSubtle, boxShadow: elevation.raised },
     '&.Mui-selected, &.Mui-selected:hover': {
       backgroundColor: colors.brandSelected,
       border: `1px solid ${showCheck ? colors.focusRing : colors.accent}`,

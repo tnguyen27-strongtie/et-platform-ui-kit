@@ -5,7 +5,18 @@ import './theme/augmentation';
 export * from './tokens/tokens';
 
 // Theme
-export { colorCssVars, resolveColors } from './theme/colors';
+export {
+  APPEARANCE_NAMES,
+  APPEARANCES,
+  type AppearanceName,
+  classicAppearance,
+  defineAppearance,
+  glassAppearance,
+  isAppearanceName,
+  type PlatformAppearance,
+  resolveAppearance,
+} from './theme/appearance';
+export { appearanceCssVars, colorCssVars, resolveColors } from './theme/colors';
 export { createPlatformTheme, type PlatformTheme, type PlatformThemeOptions } from './theme/createPlatformTheme';
 export { PlatformThemeProvider, type PlatformThemeProviderProps } from './theme/PlatformThemeProvider';
 export {

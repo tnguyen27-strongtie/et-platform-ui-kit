@@ -2,6 +2,9 @@
 
 Every color in the kit is a **role** (`brand`, `danger`, `surfaceApp`…) backed by a CSS variable. An app changes roles at runtime; MUI styles, Tailwind classes and `sx` values all update together, with no rebuild.
 
+The same applies to the **appearance**: the shape, depth, surface material and font of every component. Brand colors say *whose* app it is; the appearance says *what style* it is built in. The two are independent.
+
+- [Appearance](#appearance)
 - [Brand color in one line](#brand-color-in-one-line)
 - [Theme builder](#theme-builder)
 - [Theme files](#theme-files)
@@ -10,6 +13,59 @@ Every color in the kit is a **role** (`brand`, `danger`, `surfaceApp`…) backed
 - [MUI theme overrides](#mui-theme-overrides)
 - [Rules for themeable code](#rules-for-themeable-code)
 - [API reference](#api-reference)
+
+## Appearance
+
+```tsx
+<PlatformThemeProvider config={theme} appearance="glass">
+```
+
+| Appearance | Look |
+| --- | --- |
+| `classic` (default) | Solid surfaces, tight corners, compact shadows: the original platform look |
+| `glass` | Frosted translucent panels, bars and overlays over a soft brand-tinted backdrop; capsule buttons; large rounded dialogs and menus; floating workspace sections; the system font |
+
+Changing the appearance changes no component API and no brand color. A screen built with the kit moves to a new visual direction by changing that one value (or `appearance` in the theme file). Switching at runtime needs no rebuild, so a user setting or an A/B test can drive it.
+
+What an appearance controls:
+
+| Part | Roles | Used by |
+| --- | --- | --- |
+| `shape` (radius by role) | `control`, `field`, `overlay`, `dialog`, `panel`, `option`, `alert`, `section` | Buttons, inputs, menus/popovers/tooltips, dialogs, Card/GridView, OptionCardGroup, Alert, workspace sections |
+| `shadows` | `button`, `popover`, `dropdownItem`, `modal`, `raised`, `alert`, `panel` | Same components |
+| `material` | `app`, `panel`, `header`, `nav`, `overlay`, `control`, `splitter`, `filter`, `scrimFilter` | Page background, panels, tab bars, TopNav, floating layers, default buttons, resize handles, backdrop filters |
+| `colors` | Any role, usually neutrals | Surfaces and borders the style needs. Colors the app passes still win |
+| `fontFamily`, `workspaceGap` | | Text font; space around and between workspace sections |
+| `reducedTransparency` | Material roles | Values used when the user turns on the system's *reduce transparency* setting |
+
+Data stays readable in every appearance: grid rows, table cells and inputs keep solid surfaces; only the layers around them (panels, bars, menus, dialogs) become translucent in Glass. Glass sets solid surfaces for users with `prefers-reduced-transparency: reduce`.
+
+### Custom appearance
+
+Build on a built-in appearance and write only what differs. Each part merges key by key:
+
+```ts
+import { defineAppearance } from '@platform/ui';
+
+export const productGlass = defineAppearance(
+  {
+    name: 'product-glass',
+    shape: { control: '0.75rem', dialog: '1rem' },
+    material: { filter: 'blur(12px) saturate(160%)' },
+  },
+  'glass', // base; default 'classic'
+);
+
+<PlatformThemeProvider config={theme} appearance={productGlass}>
+```
+
+An appearance object can also go in `theme.config.ts` (`appearance: productGlass`); `theme.json` files accept the built-in names only.
+
+### App styles per appearance
+
+- Use the role tokens in app code and it follows the appearance: Tailwind `rounded-panel`, `rounded-control`, `material-panel`, `material-overlay`, `shadow-(--shadow-panel)`; in `sx`, `shape.panel`, `material.overlay`, `elevation.popover`.
+- Tailwind's `shadow-popover`-style utilities bake the default value in at build time. Use `shadow-(--shadow-popover)` to follow the appearance.
+- The provider sets `<body data-appearance="glass">` for the rare style that must differ: `[data-appearance='glass'] .my-chart-legend { … }`.
 
 ## Brand color in one line
 
@@ -120,17 +176,24 @@ The provider puts `density-standard` or `density-expanded` on `<body>`, not `<ht
 
 | Export | Description |
 | --- | --- |
-| `PlatformThemeProvider` | Applies the theme. Props: `config`, `colors`, `density`, `overrides` ([details](getting-started.md#what-the-provider-does)) |
-| `PlatformThemeConfig` | `{ version?: 1; name?: string; colors?: ColorConfig; density?: Density }`, plain JSON |
+| `PlatformThemeProvider` | Applies the theme. Props: `config`, `colors`, `density`, `appearance`, `overrides` ([details](getting-started.md#what-the-provider-does)) |
+| `PlatformThemeConfig` | `{ version?: 1; name?: string; colors?: ColorConfig; density?: Density; appearance?: AppearanceName \| PlatformAppearance }` |
+| `PlatformAppearance` | `{ name; label?; description?; colors?; shape?; shadows?; material?; fontFamily?; workspaceGap?; reducedTransparency? }` |
+| `APPEARANCES`, `APPEARANCE_NAMES` | Built-in appearances by name (`classic`, `glass`) and their names in display order |
+| `classicAppearance`, `glassAppearance` | The built-in appearance objects |
+| `defineAppearance(appearance, base?)` | Builds an appearance over `base` (a name or object, default `'classic'`), merging each part key by key |
+| `resolveAppearance(value?)` | A name or object to an appearance object; unknown names and `undefined` give Classic |
+| `isAppearanceName(value)` | `true` for a built-in name |
+| `appearanceCssVars(appearance?)` | `{ '--radius-panel': '1.25rem', '--material-filter': …, '--font-sans': … }`, defaults filled in (for setups without the provider) |
 | `definePlatformTheme(config)` | Identity function that type-checks a `theme.config.ts` |
 | `parseThemeConfig(input)` | Validates untrusted input (a JSON string or an object). Returns `{ ok: true, config, warnings }` or `{ ok: false, errors, warnings }` |
 | `normalizeThemeConfig(config)` | Drops empty parts, so exported files contain only what changed |
 | `themeConfigToJson(config)`, `themeConfigToTs(config)` | Serialize a theme file |
 | `THEME_CONFIG_VERSION` | Current theme file version (`1`) |
 | `COLOR_ROLES` | Every role name, in display order |
-| `resolveColors(config?)` | Resolved hex values of every role: defaults, then derived shades, then given values |
+| `resolveColors(config?, base?)` | Resolved values of every role: defaults, then `base` (an appearance's colors), then shades derived from `brand`, then given values |
 | `colorCssVars(values)` | `{ '--color-brand': '#a8671d', … }` for resolved values |
-| `createPlatformTheme({ density?, colors?, overrides? })` | Builds the MUI theme without the provider (for tests or custom setups) |
+| `createPlatformTheme({ density?, colors?, appearance?, overrides? })` | Builds the MUI theme without the provider (for tests or custom setups) |
 | `contrastRatio(fg, bg)` | WCAG contrast ratio (1–21) of two hex or `rgb()` colors, or `null` if a color cannot be parsed |
 | `isValidColor(value)` | `true` for hex, `rgb()`/`rgba()` and `hsl()`/`hsla()`; named colors and `var()` are rejected |
 | `parseRgb(color)` | `[r, g, b]` from a hex or `rgb()` color, else `null` |

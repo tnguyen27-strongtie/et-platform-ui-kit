@@ -36,11 +36,23 @@ for (const [name, value] of Object.entries(tokens.radius)) {
   if (name === 'none' || name === 'full') continue;
   push(`radius-${name}`, value);
 }
+lines.push('  /* Radius by role (appearance) */');
+for (const [name, value] of Object.entries(tokens.shape)) {
+  push(`radius-${kebab(name)}`, value);
+}
 
 lines.push('  /* Shadows */');
 for (const [name, value] of Object.entries(tokens.shadows)) {
   push(`shadow-${kebab(name)}`, value);
 }
+
+lines.push('  /* Materials (appearance) */');
+for (const [name, value] of Object.entries(tokens.material)) {
+  push(`material-${kebab(name)}`, value);
+}
+
+lines.push('  /* Layout (appearance) */');
+push('workspace-gap', tokens.layout.workspaceGap);
 
 lines.push('  /* Breakpoints */');
 for (const [name, value] of Object.entries(tokens.breakpoints)) {

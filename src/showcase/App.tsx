@@ -1,7 +1,10 @@
 import { type ComponentType, useEffect, useState } from 'react';
 
 import {
+  APPEARANCE_NAMES,
+  APPEARANCES,
   type ColorConfig,
+  isAppearanceName,
   parseThemeConfig,
   type PlatformThemeConfig,
   PlatformThemeProvider,
@@ -114,8 +117,19 @@ export function App() {
     else window.scrollTo(0, 0);
   }, [route.page, route.section, route.fullScreen]);
 
+  const appearance = isAppearanceName(config.appearance) ? config.appearance : 'classic';
+
   const controls = (
     <div className="flex items-center gap-4">
+      {/* Phones: no room in the bar; the Theme builder's Appearance section switches it there. */}
+      <div className="hidden w-32 md:block">
+        <Select
+          aria-label="Appearance"
+          value={appearance}
+          options={APPEARANCE_NAMES.map((name) => ({ value: name, label: APPEARANCES[name].label ?? name }))}
+          onChange={(value) => setConfig((c) => ({ ...c, appearance: value === 'classic' ? undefined : value }))}
+        />
+      </div>
       <div className="w-44">
         <Select
           aria-label="Brand color"
@@ -151,7 +165,7 @@ export function App() {
           <WorkspaceDemo key={route.fullScreen} split={route.fullScreen} />
         ) : (
           <div className="flex">
-            <aside className="sticky top-(--top-nav-height) hidden h-[calc(100dvh-var(--top-nav-height))] w-60 shrink-0 overflow-y-auto border-r border-border bg-surface md:block">
+            <aside className="sticky top-(--top-nav-height) hidden h-[calc(100dvh-var(--top-nav-height))] w-60 shrink-0 overflow-y-auto border-r border-border material-panel md:block">
               <Sidebar page={route.page} />
             </aside>
             <main className="min-w-0 flex-1 p-4">

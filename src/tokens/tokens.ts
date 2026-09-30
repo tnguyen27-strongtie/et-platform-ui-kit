@@ -190,7 +190,82 @@ export const shadows = {
   button: '0 2px 0 0 rgba(0,0,0,.04)',
   raised: '0 3px 12px rgba(0,0,0,.23), 0 3px 12px rgba(0,0,0,.16)',
   alert: '0 6px 7px 3px rgba(0,0,0,.15), 0 3px 3px 0 rgba(0,0,0,.25)',
+  /** Resting panels (Card, GridView). None in the default appearance; glass-like appearances lift panels. */
+  panel: 'none',
 } as const;
+
+export type ShadowRole = keyof typeof shadows;
+
+/**
+ * Corner radius by role. Components use these (`shape.*` = var(--radius-*)) instead of the
+ * size steps in `radius`, so an appearance can round a button differently from a dialog.
+ * Tailwind utilities: rounded-control, rounded-field, rounded-overlay, rounded-panel…
+ */
+export const defaultShape = {
+  /** Buttons. */
+  control: radius.md,
+  /** Text inputs, selects, comboboxes. */
+  field: radius.sm,
+  /** Menus, popovers, dropdown lists, tooltips. */
+  overlay: radius.sm,
+  /** Dialogs (from the md breakpoint; full-width dialogs on phones stay square). */
+  dialog: radius.sm,
+  /** Resting panels: Card, GridView, floating view controls. */
+  panel: radius.sm,
+  /** Selectable option cards (OptionCardGroup). */
+  option: radius.lg,
+  /** Alerts. */
+  alert: radius.xl,
+  /** Workspace sections (Section, SectionLayout panes). Square by default: the panes touch. */
+  section: radius.none,
+} as const;
+
+export type ShapeRole = keyof typeof defaultShape;
+
+/**
+ * Surface materials: what the layers of the UI are made of. The default appearance uses solid
+ * surfaces; a translucent appearance sets see-through backgrounds plus a backdrop filter.
+ * Values are any CSS background (colors, gradients, `var()`), read through `material.*`.
+ */
+export const defaultMaterial = {
+  /** Page background behind everything (body, Workspace). */
+  app: 'var(--color-surface-app)',
+  /** Resting panels: Card, GridView, workspace sections. */
+  panel: 'var(--color-surface)',
+  /** Tab bars and section headers. */
+  header: scales.trueGray[10],
+  /** Top navigation bar. */
+  nav: scales.trueGray[0],
+  /** Floating layers: menus, popovers, dialogs. */
+  overlay: 'var(--color-surface)',
+  /** Default and tertiary buttons. */
+  control: '#fff',
+  /** Resize handles between workspace panes. */
+  splitter: scales.trueGray[30],
+  /** `backdrop-filter` of panels, bars, overlays and controls; `none` keeps them solid. */
+  filter: 'none',
+  /** `backdrop-filter` of the dim layer behind dialogs. */
+  scrimFilter: 'none',
+} as const;
+
+export type MaterialRole = keyof typeof defaultMaterial;
+
+/** CSS custom property name of a radius role, e.g. panel -> --radius-panel. */
+export const shapeVar = (role: ShapeRole) => `--radius-${kebab(role)}`;
+/** CSS custom property name of a shadow, e.g. dropdownItem -> --shadow-dropdown-item. */
+export const shadowVar = (role: ShadowRole) => `--shadow-${kebab(role)}`;
+/** CSS custom property name of a material, e.g. scrimFilter -> --material-scrim-filter. */
+export const materialVar = (role: MaterialRole) => `--material-${kebab(role)}`;
+
+const varRefs = <K extends string>(keys: readonly K[], name: (key: K) => string) =>
+  Object.fromEntries(keys.map((key) => [key, `var(${name(key)})`])) as Record<K, string>;
+
+/** Radius roles as CSS variable references (`var(--radius-panel)`); they follow the appearance. */
+export const shape = varRefs(Object.keys(defaultShape) as ShapeRole[], shapeVar);
+/** Shadows as CSS variable references (`var(--shadow-popover)`); they follow the appearance. */
+export const elevation = varRefs(Object.keys(shadows) as ShadowRole[], shadowVar);
+/** Materials as CSS variable references (`var(--material-panel)`); they follow the appearance. */
+export const material = varRefs(Object.keys(defaultMaterial) as MaterialRole[], materialVar);
 
 /** Tailwind-compatible spacing unit: 1 = 0.25rem. */
 export const spacingUnit = 4;
@@ -215,6 +290,8 @@ export const layout = {
   /** Menu item height: mouse / touch (WCAG 2.5.8 target size on coarse pointers). */
   menuItemMinHeight: 36,
   menuItemMinHeightTouch: 48,
+  /** Space around and between workspace sections (`--workspace-gap`); appearances with floating panels set it. */
+  workspaceGap: '0px',
 } as const;
 
 export const zIndex = {
@@ -240,7 +317,9 @@ export const tokens = {
   colors: defaultColors,
   typography,
   radius,
+  shape: defaultShape,
   shadows,
+  material: defaultMaterial,
   spacingUnit,
   breakpoints,
   layout,

@@ -28,6 +28,7 @@ A wrapper is justified when it removes a footgun (value types, accessibility wir
 These conventions exist because apps rely on them; breaking one usually breaks a test or an app.
 
 - **Colors:** `colors.*` from `../tokens/tokens` or role classes (`bg-brand`, `text-text-muted`, `border-border-input`). Never hex (ESLint fails; `#fff`/`#000` pass). For transparency use `color-mix(in srgb, ${colors.x} 15%, transparent)`; MUI `alpha()` cannot read CSS variables.
+- **Shape, shadows, surfaces:** role tokens so the component follows the appearance (Classic, Glass…): `shape.*` / `rounded-panel`, `rounded-control`…; `elevation.*` / `shadow-(--shadow-popover)` (plain `shadow-popover` bakes in the Classic value); `material.*` / `material-panel`, `material-overlay`. Never `radius.sm`, raw `shadows.*`, `bg-white` or `bg-true-gray-*` for these. Check the demo with the top bar's Appearance switch set to Glass.
 - **Classes:** Tailwind for layout, combined with `cn()` so an app's `className` can override.
 - **Base:** MUI only; icons from `@mui/icons-material` imported per icon (`@mui/icons-material/Close`).
 - **Callbacks:** return normalized values (`onChange(value: V)`), keep value types (a number option stays a number), `null` for empty.

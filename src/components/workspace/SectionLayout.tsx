@@ -48,8 +48,8 @@ function ResizeHandle({ direction }: { direction: 'columns' | 'rows' }) {
   return (
     <Separator
       className={cn(
-        'shrink-0 bg-true-gray-30 transition-colors duration-250 hover:bg-true-gray-50 data-[separator=active]:bg-accent',
-        direction === 'columns' ? 'w-[5px] cursor-col-resize' : 'h-[5px] cursor-row-resize',
+        'shrink-0 bg-(--material-splitter) transition-colors duration-250 hover:bg-true-gray-50 data-[separator=active]:bg-accent',
+        direction === 'columns' ? 'w-[max(5px,var(--workspace-gap))] cursor-col-resize' : 'h-[max(5px,var(--workspace-gap))] cursor-row-resize',
       )}
     />
   );
@@ -85,7 +85,7 @@ function CollapsedRail({ label, onExpand }: { label: ReactNode; onExpand: () => 
       type="button"
       onClick={onExpand}
       aria-expanded={false}
-      className="flex h-full w-full cursor-pointer flex-col items-center gap-2 border-0 bg-true-gray-10 py-2 text-sm font-medium text-text hover:text-brand"
+      className="flex h-full w-full cursor-pointer flex-col items-center gap-2 border-0 rounded-section material-header py-2 text-sm font-medium text-text hover:text-brand"
     >
       <KeyboardDoubleArrowRightIcon fontSize="small" />
       <span className="sr-only">Expand </span>
@@ -177,8 +177,8 @@ function MobileLayout({ input, illustration, output, labels, mobileTabs, mobileA
   const tabsId = useId();
 
   return (
-    <div className="flex size-full flex-col bg-white">
-      <div className="flex shrink-0 items-center border-b-2 border-true-gray-20 bg-true-gray-10 pr-2">
+    <div className="flex size-full flex-col overflow-hidden rounded-section material-panel">
+      <div className="flex shrink-0 items-center border-b-2 border-border-tabs material-header pr-2">
         <Tabs id={tabsId} value={current} onChange={setCurrent} sx={{ flex: 1, border: 0, backgroundColor: 'transparent' }}>
           {tabs.map((t) => (
             <Tab key={t.value} value={t.value} label={t.label} disabled={t.disabled} />
@@ -218,7 +218,7 @@ export function SectionLayout({ secondarySplit = 'rows', labels: labelOverrides,
 /** Fills the viewport below the top nav. */
 export function Workspace({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <main className={cn('relative h-[calc(var(--viewport-height)-var(--top-nav-height))] w-full overflow-hidden bg-surface-app', className)}>
+    <main className={cn('relative h-[calc(var(--viewport-height)-var(--top-nav-height))] w-full overflow-hidden p-(--workspace-gap) material-app', className)}>
       {children}
     </main>
   );

@@ -58,6 +58,7 @@ import {
   useAgreementAccepted,
   useReleaseNotesSeen,
   type Density,
+  defineAppearance,
 } from '../../../src/index';
 
 /** Prints a callback value as JSON so specs can check both value and type. */
@@ -765,6 +766,40 @@ function DensityFixture() {
   );
 }
 
+// ---------- Appearance ----------
+const narrowGlass = defineAppearance({ name: 'narrow-glass', shape: { control: '3px' } }, 'glass');
+
+function AppearanceFixture() {
+  const [choice, setChoice] = useState<'classic' | 'glass' | 'custom'>('classic');
+  const [open, setOpen] = useState(false);
+  return (
+    <PlatformThemeProvider appearance={choice === 'custom' ? narrowGlass : choice}>
+      <FormField label="Appearance" htmlFor="appearance-choice">
+        <RadioGroup<'classic' | 'glass' | 'custom'>
+          name="appearance-choice"
+          value={choice}
+          onChange={setChoice}
+          options={[
+            { value: 'classic', label: 'Classic' },
+            { value: 'glass', label: 'Glass' },
+            { value: 'custom', label: 'Custom' },
+          ]}
+        />
+      </FormField>
+      <Card title="Panel">
+        <div className="flex gap-2 p-2">
+          <Button variant="primary">Save</Button>
+          <Button onClick={() => setOpen(true)}>Open dialog</Button>
+        </div>
+      </Card>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogHeader onClose={() => setOpen(false)}>Glass dialog</DialogHeader>
+        <DialogBody>Body</DialogBody>
+      </Dialog>
+    </PlatformThemeProvider>
+  );
+}
+
 // ---------- GridView ----------
 interface Part {
   id: string;
@@ -1062,6 +1097,7 @@ export const fixtures: Record<string, ComponentType> = {
   'layout-flex': FlexibleLayoutFixture,
   'layout-sized': SizedLayoutFixture,
   density: DensityFixture,
+  appearance: AppearanceFixture,
   grid: GridFixture,
   'grid-labels': GridLabelsFixture,
   'release-notes': ReleaseNotesFixture,

@@ -23,6 +23,7 @@ export const fixtureNames = [
   'layout-flex',
   'layout-sized',
   'density',
+  'appearance',
   'grid',
   'grid-labels',
   'release-notes',

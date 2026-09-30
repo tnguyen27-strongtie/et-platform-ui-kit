@@ -2,7 +2,8 @@ import type { Shadows, ThemeOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 
 import type { ColorConfig, Density } from '../tokens/tokens';
-import { colors, layout, radius, scales, shadows, tokens, typography } from '../tokens/tokens';
+import { colors, elevation, layout, material, radius, scales, shape, tokens, typography } from '../tokens/tokens';
+import { type AppearanceName, type PlatformAppearance, resolveAppearance } from './appearance';
 import { resolveColors } from './colors';
 
 /**
@@ -12,17 +13,23 @@ import { resolveColors } from './colors';
  * Styles reference role colors as CSS variables (`colors.*` = var(--color-*)), so an app
  * color config applies without rebuilding the theme. Only the MUI palette needs resolved
  * values, because MUI computes channels and contrast from them.
+ *
+ * Shape, depth and surfaces come from the appearance variables (`shape.*`, `elevation.*`,
+ * `material.*`), so switching the appearance restyles every component the same way.
  */
 
 const muiShadows = [
   'none',
-  shadows.button, // 1: buttons
-  shadows.popover, // 2: popover, tooltip
-  shadows.dropdownItem, // 3: hovered menu option
-  shadows.raised, // 4: hovered option card
-  ...Array<string>(19).fill(shadows.popover), // 5-23: Menu/Popover use 8
-  shadows.modal, // 24: Dialog
+  elevation.button, // 1: buttons
+  elevation.popover, // 2: popover, tooltip
+  elevation.dropdownItem, // 3: hovered menu option
+  elevation.raised, // 4: hovered option card
+  ...Array<string>(19).fill(elevation.popover), // 5-23: Menu/Popover use 8
+  elevation.modal, // 24: Dialog
 ] as Shadows;
+
+/** Frosted (or, in the classic appearance, solid) background of floating layers and controls. */
+const frosted = (background: string) => ({ background, backdropFilter: material.filter }) as const;
 
 const disabledControl = {
   opacity: 0.4,
@@ -63,12 +70,17 @@ export interface PlatformThemeOptions {
   density?: Density;
   /** Role colors to override, e.g. { brand: '#1565c0' }. Brand shades are derived. */
   colors?: ColorConfig;
+  /**
+   * Appearance whose colors feed the MUI palette. Shape, shadows and materials are CSS variables
+   * that PlatformThemeProvider sets; without the provider, set them with appearanceCssVars().
+   */
+  appearance?: AppearanceName | PlatformAppearance;
   overrides?: ThemeOptions;
 }
 
-export function createPlatformTheme({ density = 'standard', colors: colorConfig, overrides }: PlatformThemeOptions = {}) {
+export function createPlatformTheme({ density = 'standard', colors: colorConfig, appearance, overrides }: PlatformThemeOptions = {}) {
   const { fontSize, lineHeight } = typography.density[density];
-  const v = resolveColors(colorConfig);
+  const v = resolveColors(colorConfig, resolveAppearance(appearance).colors);
 
   return createTheme(
     {
@@ -104,7 +116,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
         muted: v.borderInput,
       },
       typography: {
-        fontFamily: typography.fontFamily.sans,
+        fontFamily: 'var(--font-sans)',
         fontSize,
         fontWeightLight: typography.weight.light,
         fontWeightRegular: typography.weight.regular,
@@ -134,7 +146,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           styleOverrides: {
             html: { color: colors.text, scrollbarWidth: 'thin', scrollbarColor: `${colors.scrollbarThumb} transparent` },
             'html, body, #root': { height: '100%' },
-            body: { backgroundColor: colors.surfaceApp },
+            body: { background: material.app, backgroundAttachment: 'fixed' },
             '::selection': { backgroundColor: colors.selection, color: '#fff', textShadow: 'none' },
             '::-webkit-scrollbar': { width: '10px', height: '10px' },
             '::-webkit-scrollbar-thumb': { backgroundColor: colors.scrollbarThumb, borderRadius: 0 },
@@ -160,12 +172,12 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           styleOverrides: {
             root: {
               whiteSpace: 'nowrap',
-              boxShadow: shadows.button,
+              boxShadow: elevation.button,
               gap: '0.5rem',
-              borderRadius: radius.md,
+              borderRadius: shape.control,
               transition: 'all 0.15s linear',
               minWidth: 'fit-content',
-              '&:hover': { transform: 'scale(1.02)', boxShadow: shadows.button },
+              '&:hover': { transform: 'scale(1.02)', boxShadow: elevation.button },
               '&.Mui-focusVisible': focusOutline,
               '&.Mui-disabled': {
                 ...disabledControl,
@@ -234,7 +246,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               style: {
                 color: '#000',
                 fontWeight: typography.weight.medium,
-                backgroundColor: '#fff',
+                ...frosted(material.control),
                 '&.Mui-disabled': { backgroundColor: colors.surfaceDisabled, color: colors.text },
               },
             },
@@ -243,7 +255,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               style: {
                 color: '#000',
                 fontWeight: typography.weight.medium,
-                backgroundColor: '#fff',
+                ...frosted(material.control),
                 border: `1px solid ${colors.borderInput}`,
                 '&.Mui-disabled': { backgroundColor: colors.surfaceDisabled, color: colors.text },
               },
@@ -312,7 +324,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           styleOverrides: {
             root: {
               backgroundColor: colors.surface,
-              borderRadius: radius.sm,
+              borderRadius: shape.field,
               transition: 'box-shadow 0.15s',
               '&:not(.MuiInputBase-multiline)': { height: layout.inputHeight },
               '&.MuiInputBase-adornedStart': { paddingLeft: 0 },
@@ -361,7 +373,8 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
         MuiMenu: {
           styleOverrides: {
             paper: {
-              borderRadius: radius.sm,
+              borderRadius: shape.overlay,
+              ...frosted(material.overlay),
               ...thinMenuScrollbar,
               // Action menus share one width range; long labels wrap instead of stretching the menu.
               [`&:not(.${SELECT_MENU_CLASS})`]: { minWidth: layout.menuMinWidth, maxWidth: layout.menuMaxWidth },
@@ -385,7 +398,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               overflowWrap: 'anywhere',
               lineHeight: 1.3,
               fontSize: typography.size.sm,
-              '&:hover, &.Mui-focusVisible': { backgroundColor: colors.brandSubtle, boxShadow: shadows.dropdownItem },
+              '&:hover, &.Mui-focusVisible': { backgroundColor: colors.brandSubtle, boxShadow: elevation.dropdownItem },
               '&.Mui-selected, &.Mui-selected:hover, &.Mui-selected.Mui-focusVisible': {
                 backgroundColor: colors.brandSelected,
               },
@@ -400,13 +413,13 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
             },
             popupIndicator: { color: '#000', '& svg': { fontSize: '1rem' } },
             clearIndicator: { '& svg': { fontSize: '1rem' } },
-            paper: { borderRadius: radius.sm, boxShadow: shadows.popover },
+            paper: { borderRadius: shape.overlay, boxShadow: elevation.popover, ...frosted(material.overlay) },
             listbox: { padding: 0, maxHeight: '24rem', ...thinMenuScrollbar },
             option: {
               padding: '0.5rem !important',
               gap: '0.5rem',
               fontSize: typography.size.sm,
-              '&:hover, &.Mui-focused': { backgroundColor: `${colors.brandSubtle} !important`, boxShadow: shadows.dropdownItem },
+              '&:hover, &.Mui-focused': { backgroundColor: `${colors.brandSubtle} !important`, boxShadow: elevation.dropdownItem },
               '&[aria-selected="true"]': { backgroundColor: `${colors.brandSelected} !important` },
             },
             noOptions: {
@@ -499,7 +512,7 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
           styleOverrides: {
             root: {
               minHeight: 'fit-content',
-              backgroundColor: scales.trueGray[10],
+              background: material.header,
               padding: '0 0.5rem',
               borderBottom: `2px solid ${colors.borderTabs}`,
             },
@@ -538,12 +551,13 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               backgroundColor: colors.text,
               color: '#fff',
               padding: '0.5rem 0.375rem',
-              borderRadius: radius.sm,
+              // Short text: large overlay radii would turn it into a pill, so cap the rounding.
+              borderRadius: `min(${shape.overlay}, 0.5rem)`,
               maxWidth: '20rem',
               fontSize: typography.size.xs,
               lineHeight: 1.4,
               fontWeight: typography.weight.regular,
-              boxShadow: shadows.popover,
+              boxShadow: elevation.popover,
             },
             arrow: { color: colors.text },
           },
@@ -551,13 +565,16 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
         MuiPopover: {
           styleOverrides: {
             paper: {
-              borderRadius: 0,
-              boxShadow: shadows.popover,
+              borderRadius: shape.overlay,
+              boxShadow: elevation.popover,
+              ...frosted(material.overlay),
             },
           },
         },
         MuiBackdrop: {
-          styleOverrides: { root: { '&:not(.MuiBackdrop-invisible)': { backgroundColor: colors.overlay } } },
+          styleOverrides: {
+            root: { '&:not(.MuiBackdrop-invisible)': { backgroundColor: colors.overlay, backdropFilter: material.scrimFilter } },
+          },
         },
         MuiDialog: {
           styleOverrides: {
@@ -566,11 +583,12 @@ export function createPlatformTheme({ density = 'standard', colors: colorConfig,
               width: 'calc(100% - 1rem)',
               maxWidth: layout.dialogMaxWidth,
               margin: '0.5rem',
-              boxShadow: shadows.modal,
+              boxShadow: elevation.modal,
+              ...frosted(material.overlay),
               animation: 'platform-modal-show 0.3s ease-out',
               [theme.breakpoints.up('md')]: {
                 width: layout.dialogWidth,
-                borderRadius: radius.sm,
+                borderRadius: shape.dialog,
                 margin: '5rem 0',
               },
             }),

@@ -8,11 +8,17 @@ import {
   DataTable,
   defaultColors,
   FormField,
+  defaultMaterial,
+  defaultShape,
+  elevation,
   layout,
+  material,
   MathSub,
   MathVar,
   NumberInput,
   radius,
+  resolveAppearance,
+  shape,
   resolveColors,
   scales,
   shadows,
@@ -459,6 +465,7 @@ function MathSection() {
 }
 
 export function Foundations() {
+  const appearance = resolveAppearance(useShowcase().config.appearance);
   return (
     <DemoPage title="Foundations" description="Design tokens every component is built from.">
       <ColorsSection />
@@ -484,8 +491,24 @@ export function Foundations() {
 
       <MathSection />
 
-      <DemoSection id="tokens" title="Radius, shadow, spacing" description="Spacing uses 4px steps (Tailwind p-2 = sx p: 2 = 8px).">
-        <h3 className="m-0 text-sm font-bold">Radius</h3>
+      <DemoSection
+        id="tokens"
+        title="Radius, shadow, spacing"
+        description="Spacing uses 4px steps (Tailwind p-2 = sx p: 2 = 8px). Radius by role, shadows and materials follow the appearance picked in the top bar."
+      >
+        <h3 className="m-0 text-sm font-bold">Radius by role</h3>
+        <div className="flex flex-wrap gap-4">
+          {Object.entries(shape).map(([name, value]) => (
+            <div key={name} className="flex flex-col items-center gap-1">
+              <div className="h-12 w-16 border-2 border-brand bg-brand-subtle" style={{ borderRadius: value }} />
+              <span className="text-xs">
+                shape.{name}{' '}
+                <span className="text-text-muted">{appearance.shape?.[name as keyof typeof defaultShape] ?? defaultShape[name as keyof typeof defaultShape]}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <h3 className="m-0 text-sm font-bold">Radius steps</h3>
         <div className="flex flex-wrap gap-4">
           {Object.entries(radius).map(([name, value]) => (
             <div key={name} className="flex flex-col items-center gap-1">
@@ -498,12 +521,23 @@ export function Foundations() {
         </div>
         <h3 className="m-0 text-sm font-bold">Shadow</h3>
         <div className="flex flex-wrap gap-6">
-          {Object.entries(shadows).map(([name, value]) => (
+          {Object.keys(shadows).map((name) => (
             <div key={name} className="flex flex-col items-center gap-2">
-              <div className="size-14 rounded-sm bg-surface" style={{ boxShadow: value }} />
-              <span className="text-xs">{name}</span>
+              <div className="size-14 rounded-sm bg-surface" style={{ boxShadow: elevation[name as keyof typeof elevation] }} />
+              <span className="text-xs">elevation.{name}</span>
             </div>
           ))}
+        </div>
+        <h3 className="m-0 text-sm font-bold">Materials</h3>
+        <div className="flex flex-wrap gap-4 rounded-sm p-4" style={{ background: material.app }}>
+          {(Object.keys(defaultMaterial) as Array<keyof typeof defaultMaterial>)
+            .filter((name) => name !== 'filter' && name !== 'scrimFilter' && name !== 'app')
+            .map((name) => (
+              <div key={name} className="flex flex-col items-center gap-1">
+                <div className="size-14 rounded-sm border border-border" style={{ background: material[name], backdropFilter: material.filter }} />
+                <span className="text-xs">material.{name}</span>
+              </div>
+            ))}
         </div>
         <h3 className="m-0 text-sm font-bold">Spacing</h3>
         <div className="flex flex-col gap-1">

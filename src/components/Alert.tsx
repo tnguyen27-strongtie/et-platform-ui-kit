@@ -5,7 +5,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { styled } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
-import { colors, radius, typography } from '../tokens/tokens';
+import { colors, shape, typography } from '../tokens/tokens';
 
 export type AlertSeverity = 'info' | 'success' | 'warning' | 'error';
 
@@ -32,7 +32,7 @@ const Root = styled('div', { shouldForwardProp: (p) => p !== 'severity' })<{ sev
     alignItems: 'center',
     gap: '1rem',
     padding: '1rem',
-    borderRadius: radius.xl,
+    borderRadius: shape.alert,
     color: tone[severity].fg,
     backgroundColor: tone[severity].bg,
     '& > .MuiSvgIcon-root': { fontSize: '1.875rem', flexShrink: 0 },

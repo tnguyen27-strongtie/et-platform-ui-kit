@@ -445,3 +445,47 @@ test.describe('Density', () => {
     await expect(body).not.toHaveClass(/density-standard/);
   });
 });
+
+test.describe('Appearance', () => {
+  test('switching the appearance restyles components and keeps the brand', async ({ page }) => {
+    await openFixture(page, 'appearance');
+    const body = page.locator('body');
+    const save = page.getByRole('button', { name: 'Save' });
+    const panel = page.locator('section').filter({ hasText: 'Panel' }).first();
+    const brandBg = await save.evaluate((el) => getComputedStyle(el).backgroundColor);
+
+    await expect(body).toHaveAttribute('data-appearance', 'classic');
+    await expect(save).toHaveCSS('border-top-left-radius', '4px');
+    await expect(panel).toHaveCSS('backdrop-filter', 'none');
+    await expect(panel).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+
+    await page.getByRole('radio', { name: 'Glass' }).check();
+    await expect(body).toHaveAttribute('data-appearance', 'glass');
+    await expect(save).toHaveCSS('border-top-left-radius', '9999px');
+    await expect(panel).toHaveCSS('backdrop-filter', /blur\(24px\)/);
+    await expect(save).toHaveCSS('background-color', brandBg);
+
+    await page.getByRole('button', { name: 'Open dialog' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Glass dialog' });
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('.MuiDialog-paper')).toHaveCSS('backdrop-filter', /blur/);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+
+  test('a custom appearance extends a built-in one', async ({ page }) => {
+    await openFixture(page, 'appearance');
+    await page.getByRole('radio', { name: 'Custom' }).check();
+    await expect(page.locator('body')).toHaveAttribute('data-appearance', 'narrow-glass');
+    await expect(page.getByRole('button', { name: 'Save' })).toHaveCSS('border-top-left-radius', '3px');
+    await expect(page.locator('section').filter({ hasText: 'Panel' }).first()).toHaveCSS('backdrop-filter', /blur/);
+  });
+
+  test('translucent appearances turn solid under reduced transparency', async ({ page }) => {
+    await openFixture(page, 'appearance');
+    await page.getByRole('radio', { name: 'Glass' }).check();
+    const css = await page.locator('#platform-ui-colors').evaluate((el) => el.textContent ?? '');
+    expect(css).toContain('@media (prefers-reduced-transparency: reduce){:root{--material-panel:var(--color-surface);');
+    expect(css).toContain('--material-filter:none;');
+  });
+});

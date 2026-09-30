@@ -6,6 +6,10 @@ import { type ChangeEvent, useRef, useState } from 'react';
 
 import {
   Alert,
+  APPEARANCE_NAMES,
+  APPEARANCES,
+  type AppearanceName,
+  appearanceCssVars,
   Button,
   Checkbox,
   Chip,
@@ -15,11 +19,15 @@ import {
   defaultColors,
   FormField,
   IconButton,
+  isAppearanceName,
   isValidColor,
   notify,
+  OptionCardGroup,
+  type PlatformAppearance,
   parseRgb,
   parseThemeConfig,
   RadioGroup,
+  resolveAppearance,
   resolveColors,
   Select,
   Switch,
@@ -131,6 +139,44 @@ const pairs: Pair[] = [
   { label: 'Input border', fg: 'borderInput', bg: 'surface', min: 3, note: 'UI component (WCAG 1.4.11)' },
 ];
 
+/**
+ * Miniature of an appearance, drawn from its own values (not the active theme), so every option
+ * shows what it would look like: backdrop, a panel, a field and a primary button.
+ */
+function AppearancePreview({ appearance }: { appearance: PlatformAppearance }) {
+  const vars = appearanceCssVars(appearance);
+  return (
+    <span aria-hidden="true" className="flex h-20 w-40 items-center justify-center p-2" style={{ background: vars['--material-app'], borderRadius: vars['--radius-panel'] }}>
+      <span
+        className="flex w-full flex-col gap-1.5 border border-border-strong p-2"
+        style={{
+          background: vars['--material-panel'],
+          backdropFilter: vars['--material-filter'],
+          borderRadius: vars['--radius-panel'],
+          boxShadow: vars['--shadow-panel'],
+        }}
+      >
+        <span className="block h-3 border border-border-input bg-surface" style={{ borderRadius: vars['--radius-field'] }} />
+        <span className="block h-3 w-14 self-end bg-brand" style={{ borderRadius: vars['--radius-control'] }} />
+      </span>
+    </span>
+  );
+}
+
+const customAppearanceCode = `import { defineAppearance, PlatformThemeProvider } from '@platform/ui';
+
+// Start from a built-in appearance and change only what differs.
+export const productGlass = defineAppearance(
+  {
+    name: 'product-glass',
+    shape: { control: '0.75rem', dialog: '1rem' },
+    material: { filter: 'blur(12px) saturate(160%)' },
+  },
+  'glass',
+);
+
+<PlatformThemeProvider config={theme} appearance={productGlass}>`;
+
 function download(filename: string, text: string, type: string) {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = document.createElement('a');
@@ -196,11 +242,35 @@ export function ThemeBuilder() {
     applyImport(text);
   };
 
+  const appearanceName = resolveAppearance(config.appearance).name;
+
   return (
     <DemoPage
       title="Theme builder"
       description="Changes apply to the whole showcase right away (and are kept when you reload), so you can open any page to check the result. Export the theme file when you are done."
     >
+      <DemoSection
+        id="appearance"
+        title="Appearance"
+        description="The visual style of every component: shape, depth, surface material, font and neutral colors. The brand color and all component APIs stay the same, so an app changes style by changing one value."
+        code={customAppearanceCode}
+      >
+        <OptionCardGroup<AppearanceName>
+          aria-label="Appearance"
+          value={isAppearanceName(appearanceName) ? appearanceName : null}
+          onChange={(appearance) => setConfig((c) => ({ ...c, appearance: appearance === 'classic' ? undefined : appearance }))}
+          options={APPEARANCE_NAMES.map((name) => ({
+            value: name,
+            label: APPEARANCES[name].label ?? name,
+            description: APPEARANCES[name].description,
+            image: <AppearancePreview appearance={APPEARANCES[name]} />,
+          }))}
+        />
+        <p className="m-0 text-sm text-text-muted">
+          {resolveAppearance(config.appearance).description} Users who turn on the system&apos;s reduce-transparency setting get solid surfaces.
+        </p>
+      </DemoSection>
+
       <DemoSection
         id="brand"
         title="Brand and text size"
@@ -234,7 +304,7 @@ export function ThemeBuilder() {
                 </Tooltip>
               ))}
             </div>
-            <Button startIcon={<RestartAltIcon />} onClick={() => setConfig({})} disabled={!customCount && !config.density && !config.name}>
+            <Button startIcon={<RestartAltIcon />} onClick={() => setConfig({})} disabled={!customCount && !config.density && !config.name && !config.appearance}>
               Reset to kit defaults
             </Button>
           </div>

@@ -5,7 +5,8 @@ import { type ReactNode, useEffect, useInsertionEffect, useMemo } from 'react';
 
 import type { ColorConfig, Density } from '../tokens/tokens';
 import { useStableValue } from '../utils/useStableValue';
-import { colorCssVars, resolveColors } from './colors';
+import { type AppearanceName, type PlatformAppearance, resolveAppearance } from './appearance';
+import { themeCss } from './colors';
 import { createPlatformTheme } from './createPlatformTheme';
 import type { PlatformThemeConfig } from './themeConfig';
 
@@ -14,9 +15,15 @@ export interface PlatformThemeProviderProps {
   /**
    * The app's theme file (exported from the showcase Theme builder):
    * import theme from './theme.config'; <PlatformThemeProvider config={theme}>.
-   * `colors` and `density` props, when given, override it (e.g. a user's text-size setting).
+   * `colors`, `density` and `appearance` props, when given, override it (e.g. a user's text-size setting).
    */
   config?: PlatformThemeConfig;
+  /**
+   * Visual style of every component: 'classic' (default) or 'glass', or a custom appearance from
+   * defineAppearance(). The brand colors stay; shape, shadows, surface materials, font and neutral
+   * colors change. Switching at runtime needs no rebuild.
+   */
+  appearance?: AppearanceName | PlatformAppearance;
   /** Text size setting: standard = 14px, expanded = 16px. */
   density?: Density;
   /**
@@ -34,7 +41,14 @@ export interface PlatformThemeProviderProps {
 
 const COLOR_STYLE_ID = 'platform-ui-colors';
 
-export function PlatformThemeProvider({ children, config, density: densityProp, colors: colorsProp, overrides: overridesProp }: PlatformThemeProviderProps) {
+export function PlatformThemeProvider({
+  children,
+  config,
+  density: densityProp,
+  colors: colorsProp,
+  appearance: appearanceProp,
+  overrides: overridesProp,
+}: PlatformThemeProviderProps) {
   // Apps often pass `overrides` inline; keep the same object while its content is unchanged.
   // Functions inside (e.g. styleOverrides callbacks) compare by identity, so hoist those out of render.
   const overrides = useStableValue(overridesProp);
@@ -42,16 +56,13 @@ export function PlatformThemeProvider({ children, config, density: densityProp, 
   const colors = config?.colors || colorsProp ? { ...config?.colors, ...colorsProp } : undefined;
   // Callers often pass an inline object; key on its content so the theme is not rebuilt every render.
   const colorKey = JSON.stringify(colors ?? {});
+  // Custom appearances are often defined inline too; compare by content like `overrides`.
+  const appearance = useStableValue(resolveAppearance(appearanceProp ?? config?.appearance));
   const theme = useMemo(
-    () => createPlatformTheme({ density, colors: JSON.parse(colorKey) as ColorConfig, overrides }),
-    [density, colorKey, overrides],
+    () => createPlatformTheme({ density, colors: JSON.parse(colorKey) as ColorConfig, appearance, overrides }),
+    [density, colorKey, appearance, overrides],
   );
-  const colorCss = useMemo(() => {
-    const vars = colorCssVars(resolveColors(JSON.parse(colorKey) as ColorConfig));
-    return `:root{${Object.entries(vars)
-      .map(([name, value]) => `${name}:${value};`)
-      .join('')}}`;
-  }, [colorKey]);
+  const colorCss = useMemo(() => themeCss(JSON.parse(colorKey) as ColorConfig, appearance), [colorKey, appearance]);
 
   // Unlayered <style> on purpose: emotion (MUI) styles land in @layer mui at the top of <head>,
   // which makes that layer the lowest priority, so variables set there would lose to the
@@ -72,6 +83,11 @@ export function PlatformThemeProvider({ children, config, density: densityProp, 
     classList.remove('density-standard', 'density-expanded');
     classList.add(`density-${density}`);
   }, [density]);
+
+  // Hook for app CSS that must differ per appearance: [data-appearance='glass'] .my-panel { … }
+  useEffect(() => {
+    document.body.dataset.appearance = appearance.name;
+  }, [appearance.name]);
 
   return (
     <StyledEngineProvider enableCssLayer>

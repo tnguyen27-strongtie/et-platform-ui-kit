@@ -4,6 +4,7 @@
  */
 // Type-only import: this file has no runtime imports so Node can run its unit tests directly.
 import type { ColorConfig, ColorRole, Density } from '../tokens/tokens';
+import type { AppearanceName, PlatformAppearance } from './appearance';
 
 /** Every role in defaultColors (tests/unit/themeConfig.test.ts checks they stay in sync). */
 export const COLOR_ROLES: readonly ColorRole[] = [
@@ -44,6 +45,9 @@ export const COLOR_ROLES: readonly ColorRole[] = [
 
 export const THEME_CONFIG_VERSION = 1;
 
+/** Built-in appearance names accepted in a theme file (tests/unit/appearance.test.ts keeps them in sync with APPEARANCES). */
+const APPEARANCE_FILE_NAMES: readonly AppearanceName[] = ['classic', 'glass'];
+
 export interface PlatformThemeConfig {
   /** Format version, for future migrations. */
   version?: typeof THEME_CONFIG_VERSION;
@@ -53,6 +57,11 @@ export interface PlatformThemeConfig {
   colors?: ColorConfig;
   /** Default text size. */
   density?: Density;
+  /**
+   * Visual style: a built-in name ('classic' default, 'glass') or, in a theme.config.ts, an
+   * appearance object from defineAppearance(). JSON theme files accept names only.
+   */
+  appearance?: AppearanceName | PlatformAppearance;
 }
 
 /** Identity helper that type-checks a theme.config.ts file. */
@@ -98,7 +107,7 @@ export function parseThemeConfig(input: unknown): ParseThemeResult {
   const raw = data as Record<string, unknown>;
   const config: PlatformThemeConfig = {};
   for (const key of Object.keys(raw)) {
-    if (!['version', 'name', 'colors', 'density', '$schema'].includes(key)) warnings.push(`Unknown key "${key}" ignored.`);
+    if (!['version', 'name', 'colors', 'density', 'appearance', '$schema'].includes(key)) warnings.push(`Unknown key "${key}" ignored.`);
   }
 
   if (raw.version !== undefined) {
@@ -112,6 +121,13 @@ export function parseThemeConfig(input: unknown): ParseThemeResult {
   if (raw.density !== undefined) {
     if (raw.density !== 'standard' && raw.density !== 'expanded') errors.push('"density" must be "standard" or "expanded".');
     else config.density = raw.density;
+  }
+  if (raw.appearance !== undefined) {
+    if (!(APPEARANCE_FILE_NAMES as readonly unknown[]).includes(raw.appearance)) {
+      errors.push(`"appearance" must be one of ${APPEARANCE_FILE_NAMES.map((n) => `"${n}"`).join(', ')}.`);
+    } else {
+      config.appearance = raw.appearance as AppearanceName;
+    }
   }
   if (raw.colors !== undefined) {
     if (typeof raw.colors !== 'object' || raw.colors === null || Array.isArray(raw.colors)) {
@@ -141,6 +157,7 @@ export function normalizeThemeConfig(config: PlatformThemeConfig): PlatformTheme
   const colors = Object.fromEntries(Object.entries(config.colors ?? {}).filter(([, v]) => typeof v === 'string' && v.trim())) as ColorConfig;
   if (Object.keys(colors).length) out.colors = colors;
   if (config.density && config.density !== 'standard') out.density = config.density;
+  if (config.appearance && config.appearance !== 'classic') out.appearance = config.appearance;
   return out;
 }
 

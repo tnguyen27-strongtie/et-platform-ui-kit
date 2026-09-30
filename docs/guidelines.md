@@ -52,6 +52,8 @@ These choices are deliberate. Keep them when adding or changing components.
 - **Open-source font.** Inter (SIL OFL 1.1) is bundled, covering Latin, Vietnamese, Cyrillic and Greek, with no font licensing to manage. Math formulas use STIX Two Math (SIL OFL 1.1), also bundled.
 - **Icons come from `@mui/icons-material` only.**
 - **Brand shadows are their own tokens** (`shadows.popover`…). `theme.shadows[0]` stays `'none'`, as MUI expects.
+- **Shape, depth and surfaces come from role tokens**, so every component follows the [appearance](theming.md#appearance): `shape.*` / `rounded-panel` for corners, `elevation.*` / `shadow-(--shadow-*)` for shadows, `material.*` / `material-panel` for panel, bar and overlay backgrounds. Do not use the size steps in `radius`, raw `shadows` values, `bg-white` or gray scale classes for these; a component that does keeps the Classic look inside a Glass app.
+- **Translucency is for the layers around data**, never for data: grid rows, table cells and inputs keep solid surfaces in every appearance.
 - **Density classes go on `<body>`**, not `<html>`, so `rem` units never change.
 - **`theme.spacing` is 4px** (MUI's default is 8px), matching Tailwind's scale.
 - **Layout.** `react-resizable-panels` (actively maintained) for resizable panes; the Input pane collapses into a rail that can be reopened; panel sizes persist; the viewer's control panel has a translucent white background and moves below the viewer on mobile.

@@ -44,7 +44,7 @@ export interface TabbedSectionProps<V extends string> extends SectionBaseProps {
 
 export type SectionProps<V extends string> = SingleSectionProps | TabbedSectionProps<V>;
 
-const headerClass = 'flex shrink-0 items-center border-b-2 border-true-gray-20 bg-true-gray-10 pr-2';
+const headerClass = 'flex shrink-0 items-center border-b-2 border-border-tabs material-header pr-2';
 const tabsSx = { flex: 1, border: 0, backgroundColor: 'transparent' } as const;
 
 /**
@@ -57,7 +57,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
   const footerBar = footer && (
     <div
       className={cn(
-        'flex shrink-0 flex-wrap items-center gap-2 border-t border-border bg-surface p-2',
+        'flex shrink-0 flex-wrap items-center gap-2 border-t border-border p-2',
         footerAlign === 'between' ? 'justify-between' : 'justify-end',
       )}
     >
@@ -68,7 +68,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
   if (props.tabs) {
     const { tabs, value, onChange } = props;
     return (
-      <div className={cn('flex h-full min-h-0 flex-col bg-white', className)}>
+      <div className={cn('flex h-full min-h-0 flex-col overflow-hidden rounded-section material-panel shadow-(--shadow-panel)', className)}>
         <div className={headerClass}>
           <Tabs id={tabsId} value={value} onChange={onChange} sx={tabsSx}>
             {tabs.map((t) => (
@@ -88,7 +88,7 @@ export function Section<V extends string>(props: SectionProps<V>) {
   }
 
   return (
-    <div className={cn('flex h-full min-h-0 flex-col bg-white', className)}>
+    <div className={cn('flex h-full min-h-0 flex-col overflow-hidden rounded-section material-panel shadow-(--shadow-panel)', className)}>
       <div className={headerClass}>
         <Tabs value="only" onChange={() => undefined} sx={tabsSx}>
           <Tab value="only" label={props.title} />

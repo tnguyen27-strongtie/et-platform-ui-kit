@@ -90,12 +90,14 @@ See [Theming](theming.md).
 2. Provides the MUI theme and `CssBaseline`.
 3. Writes the color variables (`--color-*`) for the current `colors` / `config`.
 4. Adds `density-standard` or `density-expanded` to `<body>` (14px or 16px body text).
+5. Writes the appearance variables (`--radius-*`, `--shadow-*`, `--material-*`, `--font-sans`, `--workspace-gap`) and sets `<body data-appearance="…">`.
 
 | Prop | Type | Description |
 | --- | --- | --- |
 | `config` | `PlatformThemeConfig` | Theme file exported from the theme builder |
 | `colors` | `ColorConfig` | Role colors, e.g. `{ brand: '#1565c0' }`. Overrides `config.colors` |
 | `density` | `'standard' \| 'expanded'` | Text size setting. Overrides `config.density`. Default `'standard'` |
+| `appearance` | `'classic' \| 'glass' \| PlatformAppearance` | Visual style of every component ([Appearance](theming.md#appearance)). Overrides `config.appearance`. Default `'classic'` |
 | `overrides` | `ThemeOptions` | MUI theme additions merged over the platform theme. May be passed inline |
 | `children` | `ReactNode` | |
 

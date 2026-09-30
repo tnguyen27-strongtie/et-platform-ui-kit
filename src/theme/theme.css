@@ -28,6 +28,31 @@
   justify-content: center;
 }
 
+/*
+ * Surface materials of the active appearance: solid in Classic, frosted glass in Glass.
+ * material-panel (cards, grids, sections), material-header (tab bars), material-nav (top bar),
+ * material-overlay (floating layers), material-app (page background).
+ */
+@utility material-panel {
+  background: var(--material-panel);
+  backdrop-filter: var(--material-filter);
+}
+@utility material-header {
+  background: var(--material-header);
+}
+@utility material-nav {
+  background: var(--material-nav);
+  backdrop-filter: var(--material-filter);
+}
+@utility material-overlay {
+  background: var(--material-overlay);
+  backdrop-filter: var(--material-filter);
+}
+@utility material-app {
+  background: var(--material-app);
+  background-attachment: fixed;
+}
+
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

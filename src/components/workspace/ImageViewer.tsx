@@ -152,7 +152,7 @@ export const ImageViewer = forwardRef<ImageViewerHandle, ImageViewerProps>(funct
         // Keep pointer and double-click events on the buttons: otherwise the pan handler captures the
         // pointer (the click never reaches the button) and quick repeated clicks reset the view.
         <div
-          className="absolute right-2 bottom-2 z-10 flex flex-col rounded-sm bg-white shadow-popover"
+          className="absolute right-2 bottom-2 z-10 flex flex-col rounded-overlay material-overlay shadow-(--shadow-popover)"
           onPointerDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
         >

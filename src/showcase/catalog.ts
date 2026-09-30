@@ -20,8 +20,13 @@ export const catalog: CatalogPage[] = [
   {
     page: 'theme',
     title: 'Theme builder',
-    description: 'Edit the colors and text size, check contrast, export the theme file and load it in your app.',
+    description: 'Pick the appearance, edit the colors and text size, check contrast, export the theme file and load it in your app.',
     sections: [
+      {
+        id: 'appearance',
+        title: 'Appearance',
+        exports: ['APPEARANCES', 'APPEARANCE_NAMES', 'classicAppearance', 'glassAppearance', 'defineAppearance', 'resolveAppearance', 'isAppearanceName', 'appearanceCssVars'],
+      },
       { id: 'brand', title: 'Brand and text size', exports: ['definePlatformTheme', 'THEME_CONFIG_VERSION'] },
       { id: 'roles', title: 'Color roles', exports: ['COLOR_ROLES', 'isValidColor', 'parseRgb'] },
       { id: 'contrast', title: 'Contrast check', exports: ['contrastRatio'] },
@@ -37,7 +42,7 @@ export const catalog: CatalogPage[] = [
       { id: 'colors', title: 'Colors', exports: ['colors', 'defaultColors', 'scales'] },
       { id: 'typography', title: 'Typography', exports: ['Typography', 'typography'] },
       { id: 'math', title: 'Math formulas', exports: ['MathVar', 'MathSub'] },
-      { id: 'tokens', title: 'Radius, shadow, spacing', exports: ['radius', 'shadows', 'spacingUnit', 'layout', 'breakpoints'] },
+      { id: 'tokens', title: 'Radius, shadow, spacing', exports: ['radius', 'shadows', 'spacingUnit', 'layout', 'breakpoints', 'defaultShape', 'shape', 'shapeVar', 'elevation', 'shadowVar', 'defaultMaterial', 'material', 'materialVar'] },
       { id: 'layout-primitives', title: 'Box and Stack', exports: ['Box', 'Stack'] },
     ],
   },
