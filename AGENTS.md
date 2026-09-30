@@ -53,6 +53,7 @@ Project skills in `.claude/skills/` hold the step-by-step workflows:
 | `platform-ui-component` | Adding or changing a component, prop, variant, token or theme style in this kit |
 | `platform-ui-app` | Building screens in an app that depends on `@platform/ui` |
 | `platform-ui-release` | Bumping the version, writing the changelog, verifying and packing a release |
+| `platform-ui-theme` | Turning a look-and-feel idea (a named style, a website, a logo, mood words) into a checked `theme.config.ts` with a custom appearance |
 
 Agents without skill support can read those `SKILL.md` files directly; they are plain Markdown.
 

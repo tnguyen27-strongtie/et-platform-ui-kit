@@ -33,4 +33,9 @@ export default tseslint.config(
     files: ['scripts/**', 'tests/**', '*.config.ts', '*.config.js'],
     languageOptions: { globals: { ...globals.node } },
   },
+  {
+    // Skill scripts run in Node; preview.mjs also passes callbacks that run in the page (Playwright evaluate).
+    files: ['.claude/skills/*/scripts/**'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
 );

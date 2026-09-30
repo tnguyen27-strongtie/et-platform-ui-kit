@@ -146,11 +146,16 @@ Each demo has a direct link: `/#/<page>/<id>`, for example `/#/data/grid-view`. 
 
 ## Working with AI agents
 
-The kit repository includes a skill that teaches coding agents (Claude Code and others that read `SKILL.md` files) how to build app screens with the kit: which component to pick, form and validation patterns, theming rules, and a pre-finish checklist. Copy it into the app repository:
+The kit repository includes skills for coding agents (Claude Code and others that read `SKILL.md` files):
+
+- `platform-ui-app` teaches how to build app screens with the kit: which component to pick, form and validation patterns, theming rules, and a pre-finish checklist.
+- `platform-ui-theme` turns a look-and-feel idea ("make it feel like Apple's liquid glass", "use the colors of our website", "friendlier and rounder") into a theme: it investigates the idea, maps it to colors and an appearance, checks contrast, writes `theme.config.ts` and takes before/after screenshots. Its scripts need Node ≥ 22.18; screenshots need Playwright in the app.
+
+Copy them into the app repository:
 
 ```bash
 mkdir -p .claude/skills
-cp -r ../et-platform-ui-kit/.claude/skills/platform-ui-app .claude/skills/
+cp -r ../et-platform-ui-kit/.claude/skills/platform-ui-app ../et-platform-ui-kit/.claude/skills/platform-ui-theme .claude/skills/
 ```
 
 The skill points agents to the docs shipped in `node_modules/@platform/ui/docs/`, so it stays accurate as the kit is upgraded. For agents without skill support, reference the file from the app's `AGENTS.md` or `CLAUDE.md`.

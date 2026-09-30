@@ -61,6 +61,14 @@ export const productGlass = defineAppearance(
 
 An appearance object can also go in `theme.config.ts` (`appearance: productGlass`); `theme.json` files accept the built-in names only.
 
+### Let an agent build it
+
+The `platform-ui-theme` skill (in the kit repository's `.claude/skills/`, [copy it into the app](getting-started.md#working-with-ai-agents)) does this end to end: describe the idea ("Material 3 with our blue", "like this screenshot"), and it writes and checks the theme file. Its `theme-tool.mjs` script also works by hand:
+
+```bash
+node .claude/skills/platform-ui-theme/scripts/theme-tool.mjs draft.json --write src/theme.config.ts
+```
+
 ### App styles per appearance
 
 - Use the role tokens in app code and it follows the appearance: Tailwind `rounded-panel`, `rounded-control`, `material-panel`, `material-overlay`, `shadow-(--shadow-panel)`; in `sx`, `shape.panel`, `material.overlay`, `elevation.popover`.

@@ -10,6 +10,7 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 - Custom appearances: `defineAppearance(overrides, base)`, plus `APPEARANCES`, `APPEARANCE_NAMES`, `classicAppearance`, `glassAppearance`, `resolveAppearance`, `isAppearanceName`, `appearanceCssVars` and the `PlatformAppearance` / `AppearanceName` types.
 - Role tokens that follow the appearance: `shape` / `defaultShape` (radius by role: control, field, overlay, dialog, panel, option, alert, section), `elevation` (shadows as CSS variables, new `shadows.panel`), `material` / `defaultMaterial` (surface backgrounds and backdrop filters), `layout.workspaceGap`, `shapeVar` / `shadowVar` / `materialVar`. Tailwind: `rounded-panel`…, `material-panel`…
 - Theme builder: an Appearance section with previews; the showcase top bar has an appearance switch.
+- Agent skill `platform-ui-theme` (repository `.claude/skills/`, copied into apps like `platform-ui-app`): turns a style idea, website, logo or mood words into a checked `theme.config.ts`. Its `theme-tool.mjs` validates a draft against the installed kit, prints WCAG contrast results, writes the theme file and a preview stylesheet; `preview.mjs` takes before/after screenshots of a running app.
 
 ### Changed
 
