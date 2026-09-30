@@ -4,9 +4,9 @@
  * injected, so a theme can be judged before any app code changes.
  *
  *   node preview.mjs --url http://localhost:5173 --css preview.css --out shots \
- *     [--paths "/,/#/forms,/#workspace"] [--appearance acme-glass] [--mobile] [--clear-storage]
+ *     [--paths "/,/#/forms,/#workspace"] [--appearance acme-glass] [--scheme dark] [--mobile] [--clear-storage]
  *
- * --css comes from `theme-tool.mjs <draft> --css preview.css`. Screenshots land in --out as
+ * --css comes from `theme-tool.mjs <draft> --css preview.css [--scheme dark]`; pass the same --scheme here. Screenshots land in --out as
  * <n>-<path>-before.png / -after.png (and -mobile- variants with --mobile).
  * Needs Playwright (`playwright` or `@playwright/test`) installed in the current project, and
  * a browser (`npx playwright install chromium`).
@@ -28,6 +28,7 @@ const cssPath = option('--css');
 const out = resolve(option('--out', 'theme-preview'));
 const paths = option('--paths', '/').split(',').map((p) => p.trim()).filter(Boolean);
 const appearanceName = option('--appearance');
+const scheme = option('--scheme');
 if (!url || !cssPath) {
   console.error('Usage: node preview.mjs --url <app url> --css <preview.css> [--out dir] [--paths "/,/#/forms"] [--appearance name] [--mobile] [--clear-storage]');
   process.exit(1);
@@ -77,6 +78,8 @@ for (const { tag, ...contextOptions } of viewports) {
     await page.screenshot({ path: join(out, `${name}-before.png`) });
     await page.addStyleTag({ content: css });
     if (appearanceName) await page.evaluate((n) => (document.body.dataset.appearance = n), appearanceName);
+    // Tailwind dark: variants and app CSS key off <html data-color-scheme>.
+    if (scheme) await page.evaluate((s) => (document.documentElement.dataset.colorScheme = s), scheme);
     await page.waitForTimeout(300);
     await page.screenshot({ path: join(out, `${name}-after.png`) });
     console.log(`✓ ${target} → ${name}-{before,after}.png`);

@@ -173,6 +173,20 @@ Warn first: extruded shapes on same-colored backgrounds have very low contrast b
   "material": { "header": "var(--color-surface)", "nav": "var(--color-surface-app)", "control": "var(--color-surface)" } }
 ```
 
+## Dark scheme
+
+Every recipe works in dark with no extra values: the kit switches to its dark colors and adapts the brand. Add values only where the style has its own dark character:
+
+- **Glass** already has `dark` values (darker translucent layers, faint highlights).
+- **Material 3 dark:** tonal dark surfaces tinted by the brand:
+  `"dark": { "material": { "app": "color-mix(in srgb, var(--color-brand) 6%, #111318)", "header": "color-mix(in srgb, var(--color-brand) 10%, var(--color-surface))", "nav": "color-mix(in srgb, var(--color-brand) 8%, var(--color-surface))" } }`
+- **Fluent dark:** `"dark": { "colors": { "surfaceApp": "#1f1f1f", "surface": "#292929", "border": "#3d3d3d", "borderInput": "#7a7a7a" } }` (Fluent's neutral dark ramp).
+- **Sharp / brutalist dark:** hard shadows need a light offset color in dark: `"dark": { "shadows": { "popover": "4px 4px 0 #e8e8e8", "modal": "8px 8px 0 #e8e8e8", "button": "2px 2px 0 #e8e8e8" }, "colors": { "borderInput": "#e8e8e8", "borderStrong": "#e8e8e8" } }`.
+- **Soft:** tinted shadows get lost on dark; use `"dark": { "shadows": { "panel": "0 4px 16px rgba(0,0,0,.4)" } }`.
+- **Neumorphic:** extruded shadows do not work on dark surfaces at all; recommend light only (`"colorScheme": "light"`) or a separate flat dark style.
+
+A brand guide with its own dark palette goes in `darkColors` (`brand`, `surface`, `surfaceApp`…). Keep `danger`/`warning`/`success` from the kit unless the guide defines dark versions; the kit's are tuned for dark text on filled buttons.
+
 ## Choosing and fixing the brand color
 
 - The brand fills primary buttons with `textOnBrand` (near white by default). Check "Primary button text" in the contrast table; it needs 4.5:1.

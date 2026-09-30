@@ -13,7 +13,8 @@ The kit already solves layout, styling, accessibility and the tricky input behav
 ## Ground rules
 
 - Import everything from `'@platform/ui'`, including `Box`, `Stack`, `Typography`, `Divider`, `Link`, `Chip`. Do not import `@mui/material` or `@mui/icons-material` components directly for things the kit provides (icons from `@mui/icons-material` are fine).
-- Colors: `colors.*` in `sx`/style, or role classes in Tailwind (`bg-brand`, `text-danger`, `bg-surface-app`, `border-border-input`). No hex values, so the app follows its theme. Need a real hex (charts, canvas)? `resolveColors(themeColors).brand`.
+- Colors: `colors.*` in `sx`/style, or role classes in Tailwind (`bg-brand`, `text-danger`, `bg-surface-app`, `border-border-input`). No hex values, no `bg-white` / `text-black`, no Tailwind default palette (`text-gray-500`), so the app follows its theme, its appearance and dark mode. Need a real color (charts, canvas)? `resolveSchemeColors(usePlatformColorScheme(), { colors: theme.colors, darkColors: theme.darkColors }).brand`.
+- Shape and depth: kit shadow names (`shadow-panel`, `shadow-popover`, `shadow-raised`), `rounded-sm`…`xl` or role radii (`rounded-panel`, `rounded-control`), and `material-panel` / `material-overlay` for panel and floating backgrounds. In `sx`: `shape.*`, `elevation.*`, `material.*`, not `radius.*` / `shadows.*` (fixed values).
 - Layout with Tailwind utilities; spacing in 4px steps (`p-2` = `sx={{ p: 2 }}` = 0.5rem).
 - Do not import `react-toastify`; use `notify` and the app's single `<ToastHost />`.
 
@@ -133,11 +134,23 @@ import theme from './theme.config'; // exported from the kit's theme builder
 <PlatformThemeProvider config={theme} density={settings.density}>
 ```
 
-A single `colors={{ brand }}` derives every brand shade. Do not restyle individual components to change colors; change the theme.
+A single `colors={{ brand }}` derives every brand shade. Do not restyle individual components to change colors; change the theme. The visual style (`appearance`: classic, glass or custom) and dark mode (`colorScheme`: light, dark, system) are theme settings too; creating or changing a theme is the `platform-ui-theme` skill's job.
+
+Screens must work in both color schemes. Put a light/dark switch in the app's settings (`colorScheme={settings.colorScheme ?? 'system'}`) and check new screens in dark. Drawing areas stay white; render drawings inside `VisualizationStage` or `ImageViewer` so their controls stay readable in dark.
+
+To find styles that ignore the theme (before a restyle, a dark-mode rollout, or in review), run the audit script in this skill:
+
+```bash
+node .claude/skills/platform-ui-app/scripts/audit-styles.mjs src          # report with suggested roles
+node .claude/skills/platform-ui-app/scripts/audit-styles.mjs src --fix    # safe fixes: bg-white → bg-surface, text-black → text-text-strong
+```
+
+Fix the rest by hand with the suggested role; mark a deliberate exception with a `platform-ui-audit-ignore` comment on that line.
 
 ## Before you finish
 
-- No hex colors, no direct MUI component imports, no `<input type="number">` in your diff.
+- No hex colors, no direct MUI component imports, no `<input type="number">` in your diff. `audit-styles.mjs` on the files you touched reports nothing new.
+- The screen looks right with the theme's dark scheme and, if the app offers it, the Glass appearance.
 - Every input has a visible label (through `FormField`) or an `aria-label`; every icon-only button has `aria-label`.
 - Try the screen with the keyboard only: Tab order, visible focus, Enter/Escape in dialogs.
 - If the kit is missing something the app needs, say so instead of building a lookalike in the app; it probably belongs in the kit (see the kit's `platform-ui-component` skill).

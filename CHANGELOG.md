@@ -17,6 +17,7 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 - Color roles `textStrong` (strongest text, black in light) and `textOnColor` (text on filled status and neutral colors, white in light).
 - `material.canvas`: the drawing surface of `VisualizationStage` and `ImageViewer`, white in both schemes; controls and notes on it keep light colors in dark (`data-surface="canvas"`).
 - Appearances can rescale the radius steps (`radius: { sm, md, lg, xl }`), so app code using `rounded-sm`…`rounded-xl` follows them; Glass does.
+- `audit-styles.mjs` in the `platform-ui-app` skill lists app styles that do not follow the theme (white/black, hex, Tailwind's default palette and shadows, brand scales, `radius.*` / `shadows.*` values) with the role to use, and fixes the safe ones (`--fix`).
 - Theme builder and showcase: a Light / Dark / System switch; the role editor and contrast check work on the scheme on screen (dark edits `darkColors`). Utilities → Color scheme helpers.
 - ESLint (kit only): components cannot use `bg-white`/`text-black` classes or raw `shadows.*` / `radius.sm…xl` values.
 
