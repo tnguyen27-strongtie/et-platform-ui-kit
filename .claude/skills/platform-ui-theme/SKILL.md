@@ -83,17 +83,27 @@ Use `--strict` when the user requires AA: then any failure the theme or appearan
 
 ## 5. Preview
 
+Write the theme file first (step 6, or `--write` to a scratch path while iterating), then preview it with the **real provider**:
+
+```bash
+node <skill>/scripts/theme-tool.mjs draft.json --write /tmp/theme.config.ts --force
+node <skill>/scripts/preview.mjs --theme /tmp/theme.config.ts --out theme-preview [--mobile]   # screenshots
+node <skill>/scripts/preview.mjs --theme /tmp/theme.config.ts --serve                          # the user opens it
+```
+
+Run it from the project root (the app or the kit repository). It writes a temporary sampler page (`theme-preview-<port>.tmp/`, one per run: a calculator workspace and a gallery of buttons, fields, choices, option cards, tabs, alerts, overlays and a table) rendered by `PlatformThemeProvider` with the theme file, serves it with the project's own Vite, and removes the folder when it stops. Screenshot mode saves `workspace-light`, `components-light`, `workspace-dark`, `components-dark`. With `--serve` it prints the URLs and keeps running (run it in the background and give the user the link); the top bar switches page and color scheme. Look at every shot and judge it against the brief. Typical fixes: blur invisible (backdrop too plain: add color to `material.app`), panels muddy (raise the surface percentage), text hard to read on glass (lower transparency or add a solid `colors.surface`), shape inconsistent (align `field`/`panel`/`dialog`).
+
+To see the theme on the **app's own screens**, use the injected-CSS mode: it needs no theme file and no code change, but colors MUI computes from its palette (input text, some icons, `Chip color="primary"`) keep the old values, which can look like contrast bugs in dark. Confirm anything suspicious with the real-provider mode.
+
 ```bash
 node <skill>/scripts/theme-tool.mjs draft.json --css preview.css [--scheme dark]
 node <skill>/scripts/preview.mjs --url http://localhost:5173 --css preview.css --out theme-preview \
   --paths "/,/#/some-screen" --appearance acme-glass [--scheme dark] [--mobile] [--clear-storage]
 ```
 
-Start the app first (`pnpm dev`, in the background). In the kit repository use the showcase, whose useful paths are `/#/forms`, `/#/overlays`, `/#/data`, `/#workspace`, `/#/theme`; pass `--clear-storage` so a saved showcase theme does not interfere. The script injects the variables into the running page and saves before/after screenshots; no app code changes. For a theme with a dark scheme, preview both: once without `--scheme`, once with `--scheme dark` on both commands. Look at the after shots and judge them against the brief. Typical fixes: blur invisible (backdrop too plain: add color to `material.app`), panels muddy (raise the surface percentage), text hard to read on glass (lower transparency or add a solid `colors.surface`), shape inconsistent (align `field`/`panel`/`dialog`).
+Start the app first (`pnpm dev`, in the background). In the kit repository the showcase's useful paths are `/#/forms`, `/#/overlays`, `/#/data`, `/#workspace`; pass `--clear-storage` so a saved showcase theme does not interfere.
 
-Preview limits: colors MUI computes from its palette (a few icons, `Chip color="primary"`) keep the old brand until the real provider runs, and fonts the app has not loaded yet show the fallback.
-
-If Playwright is not installed in the project, skip the screenshots, give the user the `--css` file, and describe how to check it (paste into the browser devtools, or wire the real theme file and run the app).
+Fonts the app has not installed show the fallback in both modes. If Playwright is not installed, use `--serve` and let the user look; without Vite, give the user the `--css` file to paste into the browser devtools.
 
 ## 6. Write the theme files
 

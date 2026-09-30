@@ -2,14 +2,15 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DownloadIcon from '@mui/icons-material/Download';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import { type ChangeEvent, useRef, useState } from 'react';
+import { type ChangeEvent, type CSSProperties, useRef, useState } from 'react';
 
 import {
   Alert,
   APPEARANCE_NAMES,
   APPEARANCES,
-  type AppearanceName,
   appearanceCssVars,
+  colorCssVars,
+  type ColorScheme,
   Button,
   Checkbox,
   Chip,
@@ -25,6 +26,7 @@ import {
   notify,
   OptionCardGroup,
   type PlatformAppearance,
+  type PlatformThemeConfig,
   parseRgb,
   parseThemeConfig,
   RadioGroup,
@@ -41,6 +43,7 @@ import {
   Tooltip,
   usePlatformColorScheme,
 } from '../../index';
+import { exampleThemeOf, exampleThemes, pickAppearance } from '../exampleThemes';
 import { Code, DemoGrid, DemoPage, DemoSection, useShowcase } from '../layout';
 
 const roleGroups: Array<{ title: string; hint: string; roles: ColorRole[] }> = [
@@ -145,17 +148,24 @@ const pairs: Pair[] = [
  * Miniature of an appearance, drawn from its own values (not the active theme), so every option
  * shows what it would look like: backdrop, a panel, a field and a primary button.
  */
-function AppearancePreview({ appearance }: { appearance: PlatformAppearance }) {
-  const vars = appearanceCssVars(appearance);
+function AppearancePreview({ appearance, scheme, theme }: { appearance: PlatformAppearance; scheme: ColorScheme; theme: PlatformThemeConfig }) {
+  const vars = appearanceCssVars(appearance, scheme);
+  // The miniature defines its own role colors, so materials that reference them (var(--color-surface)…)
+  // show this theme's values, not the page's.
+  const colorVars = colorCssVars(resolveSchemeColors(scheme, { colors: theme.colors, darkColors: theme.darkColors, appearance }));
   return (
-    <span aria-hidden="true" className="flex h-20 w-40 items-center justify-center p-2" style={{ background: vars['--material-app'], borderRadius: vars['--radius-panel'] }}>
+    <span
+      aria-hidden="true"
+      className="flex h-20 w-40 items-center justify-center p-2"
+      style={{ ...colorVars, background: vars['--material-app'], borderRadius: vars['--radius-panel'] } as CSSProperties}
+    >
       <span
         className="flex w-full flex-col gap-1.5 border border-border-strong p-2"
         style={{
           background: vars['--material-panel'],
           backdropFilter: vars['--material-filter'],
           borderRadius: vars['--radius-panel'],
-          boxShadow: vars['--shadow-panel'],
+          boxShadow: vars['--elevation-panel'],
         }}
       >
         <span className="block h-3 border border-border-input bg-surface" style={{ borderRadius: vars['--radius-field'] }} />
@@ -254,6 +264,8 @@ export function ThemeBuilder() {
   };
 
   const appearanceName = resolveAppearance(config.appearance).name;
+  const example = exampleThemeOf(config);
+  const pickerValue = example?.id ?? (isAppearanceName(appearanceName) ? appearanceName : null);
 
   return (
     <DemoPage
@@ -266,19 +278,35 @@ export function ThemeBuilder() {
         description="The visual style of every component: shape, depth, surface material, font and neutral colors. The brand color and all component APIs stay the same, so an app changes style by changing one value."
         code={customAppearanceCode}
       >
-        <OptionCardGroup<AppearanceName>
+        <OptionCardGroup<string>
           aria-label="Appearance"
-          value={isAppearanceName(appearanceName) ? appearanceName : null}
-          onChange={(appearance) => setConfig((c) => ({ ...c, appearance: appearance === 'classic' ? undefined : appearance }))}
-          options={APPEARANCE_NAMES.map((name) => ({
-            value: name,
-            label: APPEARANCES[name].label ?? name,
-            description: APPEARANCES[name].description,
-            image: <AppearancePreview appearance={APPEARANCES[name]} />,
-          }))}
+          value={pickerValue}
+          onChange={(value) => setConfig((c) => pickAppearance(c, value))}
+          options={[
+            ...APPEARANCE_NAMES.map((name) => ({
+              value: name,
+              label: APPEARANCES[name].label ?? name,
+              description: APPEARANCES[name].description,
+              // Built-ins preview with the current brand and scheme.
+              image: <AppearancePreview appearance={APPEARANCES[name]} scheme={scheme} theme={example ? {} : config} />,
+            })),
+            ...exampleThemes.map((e) => ({
+              value: e.id,
+              label: `${e.label} (example)`,
+              description: e.description,
+              image: (
+                <AppearancePreview
+                  appearance={resolveAppearance(e.config.appearance)}
+                  scheme={e.config.colorScheme === 'dark' ? 'dark' : 'light'}
+                  theme={e.config}
+                />
+              ),
+            })),
+          ]}
         />
         <p className="m-0 text-sm text-text-muted">
-          {resolveAppearance(config.appearance).description} Users who turn on the system&apos;s reduce-transparency setting get solid surfaces.
+          {example ? example.description : resolveAppearance(config.appearance).description} Users who turn on the system&apos;s reduce-transparency setting get solid
+          surfaces. Examples are complete themes (colors, dark colors, scheme) made with the platform-ui-theme skill; picking one replaces the current theme.
         </p>
         <FormField
           label="Color scheme"
@@ -425,6 +453,11 @@ export function ThemeBuilder() {
         title="Export and import"
         description="The file contains only what you changed; everything else keeps following the kit defaults (and their future fixes)."
       >
+        {typeof config.appearance === 'object' && (
+          <Alert severity="info">
+            This theme uses a custom appearance ({config.appearance.name}). theme.json files carry built-in appearance names only, so export theme.config.ts.
+          </Alert>
+        )}
         <Tabs id="theme-format" value={format} onChange={setFormat} aria-label="Export format">
           <Tab value="json" label="theme.json" />
           <Tab value="ts" label="theme.config.ts" />

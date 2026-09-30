@@ -352,3 +352,28 @@ test.describe('Theme builder', () => {
     await expect(exported(page)).toHaveText(JSON.stringify({ version: 1, colors: { brand: '#2e7d32' }, density: 'expanded' }, null, 2));
   });
 });
+
+test('Showcase: the Neon Grid example theme applies, survives a reload and can be left', async ({ page }) => {
+  await page.goto('/#/actions');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const primary = page.getByRole('button', { name: 'Calculate' }).first();
+  await expect(primary).toHaveCSS('background-color', 'rgb(168, 103, 29)');
+
+  await page.getByRole('combobox', { name: 'Appearance' }).click();
+  await page.getByRole('option', { name: 'Neon Grid (example)' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-appearance', 'neon-grid');
+  await expect(page.locator('html')).toHaveAttribute('data-color-scheme', 'dark');
+  await expect(primary).toHaveCSS('background-color', 'rgb(252, 238, 10)');
+
+  await page.reload();
+  await expect(page.locator('body')).toHaveAttribute('data-appearance', 'neon-grid');
+  await expect(page.getByRole('combobox', { name: 'Appearance' })).toHaveText('Neon Grid (example)');
+
+  // Leaving an example drops its colors and scheme instead of mixing them into Classic.
+  await page.getByRole('combobox', { name: 'Appearance' }).click();
+  await page.getByRole('option', { name: 'Classic' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-appearance', 'classic');
+  await expect(page.locator('html')).toHaveAttribute('data-color-scheme', 'light');
+  await expect(primary).toHaveCSS('background-color', 'rgb(168, 103, 29)');
+});

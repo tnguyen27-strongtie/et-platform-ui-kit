@@ -6,7 +6,6 @@ import {
   type ColorConfig,
   type ColorSchemeSetting,
   isAppearanceName,
-  parseThemeConfig,
   type PlatformThemeConfig,
   PlatformThemeProvider,
   Select,
@@ -15,6 +14,7 @@ import {
   TopNav,
 } from '../index';
 import { catalog } from './catalog';
+import { exampleThemeOf, exampleThemes, fromStoredTheme, pickAppearance, toStoredTheme } from './exampleThemes';
 import { href, ShowcaseContext, useRoute } from './layout';
 import { Actions } from './pages/Actions';
 import { DataDisplay } from './pages/DataDisplay';
@@ -58,13 +58,12 @@ const THEME_STORAGE_KEY = 'showcase:theme';
 function loadTheme(): PlatformThemeConfig {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (!stored) return {};
-    const result = parseThemeConfig(stored);
-    return result.ok ? result.config : {};
+    return stored ? fromStoredTheme(stored) : {};
   } catch {
     return {};
   }
 }
+
 
 const sameColors = (a: ColorConfig | undefined, b: ColorConfig | undefined) => JSON.stringify(a ?? {}) === JSON.stringify(b ?? {});
 
@@ -104,7 +103,7 @@ export function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(config));
+      localStorage.setItem(THEME_STORAGE_KEY, toStoredTheme(config));
     } catch {
       // storage blocked: the theme just resets on reload
     }
@@ -118,17 +117,20 @@ export function App() {
     else window.scrollTo(0, 0);
   }, [route.page, route.section, route.fullScreen]);
 
-  const appearance = isAppearanceName(config.appearance) ? config.appearance : 'classic';
+  const appearance = exampleThemeOf(config)?.id ?? (isAppearanceName(config.appearance) ? config.appearance : 'classic');
 
   const controls = (
     <div className="flex items-center gap-4">
       {/* Phones: no room in the bar; the Theme builder's Appearance section switches it there. */}
-      <div className="hidden w-32 md:block">
+      <div className="hidden w-52 md:block">
         <Select
           aria-label="Appearance"
           value={appearance}
-          options={APPEARANCE_NAMES.map((name) => ({ value: name, label: APPEARANCES[name].label ?? name }))}
-          onChange={(value) => setConfig((c) => ({ ...c, appearance: value === 'classic' ? undefined : value }))}
+          options={[
+            ...APPEARANCE_NAMES.map((name) => ({ value: name, label: APPEARANCES[name].label ?? name })),
+            ...exampleThemes.map((e) => ({ value: e.id, label: `${e.label} (example)` })),
+          ]}
+          onChange={(value) => setConfig((c) => pickAppearance(c, value))}
         />
       </div>
       <div className="hidden w-28 md:block">
