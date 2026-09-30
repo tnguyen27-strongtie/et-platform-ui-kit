@@ -2,38 +2,51 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.12.0] - 2026-10-01
+
+Themes are no longer just a brand color. An app can switch the visual style of every component (**appearances**: Classic, Glass or its own), turn on **dark mode**, and have its own Tailwind classes follow both, without touching component code. The default light Classic look is unchanged (every kit fixture renders pixel-identical), apart from the two small details under Changed.
 
 ### Added
 
-- **Appearances**: one prop changes the visual style of every component while the brand colors and component APIs stay the same. `<PlatformThemeProvider appearance="glass">` (or `appearance` in the theme file) switches to Glass: frosted translucent panels, bars, menus and dialogs over a brand-tinted backdrop, capsule buttons, large rounded overlays and floating workspace sections. `classic` (default) is the existing look. Glass turns solid for users with the system's reduce-transparency setting. See `docs/theming.md` → "Appearance".
-- Custom appearances: `defineAppearance(overrides, base)`, plus `APPEARANCES`, `APPEARANCE_NAMES`, `classicAppearance`, `glassAppearance`, `resolveAppearance`, `isAppearanceName`, `appearanceCssVars` and the `PlatformAppearance` / `AppearanceName` types.
-- Role tokens that follow the appearance: `shape` / `defaultShape` (radius by role: control, field, overlay, dialog, panel, option, alert, section), `elevation` (shadows as CSS variables, new `shadows.panel`), `material` / `defaultMaterial` (surface backgrounds and backdrop filters), `layout.workspaceGap`, `shapeVar` / `shadowVar` / `materialVar`. Tailwind: `rounded-panel`…, `material-panel`…
-- Theme builder: an Appearance section with previews; the showcase top bar has an appearance switch.
-- Agent skill `platform-ui-theme` (repository `.claude/skills/`, copied into apps like `platform-ui-app`): turns a style idea, website, logo or mood words into a checked `theme.config.ts`. Its `theme-tool.mjs` validates a draft against the installed kit, prints WCAG contrast results, writes the theme file and a preview stylesheet; `preview.mjs` takes before/after screenshots of a running app.
+**Appearances**
 
-- **Dark mode**: `<PlatformThemeProvider colorScheme="dark">` (or `'system'`, which follows the OS live; also `colorScheme` in theme files). Works with every appearance. Dark role colors (`defaultDarkColors`, WCAG AA checked in unit tests), a reversed neutral scale (`darkTrueGray`, so `true-gray-*` classes adapt), dark shadows and materials, MUI `palette.mode`, `color-scheme`, and `<html data-color-scheme>`; Tailwind's `dark:` variant follows the provider. The light brand is adapted for dark surfaces automatically; `darkColors` (prop and theme file) overrides any dark role. Appearances can set `dark: { colors, shadows, material }`; Glass does.
-- `usePlatformColorScheme()`, `resolveSchemeColors(scheme, { colors, darkColors, appearance })`, and the color helpers `adaptBrandForDark`, `readableOn`, `contrast`, `mix`.
-- Color roles `textStrong` (strongest text, black in light) and `textOnColor` (text on filled status and neutral colors, white in light).
-- `material.canvas`: the drawing surface of `VisualizationStage` and `ImageViewer`, white in both schemes; controls and notes on it keep light colors in dark (`data-surface="canvas"`).
-- Appearances can rescale the radius steps (`radius: { sm, md, lg, xl }`), so app code using `rounded-sm`…`rounded-xl` follows them; Glass does.
-- `audit-styles.mjs` in the `platform-ui-app` skill lists app styles that do not follow the theme (white/black, hex, Tailwind's default palette and shadows, brand scales, `radius.*` / `shadows.*` values) with the role to use, and fixes the safe ones (`--fix`).
-- Showcase example theme **Neon Grid** (cyberpunk, dark scheme, custom appearance), made with the `platform-ui-theme` skill: pick it in the top bar or the Theme builder's Appearance section. Example themes live in the showcase only, not in the kit's API.
-- `platform-ui-theme` skill: `preview.mjs --theme <file> [--serve]` renders a sampler page (a workspace and a component gallery) with the real `PlatformThemeProvider` in the project's own Vite, as screenshots in light and dark or as a page to open; parallel previews use separate temporary folders.
-- Theme builder and showcase: a Light / Dark / System switch; the role editor and contrast check work on the scheme on screen (dark edits `darkColors`). Utilities → Color scheme helpers.
-- ESLint (kit only): components cannot use `bg-white`/`text-black` classes or raw `shadows.*` / `radius.sm…xl` values.
+- `<PlatformThemeProvider appearance="glass">` (or `appearance` in the theme file) changes shape, depth, surface material, font and neutral colors of every component; brand colors and component APIs stay the same. `classic` (default) is the existing look. Glass: frosted translucent panels, bars, menus and dialogs over a brand-tinted backdrop, capsule buttons, large rounded overlays, floating workspace sections; solid surfaces for users with the system's reduce-transparency setting. See `docs/theming.md` → Appearance.
+- Custom appearances with `defineAppearance(overrides, base)`; also `APPEARANCES`, `APPEARANCE_NAMES`, `classicAppearance`, `glassAppearance`, `resolveAppearance`, `isAppearanceName`, `appearanceCssVars`, and the `PlatformAppearance`, `PlatformAppearanceDark`, `AppearanceName` types.
+- Role tokens that follow the appearance: `shape` / `defaultShape` (radius by role: control, field, overlay, dialog, panel, option, alert, section), `elevation` (shadows as CSS variables; new `shadows.panel`), `material` / `defaultMaterial` (surface backgrounds and backdrop filters, including `canvas` for drawing surfaces), `layout.workspaceGap`, `shapeVar` / `shadowVar` / `elevationVar` / `materialVar`. Tailwind: `rounded-control`, `rounded-panel`…, `material-panel`, `material-overlay`, `material-nav`, `material-header`, `material-app`.
+- Appearances can rescale the radius steps (`radius: { sm, md, lg, xl }`), so app code using `rounded-sm`…`rounded-xl` follows them.
+
+**Dark mode**
+
+- `<PlatformThemeProvider colorScheme="dark">`, or `'system'` to follow the operating system live; also `colorScheme` in theme files. Works with every appearance. Dark role colors (`defaultDarkColors`, WCAG AA checked in unit tests), a reversed neutral scale (`darkTrueGray`: `true-gray-*` classes adapt), dark shadows and materials, MUI `palette.mode`, `color-scheme`, `<html data-color-scheme>`; Tailwind's `dark:` variant follows the provider.
+- The light brand is made readable on dark surfaces automatically; `darkColors` (prop and theme file) sets any dark role. Appearances can add `dark: { colors, shadows, material }`.
+- Drawing surfaces (`VisualizationStage`, `ImageViewer`) stay white in dark, and their controls keep light colors (`data-surface="canvas"`); a theme can make them dark with `material.canvas`.
+- `usePlatformColorScheme()`, `resolveSchemeColors(scheme, { colors, darkColors, appearance })` for real colors (charts, canvas), and the helpers `adaptBrandForDark`, `readableOn`, `contrast`, `mix`.
+- Color roles `textStrong` (strongest text: black in light, white in dark) and `textOnColor` (text on filled status and neutral colors).
+
+**Showcase**
+
+- Top bar: Appearance and Light / Dark / System switches. Theme builder: Appearance section with previews and a color scheme choice; the role editor and contrast check work on the scheme on screen (dark edits `darkColors`). Utilities → Color scheme helpers.
+- Example theme **Neon Grid** (cyberpunk, dark, custom appearance), made with the `platform-ui-theme` skill. Showcase only, not part of the kit's API.
+
+**Agent skills** (repository `.claude/skills/`; copy into app repositories, see `docs/getting-started.md`)
+
+- `platform-ui-theme`: turns a style idea, website, logo or mood words into a checked `theme.config.ts`. `theme-tool.mjs` validates a draft against the installed kit, prints WCAG contrast per color scheme and writes the theme file; `preview.mjs --theme <file>` renders a workspace and component gallery with the real provider (screenshots, or `--serve` to open it), and `--css` mode previews the app's own screens.
+- `platform-ui-app`: `audit-styles.mjs` lists app styles that do not follow the theme (white/black, hex, Tailwind's default palette and shadows, brand scales, `radius.*` / `shadows.*` values) with the role to use, and fixes the safe ones (`--fix`).
 
 ### Changed
 
-- Tailwind's kit shadow utilities (`shadow-popover`, `shadow-panel`…) now follow the appearance and the dark scheme: shadow values live in `--elevation-*` and `--shadow-*` points at them (`elevationVar`). `appearanceCssVars` returns `--elevation-*` keys.
-- The theme uses role colors instead of fixed white and black: default, tertiary and text buttons, select and combobox arrows (`textStrong`); secondary and danger buttons, release note badges (`textOnColor`); `primaryDark` buttons and text selection (`textOnBrand`, `#f4f4f4` by default instead of `#fff`); tooltip text (`surface`). With the default light Classic theme every kit fixture renders pixel-identical to the previous version.
-- `material.header`, `material.nav` and `material.splitter` default to the `true-gray` CSS variables (same values in light).
-- Brand shade math no longer uses MUI's helpers (same results, now in the React-free `colorMath` module the theme skill reuses).
-- `resolveColors(config, base?)` takes an optional base (an appearance's colors) under the app config. `createPlatformTheme` accepts `appearance`.
-- Components read radius, shadows and backgrounds from the role tokens instead of fixed values, and `Section`, `SectionLayout`, `TopNav` and `Tabs` no longer hard-code gray scale backgrounds. With the default Classic appearance the result looks the same, with one exception: `Popover` paper (HelpPopover, InfoTip) now has the same 0.125rem corners as menus instead of square corners.
-- The theme uses `var(--font-sans)` for text, so the font follows the appearance.
+- `Popover` paper (HelpPopover, InfoTip) has the same 0.125rem corners as menus instead of square corners.
+- `primaryDark` buttons and selected text use `textOnBrand` (`#f4f4f4` by default) instead of `#fff`.
+- The kit's shadow utilities (`shadow-popover`, `shadow-panel`…) now follow the appearance and dark scheme: shadow values live in `--elevation-*`, and `--shadow-*` points at them.
+- The theme and components use role colors and tokens instead of fixed white, black, gray-scale values, radii and shadows; `Section`, `SectionLayout`, `TopNav` and `Tabs` no longer hard-code backgrounds. The text font is `var(--font-sans)`.
+- `resolveColors(config, base?)` takes an optional base (an appearance's colors); `createPlatformTheme` accepts `appearance`, `colorScheme` and `darkColors`. Brand shade math no longer uses MUI's helpers (same results, in the React-free `colorMath` module).
 
-No breaking changes.
+### Upgrading
+
+- No code changes are needed; without `appearance` or `colorScheme` an app looks as before.
+- If the app's own CSS overrides a kit shadow variable (`--shadow-popover: …`), set `--elevation-popover` instead; Tailwind `shadow-popover` now reads that.
+- Before enabling Glass or dark mode, run `audit-styles.mjs` (in the `platform-ui-app` skill) on the app: `bg-white`, `text-black`, hex colors and Tailwind's default palette in app code do not follow the theme.
+- Review screens with `HelpPopover` / `InfoTip` (rounded corners).
 
 ## [0.11.0] - 2026-09-28
 
