@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, type Locator, test } from '@playwright/test';
 
 import { expectOut, openFixture, tabKey } from '../helpers';
@@ -539,6 +540,33 @@ test.describe('Color scheme', () => {
     await expect(panel).toHaveCSS('background-color', /color\(srgb|rgba\(28, 31, 37/);
   });
 });
+
+// The smoke spec disables color-contrast because some default light pairs are below 4.5:1
+// (README, "Not included yet"). The dark scheme has no such exception, so check it fully here.
+for (const appearance of ['Classic', 'Glass'] as const) {
+  test(`dark ${appearance} passes axe, including color contrast`, async ({ page }) => {
+    await openFixture(page, 'appearance');
+    await page.getByRole('radio', { name: appearance }).check();
+    await page.getByRole('radio', { name: 'Dark' }).check();
+    await expect(page.locator('body')).toHaveCSS('color', 'rgb(232, 232, 232)');
+    await page.getByRole('button', { name: 'Open dialog' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    // axe reads colors as they are now: wait for the color transitions and the dialog's
+    // entrance animation, or it measures in-between colors (seen in WebKit).
+    await page.evaluate(() =>
+      Promise.all(
+        document
+          .getAnimations()
+          .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+          // A transition replaced by a newer one rejects with AbortError; it is done either way.
+          .map((a) => a.finished.catch(() => undefined)),
+      ),
+    );
+
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  });
+}
 
 test.describe('App Tailwind classes follow the appearance', () => {
   test('rounded-sm and shadow-popover change with Glass and the dark scheme', async ({ page }) => {

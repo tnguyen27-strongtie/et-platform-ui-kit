@@ -67,6 +67,7 @@ import {
   defineAppearance,
   usePlatformColorScheme,
 } from '../../../src/index';
+import type { FixtureName } from '../helpers';
 
 /** Prints a callback value as JSON so specs can check both value and type. */
 function Out({ id, value }: { id: string; value: unknown }) {
@@ -114,6 +115,10 @@ function ButtonFixture() {
         <IconButton aria-label="Settings" onClick={click}>
           <SettingsIcon />
         </IconButton>
+      </div>
+      {/* App Tailwind classes must beat the theme's MUI styles (docs/getting-started.md). */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button className="p-0 bg-danger">Utility classes</Button>
       </div>
       <form
         onSubmit={(e) => {
@@ -167,6 +172,9 @@ function NumberInputFixture() {
   const [value, setValue] = useState<number | null>(1);
   const [calls, setCalls] = useState(0);
   const [price, setPrice] = useState<number | null>(null);
+  const [offset, setOffset] = useState<number | null>(null);
+  const [offsetCalls, setOffsetCalls] = useState<Array<number | null>>([]);
+  const [clamped, setClamped] = useState<number | null>(5);
   return (
     <>
       <FormField label="Length" htmlFor="length" description="0 to 100 ft">
@@ -185,6 +193,19 @@ function NumberInputFixture() {
       <FormField label="Price" htmlFor="price">
         <NumberInput value={price} onChange={setPrice} precision={2} />
       </FormField>
+      {/* No min: negatives allowed. Records every value onChange receives. */}
+      <FormField label="Offset" htmlFor="offset">
+        <NumberInput
+          value={offset}
+          onChange={(v) => {
+            setOffsetCalls((c) => [...c, v]);
+            setOffset(v);
+          }}
+        />
+      </FormField>
+      <FormField label="Clamped" htmlFor="clamped" description="0 to 10, clamped on blur">
+        <NumberInput value={clamped} onChange={setClamped} min={0} max={10} clampBehavior="blur" />
+      </FormField>
       <FormField label="Read only" htmlFor="ro">
         <NumberInput value={5} onChange={() => undefined} readOnly />
       </FormField>
@@ -198,6 +219,9 @@ function NumberInputFixture() {
       <Out id="value" value={value} />
       <Out id="calls" value={calls} />
       <Out id="price" value={price} />
+      <Out id="offset" value={offset} />
+      <Out id="offset-calls" value={offsetCalls} />
+      <Out id="clamped" value={clamped} />
     </>
   );
 }
@@ -887,6 +911,9 @@ function GridFixture() {
   const [selected, setSelected] = useState<string | null>(null);
   const [opened, setOpened] = useState<string[]>([]);
   const [state, setState] = useState<GridViewState | null>(null);
+  // "Reload grid" remounts the grid with the last reported state, like an app restoring a saved layout.
+  const [saved, setSaved] = useState<GridViewState | null>(null);
+  const [mounts, setMounts] = useState(0);
   const columns: GridColumn<Part>[] = [
     { id: 'model', header: 'Model', value: 'model', type: 'image', width: 180, image: { src: () => '/images/sample-drawing.svg', alt: (r) => `${r.model} photo`, subtext: (r) => r.description } },
     { id: 'material', header: 'Material', value: 'material', filter: 'select', width: 150 },
@@ -900,6 +927,7 @@ function GridFixture() {
     <>
       <div style={{ width: 640 }}>
         <GridView
+          key={mounts}
           aria-label="Parts"
           rows={parts}
           columns={columns}
@@ -913,10 +941,18 @@ function GridFixture() {
           selectedRowId={selected}
           onRowClick={(r) => setSelected(r.id)}
           onStateChange={setState}
-          initialState={{ pinned: { start: ['model'], end: [] } }}
+          initialState={saved ?? { pinned: { start: ['model'], end: [] } }}
           maxHeight={260}
         />
       </div>
+      <Button
+        onClick={() => {
+          setSaved(state);
+          setMounts((m) => m + 1);
+        }}
+      >
+        Reload grid
+      </Button>
       <Out id="selected" value={selected} />
       <Out id="opened" value={opened} />
       <Out id="state" value={state} />
@@ -1138,7 +1174,15 @@ function SectionFooterFixture() {
   );
 }
 
-export const fixtures: Record<string, ComponentType> = {
+/**
+ * Fixtures that render their own PlatformThemeProvider. The harness leaves out its provider for
+ * these: providers are page-global and must not be nested (docs/getting-started.md).
+ */
+export const ownThemeFixtures: ReadonlySet<FixtureName> = new Set(['density', 'appearance']);
+
+// Typed by FixtureName so this map and fixtureNames (helpers.ts) cannot drift apart: a fixture
+// missing from either list is a type error, and the smoke spec runs axe on every name.
+export const fixtures: Record<FixtureName, ComponentType> = {
   button: ButtonFixture,
   'text-input': TextInputFixture,
   'number-input': NumberInputFixture,

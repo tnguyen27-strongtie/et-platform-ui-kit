@@ -5,11 +5,11 @@
  */
 import '../../../src/theme/theme.css';
 
-import { StrictMode, useEffect, useState } from 'react';
+import { type ComponentType, StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { PlatformThemeProvider, ToastHost } from '../../../src/index';
-import { fixtures } from './fixtures';
+import { fixtures, ownThemeFixtures } from './fixtures';
 
 function Harness() {
   const [name, setName] = useState(() => location.hash.slice(1));
@@ -18,14 +18,19 @@ function Harness() {
     addEventListener('hashchange', onHash);
     return () => removeEventListener('hashchange', onHash);
   }, []);
-  const Fixture = fixtures[name];
+  // The hash may name no fixture at all.
+  const Fixture = (fixtures as Partial<Record<string, ComponentType>>)[name];
+  const page = (
+    <main style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 720 }}>
+      <h1 style={{ margin: 0, fontSize: 16 }}>Test harness</h1>
+      <h2 style={{ margin: 0, fontSize: 14 }}>Fixture: {name}</h2>
+      {Fixture ? <Fixture /> : <p>Unknown fixture "{name}". Available: {Object.keys(fixtures).join(', ')}</p>}
+    </main>
+  );
+  if ((ownThemeFixtures as ReadonlySet<string>).has(name)) return page;
   return (
     <PlatformThemeProvider>
-      <main style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 720 }}>
-        <h1 style={{ margin: 0, fontSize: 16 }}>Test harness</h1>
-        <h2 style={{ margin: 0, fontSize: 14 }}>Fixture: {name}</h2>
-        {Fixture ? <Fixture /> : <p>Unknown fixture "{name}". Available: {Object.keys(fixtures).join(', ')}</p>}
-      </main>
+      {page}
       <ToastHost />
     </PlatformThemeProvider>
   );

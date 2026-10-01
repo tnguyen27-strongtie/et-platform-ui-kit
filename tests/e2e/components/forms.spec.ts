@@ -109,6 +109,73 @@ test.describe('NumberInput', () => {
     await expectOut(page, 'price', 5);
   });
 
+  test('comma decimal and minus sign: onChange gets each complete number, blur normalizes', async ({ page }) => {
+    const offset = page.getByRole('spinbutton', { name: 'Offset' });
+    await offset.pressSequentially('-2,5');
+    // "-" is incomplete (not emitted); "-2" and "-2," both parse to -2 (emitted once); "-2,5" is -2.5.
+    await expectOut(page, 'offset-calls', [-2, -2.5]);
+    await expect(offset).toHaveValue('-2,5');
+    await offset.blur();
+    await expect(offset).toHaveValue('-2.5');
+    await expectOut(page, 'offset', -2.5);
+  });
+
+  test('a lone minus sign reverts to the last value on blur', async ({ page }) => {
+    const offset = page.getByRole('spinbutton', { name: 'Offset' });
+    await offset.fill('4');
+    await offset.fill('-');
+    await offset.blur();
+    await expect(offset).toHaveValue('4');
+    await expectOut(page, 'offset', 4);
+  });
+
+  test('minus is rejected when min is 0 or more', async ({ page }) => {
+    const length = page.getByRole('spinbutton', { name: 'Length' });
+    await length.fill('');
+    await length.pressSequentially('-3');
+    await expect(length).toHaveValue('3');
+    await expectOut(page, 'value', 3);
+  });
+
+  test('text with thousands separators is not accepted (the field keeps its text)', async ({ page }) => {
+    const offset = page.getByRole('spinbutton', { name: 'Offset' });
+    await offset.fill('7');
+    // fill() replaces the text in one input event, like a paste.
+    await offset.fill('1,234.5');
+    await expect(offset).toHaveValue('7');
+    await expectOut(page, 'offset', 7);
+  });
+
+  test('very large values round-trip without exponent notation', async ({ page }) => {
+    const offset = page.getByRole('spinbutton', { name: 'Offset' });
+    await offset.fill('1000000000000000000000');
+    await offset.blur();
+    await expect(offset).toHaveValue('1000000000000000000000');
+    await expectOut(page, 'offset', 1e21);
+    // Still editable: one more digit at the end is accepted. (End does not move the caret on macOS.)
+    await offset.focus();
+    await offset.evaluate((el: HTMLInputElement) => el.setSelectionRange(el.value.length, el.value.length));
+    await offset.press('0');
+    await expectOut(page, 'offset', 1e22);
+  });
+
+  test('out-of-range value is kept and marked invalid; clampBehavior="blur" clamps it', async ({ page }) => {
+    const length = page.getByRole('spinbutton', { name: 'Length' });
+    await length.fill('150');
+    await length.blur();
+    await expect(length).toHaveValue('150');
+    await expect(length).toHaveAttribute('aria-invalid', 'true');
+    await expectOut(page, 'value', 150);
+
+    const clamped = page.getByRole('spinbutton', { name: 'Clamped' });
+    await expect(clamped).not.toHaveAttribute('aria-invalid');
+    await clamped.fill('15');
+    await clamped.blur();
+    await expect(clamped).toHaveValue('10');
+    await expectOut(page, 'clamped', 10);
+    await expect(clamped).not.toHaveAttribute('aria-invalid');
+  });
+
   test('read-only ignores arrow keys; disabled cannot be focused for editing', async ({ page }) => {
     const ro = page.getByRole('spinbutton', { name: 'Read only' });
     await ro.press('ArrowUp');

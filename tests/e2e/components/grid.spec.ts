@@ -349,3 +349,35 @@ test.describe('locale', () => {
     await expect(grid.getByRole('cell', { name: '1.450', exact: true })).toHaveCount(0);
   });
 });
+
+test.describe('saving and restoring the layout', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'grid');
+  });
+
+  const reported = async (page: Page) => JSON.parse((await page.getByTestId('state').textContent())!) as Record<string, unknown>;
+
+  test('onStateChange reports the starting state once on mount', async ({ page }) => {
+    await expect.poll(async () => (await reported(page)).pinned).toEqual({ start: ['model'], end: [] });
+  });
+
+  test('a reported state passed back as initialState restores sort, filters, search, layout', async ({ page }) => {
+    await sortButton(page, 'Capacity').click();
+    await page.getByRole('searchbox', { name: 'Search Parts' }).fill('screw');
+    await openColumnMenu(page, 'Qty');
+    await page.getByRole('menuitem', { name: 'Hide column' }).click();
+    await page.getByRole('button', { name: /^Filters/ }).click();
+    await expect
+      .poll(() => reported(page))
+      .toMatchObject({ sort: [{ id: 'capacity', desc: false }], search: 'screw', hidden: ['qty'], filtersVisible: false });
+    const before = await models(page);
+    const state = await reported(page);
+
+    await page.getByRole('button', { name: 'Reload grid' }).click();
+    await expect(page.getByRole('searchbox', { name: 'Search Parts' })).toHaveValue('screw');
+    expect(await models(page)).toEqual(before);
+    expect(await headers(page)).not.toContain('Qty');
+    await expect(page.getByRole('button', { name: /^Filters/ })).toHaveAttribute('aria-pressed', 'false');
+    await expect.poll(() => reported(page)).toEqual(state);
+  });
+});

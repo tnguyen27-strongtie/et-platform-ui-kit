@@ -14,6 +14,26 @@ test('activates on click, Enter and Space', async ({ page }) => {
   await expectOut(page, 'clicks', 3);
 });
 
+// The kit's core styling promise: an app's Tailwind classes beat MUI styles without !important,
+// through CSS layer order (docs/getting-started.md, "How app classes beat MUI styles").
+test('app Tailwind classes override the theme MUI styles', async ({ page }) => {
+  const plain = page.getByRole('button', { name: 'Primary', exact: true });
+  const styled = page.getByRole('button', { name: 'Utility classes' });
+  // Baseline, so the check below cannot pass by accident.
+  await expect(plain).not.toHaveCSS('padding', '0px');
+  // toHaveCSS retries: MUI buttons transition padding and colors for 0.15s.
+  await expect(styled).toHaveCSS('padding', '0px');
+  const danger = await page.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.className = 'bg-danger';
+    document.body.append(probe);
+    const color = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return color;
+  });
+  await expect(styled).toHaveCSS('background-color', danger);
+});
+
 test('disabled button ignores clicks and keyboard', async ({ page }) => {
   const button = page.getByRole('button', { name: 'Disabled primary' });
   await expect(button).toBeDisabled();
