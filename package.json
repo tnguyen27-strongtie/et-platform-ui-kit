@@ -41,6 +41,7 @@
     "test": "node --test \"tests/unit/**/*.test.ts\"",
     "test:e2e": "playwright test",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
+    "check:architecture": "node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs",
     "preview": "vite preview --outDir dist-showcase",
     "prepack": "npm run build"
   },

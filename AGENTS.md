@@ -63,7 +63,7 @@ Agents without skill support can read those `SKILL.md` files directly; they are 
 
 ## Definition of done
 
-1. `npm run check` passes, and `node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs` reports no errors.
+1. `npm run check` passes, and `npm run check:architecture` reports no errors.
 2. `npm run test:e2e` passes when components, the theme, CSS or the showcase changed.
 3. Docs and `CHANGELOG.md` updated when the public API or visible behavior changed.
 4. Report what you verified and what you did not.

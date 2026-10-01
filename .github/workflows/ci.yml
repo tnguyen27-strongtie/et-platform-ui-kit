@@ -23,12 +23,17 @@ jobs:
       artifact: ${{ steps.pack.outputs.artifact }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the architecture check diffs a pull request against its base branch
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - name: Architecture check
+        # Pull requests: changes since the base branch. Pushes and tags: the whole library.
+        run: npm run check:architecture -- ${{ github.event_name == 'pull_request' && format('--base origin/{0}', github.base_ref) || '--all' }}
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
