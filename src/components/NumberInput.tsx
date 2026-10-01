@@ -89,6 +89,8 @@ export const NumberInput = forwardRef<HTMLDivElement, NumberInputProps>(function
 
   const outOfRange = value !== null && !isInRange(value, rules);
   const allowNegative = min === undefined || min < 0;
+  // An explicit `error` prop wins over the field's state and the range check.
+  const invalid = error ?? (field?.invalid || outOfRange);
 
   return (
     <TextInput
@@ -96,7 +98,7 @@ export const NumberInput = forwardRef<HTMLDivElement, NumberInputProps>(function
       {...props}
       disabled={disabled}
       readOnly={readOnly}
-      error={error ?? (field?.invalid || outOfRange)}
+      error={invalid}
       value={draft}
       onChange={(e) => {
         const text = e.target.value.trim();
@@ -119,7 +121,7 @@ export const NumberInput = forwardRef<HTMLDivElement, NumberInputProps>(function
         'aria-valuenow': value ?? undefined,
         'aria-valuemin': min,
         'aria-valuemax': max,
-        'aria-invalid': error ?? (field?.invalid || outOfRange) ? true : undefined,
+        'aria-invalid': invalid ? true : undefined,
         'aria-describedby': field?.describedBy,
         ...inputProps,
       }}

@@ -81,6 +81,9 @@ export function stepNumber(value: number | null, delta: number, rules: NumberRul
 /** Text shown for a committed value: fixed decimals if precision is set, else shortest form. */
 export function formatNumber(value: number | null, precision?: number): string {
   if (value === null || !Number.isFinite(value)) return '';
+  // From 1e21, String() and toFixed() switch to exponent notation ("1e+21"). Numbers that large
+  // are always integers, so BigInt prints every digit.
+  if (Math.abs(value) >= 1e21) return BigInt(value).toString() + (precision ? `.${'0'.repeat(precision)}` : '');
   if (precision !== undefined) return roundTo(value, precision).toFixed(precision);
   const text = String(value);
   // Avoid exponent notation (1e-7), which the field would not accept back as input.

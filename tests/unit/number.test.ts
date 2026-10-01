@@ -104,6 +104,15 @@ describe('formatNumber', () => {
     assert.equal(formatNumber(1e-7), '0.0000001');
     assert.ok(isPartialNumber(formatNumber(1e-7)));
   });
+
+  it('never uses exponent notation, so the text parses back', () => {
+    assert.equal(formatNumber(1e21), '1000000000000000000000');
+    assert.equal(formatNumber(-1e21, 2), '-1000000000000000000000.00');
+    for (const n of [1e21, -2.5e22, 1e300]) {
+      assert.ok(isPartialNumber(formatNumber(n)), String(n));
+      assert.equal(parseNumber(formatNumber(n)), n);
+    }
+  });
 });
 
 describe('isInRange', () => {
