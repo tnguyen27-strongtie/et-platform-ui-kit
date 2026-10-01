@@ -22,14 +22,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
+          cache: npm
+      - run: npm ci
       - name: Build showcase
-        run: pnpm build:showcase
+        run: npm run build:showcase
         env:
           SHOWCASE_BASE: /${{ github.event.repository.name }}/
       - name: Drop files the showcase does not use

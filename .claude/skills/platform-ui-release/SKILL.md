@@ -1,11 +1,11 @@
 ---
 name: platform-ui-release
-description: Release workflow for the @platform/ui kit - choosing the semver bump, writing the CHANGELOG entry, running the full verification, building the tarball with pnpm pack and checking its contents before apps install it. Use it whenever the user asks to release, publish, pack, cut a version, bump the version, "ship this to the apps", prepare release notes for the kit, or produce a .tgz of @platform/ui, even if they only mention one of those steps, because a pack without a version bump or changelog silently gives apps a stale or undocumented build.
+description: Release workflow for the @platform/ui kit - choosing the semver bump, writing the CHANGELOG entry, running the full verification, building the tarball with npm pack and checking its contents before apps install it. Use it whenever the user asks to release, publish, pack, cut a version, bump the version, "ship this to the apps", prepare release notes for the kit, or produce a .tgz of @platform/ui, even if they only mention one of those steps, because a pack without a version bump or changelog silently gives apps a stale or undocumented build.
 ---
 
 # Releasing @platform/ui
 
-Apps install the kit as a tarball (or from an internal registry), and pnpm caches tarballs **by version**. Packing new code under an old version number means apps keep the cached old build without any error. That, plus an undocumented change reaching several apps at once, is why every release follows the same steps.
+Apps install the kit as a tarball (or from an internal registry), and an app tells tarballs apart **by version**. Packing new code under an old version number means apps can keep the old build without any error. That, plus an undocumented change reaching several apps at once, is why every release follows the same steps.
 
 ## 1. Find what changed since the last release
 
@@ -38,9 +38,9 @@ Visible design changes (font, colors, spacing) are at least minor even when the 
 ## 4. Verify
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm check          # lint, typecheck, unit tests, build
-pnpm test:e2e       # full Playwright suite
+npm ci
+npm run check       # lint, typecheck, unit tests, build
+npm run test:e2e    # full Playwright suite
 git status          # tokens.generated.css must not change after the build
 ```
 
@@ -49,7 +49,7 @@ Do not release on a failing or skipped check. If e2e cannot run (no browser avai
 ## 5. Pack and inspect
 
 ```bash
-pnpm pack --pack-destination <dir>     # runs the build again through prepack
+npm pack --pack-destination <dir>      # runs the build again through prepack
 scripts/verify-pack.sh <dir>/platform-ui-x.y.z.tgz   # required files present, nothing repo-only packed
 ```
 
@@ -63,4 +63,4 @@ For larger changes, smoke-test the tarball in a throwaway Vite app outside the r
 - Releases are made on `main`. If the work is on a branch, merge it first (fast-forward or merge commit, not squash, so the tag stays on `main`'s history).
 - Tag it: `git tag vX.Y.Z`. Ask before pushing the tag: `git push origin vX.Y.Z` starts `.github/workflows/release.yml`, which runs the full CI (checks, Chromium and WebKit e2e), fails if the tag does not match `package.json`, and creates a GitHub Release with the `[X.Y.Z]` CHANGELOG section as notes and the CI-built tarball attached. Versions with a `-` (`0.6.0-rc.1`) become pre-releases.
 - If the release job fails after the tag is pushed, fix the cause, then delete and re-push the tag (`git push origin :vX.Y.Z`, `git tag -f vX.Y.Z`, `git push origin vX.Y.Z`) with the user's go-ahead.
-- Report to the user: the version and why that bump, the changelog entry, the verification results, the tarball path (or the GitHub Release link), and what apps must do to upgrade (`pnpm add ./platform-ui-x.y.z.tgz`, plus any migration steps).
+- Report to the user: the version and why that bump, the changelog entry, the verification results, the tarball path (or the GitHub Release link), and what apps must do to upgrade (`npm install ./platform-ui-x.y.z.tgz`, plus any migration steps).

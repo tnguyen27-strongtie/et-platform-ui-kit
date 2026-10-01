@@ -7,7 +7,7 @@
   "engines": {
     "node": ">=22.18"
   },
-  "packageManager": "pnpm@12.6.0",
+  "packageManager": "npm@11.13.0",
   "sideEffects": [
     "**/*.css"
   ],
@@ -34,15 +34,15 @@
   "scripts": {
     "dev": "vite",
     "tokens": "node scripts/build-tokens.ts",
-    "build": "pnpm tokens && tsc -b && vite build -c vite.lib.config.ts && tsc -p tsconfig.lib.json && mkdir -p dist/theme && cp src/theme/*.css dist/theme/",
+    "build": "npm run tokens && tsc -b && vite build -c vite.lib.config.ts && tsc -p tsconfig.lib.json && mkdir -p dist/theme && cp src/theme/*.css dist/theme/",
     "build:showcase": "tsc -b && vite build --outDir dist-showcase",
     "typecheck": "tsc -b && tsc -p tsconfig.node.json",
     "lint": "eslint .",
     "test": "node --test \"tests/unit/**/*.test.ts\"",
     "test:e2e": "playwright test",
-    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "preview": "vite preview --outDir dist-showcase",
-    "prepack": "pnpm build"
+    "prepack": "npm run build"
   },
   "peerDependencies": {
     "@emotion/react": "^11.14.0",

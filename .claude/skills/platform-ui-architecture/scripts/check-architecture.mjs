@@ -373,9 +373,9 @@ if (!ALL) {
     report('changelog', 'warn', 'CHANGELOG.md', 1, 'Library files changed but CHANGELOG.md did not. Add an entry unless the change is invisible to apps (refactor, comments).');
 
   if (changed.has('src/tokens/tokens.ts') && !changed.has('src/theme/tokens.generated.css'))
-    report('tokens', 'error', 'src/tokens/tokens.ts', 1, 'tokens.ts changed but tokens.generated.css did not. Run pnpm tokens and commit the result (CI fails otherwise).');
+    report('tokens', 'error', 'src/tokens/tokens.ts', 1, 'tokens.ts changed but tokens.generated.css did not. Run npm run tokens and commit the result (CI fails otherwise).');
   if (changed.has('src/theme/tokens.generated.css') && !changed.has('src/tokens/tokens.ts'))
-    report('tokens', 'error', 'src/theme/tokens.generated.css', 1, 'tokens.generated.css is generated. Edit tokens.ts and run pnpm tokens.');
+    report('tokens', 'error', 'src/theme/tokens.generated.css', 1, 'tokens.generated.css is generated. Edit tokens.ts and run npm run tokens.');
 
   // New pure modules need unit tests.
   for (const [file, status] of changed) {

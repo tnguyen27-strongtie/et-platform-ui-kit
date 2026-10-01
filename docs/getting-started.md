@@ -14,19 +14,19 @@ The package is named `@platform/ui`. It is marked `"private": true` so it can ne
 
 | Method | In the kit | In the app | Use when |
 | --- | --- | --- | --- |
-| Tarball | `pnpm pack`, or download it from the GitHub Release (tagged versions) or the CI run's artifacts (any commit) | `pnpm add ./path/platform-ui-0.12.0.tgz` | The app lives in another repository and you want a pinned version |
-| Local link | `pnpm build` | `pnpm add link:../et-platform-ui-kit` | You change the kit and the app at the same time |
-| Internal registry | Remove `private`, add `publishConfig.registry`, `pnpm publish` | `pnpm add @platform/ui` | Several teams share the kit |
+| Tarball | `npm pack`, or download it from the GitHub Release (tagged versions) or the CI run's artifacts (any commit) | `npm install ./path/platform-ui-0.12.0.tgz` | The app lives in another repository and you want a pinned version |
+| Local link | `npm run build` | `npm install ../et-platform-ui-kit` | You change the kit and the app at the same time |
+| Internal registry | Remove `private`, add `publishConfig.registry`, `npm publish` | `npm install @platform/ui` | Several teams share the kit |
 
-> Bump `version` in the kit's `package.json` before packing a new tarball. pnpm caches tarballs by version, so an app would otherwise keep the old build.
+> Bump `version` in the kit's `package.json` before packing a new tarball. An app tells tarballs apart by version, so it could otherwise keep the old build.
 
 ## Peer dependencies
 
 The kit does not bundle React, MUI or Emotion. The app installs them, so the whole app runs a single copy of each.
 
 ```bash
-pnpm add react react-dom @mui/material @mui/icons-material @emotion/react @emotion/styled
-pnpm add -D tailwindcss @tailwindcss/vite @vitejs/plugin-react vite
+npm install react react-dom @mui/material @mui/icons-material @emotion/react @emotion/styled
+npm install -D tailwindcss @tailwindcss/vite @vitejs/plugin-react vite
 ```
 
 | Package | Range |
@@ -125,8 +125,8 @@ The kit re-exports the MUI primitives apps need (`Box`, `Stack`, `Typography`, `
 The repository contains a showcase: a live catalog of every export with usage notes, states and code samples.
 
 ```bash
-pnpm install
-pnpm dev   # http://localhost:5173
+npm install
+npm run dev   # http://localhost:5173
 ```
 
 | Page | URL | Contents |

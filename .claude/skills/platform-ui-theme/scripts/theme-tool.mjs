@@ -25,7 +25,7 @@
  *   }
  *
  * No dependencies: it runs the kit's own React-free modules (tokens, appearance, themeConfig, colors)
- * from node_modules/@platform/ui/dist, or from dist/ inside the kit repository (run `pnpm build` first),
+ * from node_modules/@platform/ui/dist, or from dist/ inside the kit repository (run `npm run build` first),
  * so colors resolve and the preview CSS is built exactly as PlatformThemeProvider does it.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -55,7 +55,7 @@ function findKit() {
     if (existsSync(join(installed, 'tokens/tokens.js'))) return installed;
     const pkg = join(dir, 'package.json');
     if (existsSync(pkg) && JSON.parse(readFileSync(pkg, 'utf8')).name === '@platform/ui') {
-      if (!existsSync(join(dir, 'dist/theme/colors.js'))) fail('Inside the kit repository: run `pnpm build` first (the tool uses dist/).');
+      if (!existsSync(join(dir, 'dist/theme/colors.js'))) fail('Inside the kit repository: run `npm run build` first (the tool uses dist/).');
       return join(dir, 'dist');
     }
     const parent = dirname(dir);

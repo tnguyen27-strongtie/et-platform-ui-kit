@@ -62,7 +62,7 @@ Read the full diff (`git diff <base>` plus untracked files) and go through each 
 
 ### 2c. Verify
 
-Run `pnpm check`, plus `pnpm test:e2e` (in the background; `--project desktop` while iterating) when components, the theme, CSS or the showcase changed. The architecture check does not replace them.
+Run `npm run check`, plus `npm run test:e2e` (in the background; `npm run test:e2e -- --project desktop` while iterating) when components, the theme, CSS or the showcase changed. The architecture check does not replace them.
 
 ## 3. Report
 

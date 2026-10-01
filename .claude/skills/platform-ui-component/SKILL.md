@@ -17,7 +17,7 @@ Look at how the nearest existing component does it before writing anything; the 
 | --- | --- |
 | How an MUI component looks | `src/theme/createPlatformTheme.ts` (`components.MuiXxx.styleOverrides` or `variants`). Plain MUI usage in apps then matches too |
 | A simpler or safer API around MUI | A wrapper in `src/components/` |
-| A color, size, radius, shadow, breakpoint | `src/tokens/tokens.ts`, then `pnpm tokens` |
+| A color, size, radius, shadow, breakpoint | `src/tokens/tokens.ts`, then `npm run tokens` |
 | Global CSS, Tailwind utilities or variants | `src/theme/theme.css` |
 | Pure logic (parsing, filtering, sorting) | A React-free module with unit tests (like `utils/number.ts`, `grid/gridFilters.ts`) |
 
@@ -77,16 +77,16 @@ Pure logic gets a `tests/unit/*.test.ts` (`node:test` + `node:assert/strict`, im
 ## 7. Verify
 
 ```bash
-pnpm check                                   # lint, typecheck, unit tests, build
+npm run check                                # lint, typecheck, unit tests, build
 node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs   # layers, reuse, API completeness, budgets
-pnpm test:e2e                                # full suite in Chromium + WebKit, ~2 min; pass one spec file or --project desktop while iterating
+npm run test:e2e                             # full suite in Chromium + WebKit, ~2 min; append `-- <spec file>` or `-- --project desktop` while iterating
 ```
 
-For visual changes, run `pnpm dev` and look at the demo and the fixture (`/tests/e2e/harness/index.html#<fixture>`); a Playwright screenshot before and after is the quickest honest check. Then do the review gate of `platform-ui-architecture` (checklist and report). Finish by reporting what passed, what you looked at, and anything you did not verify.
+For visual changes, run `npm run dev` and look at the demo and the fixture (`/tests/e2e/harness/index.html#<fixture>`); a Playwright screenshot before and after is the quickest honest check. Then do the review gate of `platform-ui-architecture` (checklist and report). Finish by reporting what passed, what you looked at, and anything you did not verify.
 
 ## Token and theme changes
 
-- Edit `tokens.ts`, run `pnpm tokens`, commit `tokens.generated.css` too (CI fails if it is stale).
+- Edit `tokens.ts`, run `npm run tokens`, commit `tokens.generated.css` too (CI fails if it is stale).
 - A new role color goes in `defaultColors`; if it should follow the brand, derive it in `resolveColors` (`src/theme/colors.ts`).
 - In `createPlatformTheme.ts`, use `colors.x` inside `styleOverrides` and resolved values (`v.x`) inside `palette`, because MUI computes contrast from palette values.
 - A new Button variant: declare it in `src/theme/augmentation.ts` (`ButtonPropsVariantOverrides`) and style it in `MuiButton.variants`.
@@ -94,8 +94,8 @@ For visual changes, run `pnpm dev` and look at the demo and the fixture (`/tests
 
 ## Fonts
 
-- Fonts are open source (SIL OFL) and bundled as dependencies (`@fontsource*`), declared in `src/theme/fonts.css`, with a family token in `typography.fontFamily` (`pnpm tokens` turns it into `--font-*` and a `font-*` utility). Apps never copy font files.
+- Fonts are open source (SIL OFL) and bundled as dependencies (`@fontsource*`), declared in `src/theme/fonts.css`, with a family token in `typography.fontFamily` (`npm run tokens` turns it into `--font-*` and a `font-*` utility). Apps never copy font files.
 - Check the package's `unicode-range` before importing its CSS. Fontsource labels some fonts `latin` even when the file holds every glyph (STIX Two Math does); importing a CSS file with a `unicode-range` silently sends symbols outside the range to fallback fonts. Import the per-subset-per-weight file (`latin-400.css`), which has no `unicode-range`, as `fonts.css` does for the math font.
 - Never write `url('@fontsource/…')` (a bare specifier) in the kit's CSS. Apps inline the kit's CSS into their own, so Vite resolves that URL from the app, where the font package is not a direct dependency, leaves it unchanged and the font 404s. The kit's own showcase does not catch this because the package sits in the repo's root `node_modules`. Use `@import` of the package CSS: its relative `./files/…` URLs get rebased. `scripts/verify-pack.sh` fails on bare URLs.
-- Verify with `pnpm build:showcase` (the font file must appear in `dist-showcase/assets`) and an e2e check that `document.fonts.load()` returns the face as `loaded` with the expected `unicodeRange`.
+- Verify with `npm run build:showcase` (the font file must appear in `dist-showcase/assets`) and an e2e check that `document.fonts.load()` returns the face as `loaded` with the expected `unicodeRange`.
 - MathML in the showcase: `@types/react` has no MathML tags, so add any new tag or attribute to `src/showcase/mathml.d.ts`. Formulas are demonstrated in Foundations → Math formulas.

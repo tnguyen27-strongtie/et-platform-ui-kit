@@ -17,7 +17,7 @@ Scripts below are relative to this skill's directory (`.claude/skills/platform-u
 ## 1. Check the setup
 
 1. Find where you are. An **app** has `@platform/ui` in `package.json`; the **kit repository** has `src/tokens/tokens.ts`.
-2. Run `node <skill>/scripts/theme-tool.mjs --list`. If it says the kit has no appearances or no color schemes, the app needs a newer `@platform/ui`; tell the user and offer what the installed version supports (a colors-only theme at least). Inside the kit repository the tool reads `dist/`, so run `pnpm build` first.
+2. Run `node <skill>/scripts/theme-tool.mjs --list`. If it says the kit has no appearances or no color schemes, the app needs a newer `@platform/ui`; tell the user and offer what the installed version supports (a colors-only theme at least). Inside the kit repository the tool reads `dist/`, so run `npm run build` first.
 3. Read the existing theme file (`src/theme.config.ts`, `theme.json`, or the `PlatformThemeProvider` props in `main.tsx`) so you keep what the user already chose (name, density, colors they set on purpose).
 
 ## 2. Investigate the idea
@@ -101,7 +101,7 @@ node <skill>/scripts/preview.mjs --url http://localhost:5173 --css preview.css -
   --paths "/,/#/some-screen" --appearance acme-glass [--scheme dark] [--mobile] [--clear-storage]
 ```
 
-Start the app first (`pnpm dev`, in the background). In the kit repository the showcase's useful paths are `/#/forms`, `/#/overlays`, `/#/data`, `/#workspace`; pass `--clear-storage` so a saved showcase theme does not interfere.
+Start the app first (`npm run dev`, in the background). In the kit repository the showcase's useful paths are `/#/forms`, `/#/overlays`, `/#/data`, `/#workspace`; pass `--clear-storage` so a saved showcase theme does not interfere.
 
 Fonts the app has not installed show the fallback in both modes. If Playwright is not installed, use `--serve` and let the user look; without Vite, give the user the `--css` file to paste into the browser devtools.
 
@@ -115,7 +115,7 @@ node <skill>/scripts/theme-tool.mjs draft.json --write src/theme.config.ts [--js
 - `--json` writes a `theme.json` for themes loaded at runtime (per customer, from an API). JSON files accept built-in appearance names only; a custom appearance needs the `.ts` file.
 - Wire it once if the app does not yet: `import theme from './theme.config'` and `<PlatformThemeProvider config={theme}>` in `main.tsx`. A user's density setting still overrides it: `density={userSettings.density}`.
 - If the theme needs a font, add the `@fontsource` package and its import in `main.tsx`.
-- Run the app's typecheck (`pnpm typecheck` or `tsc`) to confirm the file compiles against the installed kit.
+- Run the app's typecheck (`npm run typecheck` or `tsc`) to confirm the file compiles against the installed kit.
 
 In the **kit repository**, a theme for a specific app does not belong in the kit: write it to the location the user names, or hand over the file. A new **built-in** appearance for every app is a kit change: follow the `platform-ui-component` skill (add it to `APPEARANCES` and the theme-file name list in `themeConfig.ts`, unit tests, showcase, docs, changelog).
 

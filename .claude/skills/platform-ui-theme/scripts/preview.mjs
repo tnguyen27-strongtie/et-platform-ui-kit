@@ -201,7 +201,7 @@ const scheme = option('--scheme');
 
 const chromium = await loadChromium();
 if (!chromium) {
-  fail('Playwright is not installed here. Install it for the preview (pnpm add -D playwright && npx playwright install chromium), or review the theme by hand in the running app.');
+  fail('Playwright is not installed here. Install it for the preview (npm install -D playwright && npx playwright install chromium), or review the theme by hand in the running app.');
 }
 const targets = paths.map((p, i) => ({ url: new URL(p, url).href, name: `${String(i + 1).padStart(2, '0')}-${slug(p)}` }));
 const problems = await shoot(chromium, targets, async (page, t, tag) => {

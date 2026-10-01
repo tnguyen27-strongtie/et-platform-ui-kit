@@ -49,7 +49,7 @@ Decide this before writing code. Pick the lowest layer that can hold the change.
 
 | The change is… | Put it in | Not in |
 | --- | --- | --- |
-| A design value (color, size, radius, shadow, z-index, breakpoint) | `tokens/tokens.ts` + `pnpm tokens` | a component constant |
+| A design value (color, size, radius, shadow, z-index, breakpoint) | `tokens/tokens.ts` + `npm run tokens` | a component constant |
 | How an MUI component looks everywhere | `theme/createPlatformTheme.ts` (`styleOverrides`, `variants`) | a wrapper that restyles MUI |
 | Global CSS, Tailwind utility or variant | `theme/theme.css` | a component's inline styles |
 | Pure logic (parse, format, filter, sort, compare) | a React-free `.ts` module next to its user (`grid/gridFilters.ts`) or in `utils/` when two places use it, with a unit test | inside a component body |

@@ -6,18 +6,18 @@ Context for AI coding agents working in this repository. Human-facing docs: [REA
 
 `@platform/ui`: a shared React component kit (React 19, MUI 9, Tailwind CSS 4, TypeScript strict) for the platform's calculator apps. It ships design tokens, an MUI theme, ~50 components, a data grid (`GridView`) and a three-section workspace layout. The package is private and consumed by apps as a tarball, a local link or from an internal registry.
 
-The repo also contains a **showcase** (`src/showcase/`, `pnpm dev`) that demos every export. It is not part of the package.
+The repo also contains a **showcase** (`src/showcase/`, `npm run dev`) that demos every export. It is not part of the package.
 
 ## Commands
 
 | Task | Command |
 | --- | --- |
-| Install | `pnpm install` (pnpm 12, Node ≥ 22.18) |
-| Showcase | `pnpm dev` → http://localhost:5173 |
-| Fast checks (run before saying you are done) | `pnpm check` = lint + typecheck + unit tests + library build |
-| E2E (Playwright, starts its own server) | `pnpm test:e2e` (Chromium and WebKit, about 2 minutes); one file: `pnpm test:e2e tests/e2e/components/forms.spec.ts`; one browser: `--project desktop` or `--project safari` |
-| Regenerate token CSS after editing `tokens.ts` | `pnpm tokens` |
-| Package | `pnpm pack`, then `scripts/verify-pack.sh <tgz>`. CI keeps a tarball per commit; tags `vX.Y.Z` create a GitHub Release |
+| Install | `npm install` (npm 11, Node ≥ 22.18) |
+| Showcase | `npm run dev` → http://localhost:5173 |
+| Fast checks (run before saying you are done) | `npm run check` = lint + typecheck + unit tests + library build |
+| E2E (Playwright, starts its own server) | `npm run test:e2e` (Chromium and WebKit, about 2 minutes); one file: `npm run test:e2e -- tests/e2e/components/forms.spec.ts`; one browser: `npm run test:e2e -- --project desktop` (or `safari`) |
+| Regenerate token CSS after editing `tokens.ts` | `npm run tokens` |
+| Package | `npm pack`, then `scripts/verify-pack.sh <tgz>`. CI keeps a tarball per commit; tags `vX.Y.Z` create a GitHub Release |
 
 ## Map
 
@@ -61,7 +61,7 @@ Agents without skill support can read those `SKILL.md` files directly; they are 
 
 ## Definition of done
 
-1. `pnpm check` passes, and `node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs` reports no errors.
-2. `pnpm test:e2e` passes when components, the theme, CSS or the showcase changed.
+1. `npm run check` passes, and `node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs` reports no errors.
+2. `npm run test:e2e` passes when components, the theme, CSS or the showcase changed.
 3. Docs and `CHANGELOG.md` updated when the public API or visible behavior changed.
 4. Report what you verified and what you did not.

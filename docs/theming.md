@@ -162,7 +162,7 @@ Any role you pass explicitly wins over the derived value:
 
 The showcase includes a theme builder for designers and developers.
 
-1. Run `pnpm dev` and open `/#/theme`.
+1. Run `npm run dev` and open `/#/theme`.
 2. Pick the brand color. Hover, active, subtle and focus shades are derived automatically. Turn on **Show all roles** to edit any role. Changes apply to the whole showcase immediately, so open other pages to review them. The theme survives a page reload.
 3. Check the **Contrast check** table (WCAG 2.1 AA) and fix failing pairs if your product must meet AA.
 4. **Export** `theme.config.ts` (or `theme.json`). The file contains only what you changed; everything else keeps the kit defaults.

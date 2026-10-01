@@ -10,6 +10,10 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 
 - `platform-ui-architecture`: a design gate before coding (which layer, what to reuse, public surface, size budget, dependencies) and a review gate before a change is done. `check-architecture.mjs` checks the branch against the kit's layers (`tokens` ← `utils` ← `theme` / components ← feature areas ← `index.ts`), import cycles, unknown or non-MUI UI packages, MUI barrel imports, duplicated helpers (Web Storage, `clsx`, `alpha(colors.x)`), file growth over budget, new exports without showcase / docs / changelog / fixture, removed exports and new dependencies. `references/architecture.md` documents the layers, placement rules, budgets and known debt.
 
+### Changed
+
+- Tooling: the repository uses npm (11, pinned in `packageManager`) instead of pnpm. `package-lock.json` replaces `pnpm-lock.yaml` and keeps every direct dependency at the version pnpm had resolved; CI installs with `npm ci`. Script arguments now go after `--`, for example `npm run test:e2e -- --project desktop`. The tarball ships the same files; only `packageManager` and the script commands in its `package.json` differ.
+
 ## [0.12.0] - 2026-10-01
 
 Themes are no longer just a brand color. An app can switch the visual style of every component (**appearances**: Classic, Glass or its own), turn on **dark mode**, and have its own Tailwind classes follow both, without touching component code. The default light Classic look is unchanged (every kit fixture renders pixel-identical), apart from the two small details under Changed.

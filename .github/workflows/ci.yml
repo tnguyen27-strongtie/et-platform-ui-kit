@@ -23,22 +23,21 @@ jobs:
       artifact: ${{ steps.pack.outputs.artifact }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm build
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
       - name: Tokens file is up to date
         run: git diff --exit-code src/theme/tokens.generated.css
       - name: Pack
         id: pack
         run: |
-          pnpm pack --pack-destination pack
+          npm pack --pack-destination pack
           scripts/verify-pack.sh pack/*.tgz
           version=$(node -p "require('./package.json').version")
           echo "artifact=platform-ui-${version}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
@@ -63,14 +62,13 @@ jobs:
             projects: --project safari --project safari-mobile
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
-      - run: pnpm test:e2e ${{ matrix.projects }}
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run test:e2e -- ${{ matrix.projects }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

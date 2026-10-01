@@ -16,28 +16,28 @@ How to develop, test and release `@platform/ui`. Coding agents: start with [AGEN
 | Tool | Version |
 | --- | --- |
 | Node.js | 24 LTS (≥ 22.18: `scripts/build-tokens.ts` runs TypeScript directly) |
-| pnpm | 12 (pinned in `packageManager`) |
+| npm | 11 (pinned in `packageManager`) |
 | TypeScript / Vite | 6.0 / 8.3 |
 
 ```bash
-pnpm install
-pnpm dev   # showcase at http://localhost:5173
+npm install
+npm run dev   # showcase at http://localhost:5173
 ```
 
 ## Scripts
 
 | Script | Description |
 | --- | --- |
-| `pnpm dev` | Showcase dev server |
-| `pnpm tokens` | Regenerate `src/theme/tokens.generated.css` from `tokens.ts` |
-| `pnpm lint` | ESLint: typescript-eslint, react-hooks, no hex colors in components |
-| `pnpm typecheck` | Strict `tsc`, including `tests/unit` and `scripts` (`tsconfig.node.json`) |
-| `pnpm test` | Unit tests for pure logic (`node --test`, no extra dependencies) |
-| `pnpm test:e2e` | Playwright in Chromium and WebKit: component behavior, keyboard, axe, theming. Starts the dev server itself. `--project desktop` or `--project safari` runs one browser |
-| `pnpm check` | `lint` + `typecheck` + `test` + `build`, the same as the first CI job |
-| `pnpm build` | Library build to `dist/` (ESM + `.d.ts` + CSS) |
-| `pnpm build:showcase` | Showcase build to `dist-showcase/` |
-| `pnpm pack` | Tarball `platform-ui-x.y.z.tgz` (runs `build` first); check it with `scripts/verify-pack.sh <tgz>` |
+| `npm run dev` | Showcase dev server |
+| `npm run tokens` | Regenerate `src/theme/tokens.generated.css` from `tokens.ts` |
+| `npm run lint` | ESLint: typescript-eslint, react-hooks, no hex colors in components |
+| `npm run typecheck` | Strict `tsc`, including `tests/unit` and `scripts` (`tsconfig.node.json`) |
+| `npm test` | Unit tests for pure logic (`node --test`, no extra dependencies) |
+| `npm run test:e2e` | Playwright in Chromium and WebKit: component behavior, keyboard, axe, theming. Starts the dev server itself. `npm run test:e2e -- --project desktop` (or `safari`) runs one browser |
+| `npm run check` | `lint` + `typecheck` + `test` + `build`, the same as the first CI job |
+| `npm run build` | Library build to `dist/` (ESM + `.d.ts` + CSS) |
+| `npm run build:showcase` | Showcase build to `dist-showcase/` |
+| `npm pack` | Tarball `platform-ui-x.y.z.tgz` (runs `build` first); check it with `scripts/verify-pack.sh <tgz>` |
 
 CI (`.github/workflows/ci.yml`) runs `lint`, `typecheck`, `test`, `build`, checks that `tokens.generated.css` is up to date, and runs the e2e suite in Chromium and WebKit (Safari's engine) as two parallel jobs on every pull request. It also packs the kit, checks the tarball with `scripts/verify-pack.sh`, and keeps it for 30 days as an artifact named `platform-ui-<version>-<commit>` on the run's summary page, so a branch can be tried in an app without building it locally.
 
@@ -87,7 +87,7 @@ public/images/                     # Logos and the sample drawing used by the sh
 ## Changing tokens
 
 1. Edit `src/tokens/tokens.ts`. New role colors go in `defaultColors`.
-2. Run `pnpm tokens` to update `tokens.generated.css`. Never edit that file by hand.
+2. Run `npm run tokens` to update `tokens.generated.css`. Never edit that file by hand.
 3. If MUI needs the token, reference it in `createPlatformTheme.ts`: `colors.x` in `styleOverrides`, the resolved value (`v.x`) in `palette`.
 
 Never write hex values in components (ESLint enforces this; pure white and black are allowed).
@@ -109,12 +109,12 @@ Never write hex values in components (ESLint enforces this; pure white and black
 ## Testing
 
 ```bash
-pnpm check && pnpm test:e2e
+npm run check && npm run test:e2e
 ```
 
 **Unit tests** (`tests/unit`) cover pure logic: number parsing and rounding, grid filters, theme files, release note sorting and dates.
 
-**E2E tests** run against a harness page with one fixture per component (`tests/e2e/harness/fixtures.tsx`; open `pnpm dev`, then `/tests/e2e/harness/index.html#<name>`). Fixtures print what callbacks received into `<output data-testid>`, so tests check values and types (`2` vs `"2"`), not only what is drawn.
+**E2E tests** run against a harness page with one fixture per component (`tests/e2e/harness/fixtures.tsx`; open `npm run dev`, then `/tests/e2e/harness/index.html#<name>`). Fixtures print what callbacks received into `<output data-testid>`, so tests check values and types (`2` vs `"2"`), not only what is drawn.
 
 | Area | What is tested |
 | --- | --- |
@@ -146,10 +146,10 @@ When adding a component, add a fixture, add its name to `fixtureNames` in `tests
 
 ## Releasing
 
-1. Bump `version` in `package.json` following semver: new features → minor, fixes → patch, breaking changes → major. Without a version bump, pnpm in the apps keeps using the cached tarball.
+1. Bump `version` in `package.json` following semver: new features → minor, fixes → patch, breaking changes → major. Without a version bump, an app cannot tell the new tarball from the one it already installed and may keep the old build.
 2. Add an entry to [CHANGELOG.md](CHANGELOG.md).
-3. Run `pnpm check && pnpm test:e2e`.
-4. `pnpm pack` (or `pnpm publish` to an internal registry) and update the apps.
+3. Run `npm run check && npm run test:e2e`.
+4. `npm pack` (or `npm publish` to an internal registry) and update the apps.
 
 ## Moving into an Nx workspace
 

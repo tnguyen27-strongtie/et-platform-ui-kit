@@ -28,9 +28,9 @@ import { Button, FormField, NumberInput } from '@platform/ui';
 The package is private (`"private": true`) and is not published to the public npm registry. Install it from a tarball, a local link, or your internal registry. See [Getting started](docs/getting-started.md#installation) for details.
 
 ```bash
-pnpm add ./platform-ui-0.12.0.tgz
-pnpm add react react-dom @mui/material @mui/icons-material @emotion/react @emotion/styled
-pnpm add -D tailwindcss @tailwindcss/vite
+npm install ./platform-ui-0.12.0.tgz
+npm install react react-dom @mui/material @mui/icons-material @emotion/react @emotion/styled
+npm install -D tailwindcss @tailwindcss/vite
 ```
 
 ### Requirements
@@ -107,8 +107,8 @@ Import everything from `@platform/ui`, including `Box`, `Stack`, `Typography`, `
 The repository includes a live catalog of every export, with usage notes and code samples.
 
 ```bash
-pnpm install
-pnpm dev   # http://localhost:5173
+npm install
+npm run dev   # http://localhost:5173
 ```
 
 ## Not included yet
