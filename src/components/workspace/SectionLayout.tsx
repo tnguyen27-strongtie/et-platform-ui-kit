@@ -6,6 +6,7 @@ import { Group, Panel, type PanelSize, Separator, useDefaultLayout, usePanelRef 
 
 import { layout } from '../../tokens/tokens';
 import { cn } from '../../utils/cn';
+import { readStorage, writeStorage } from '../../utils/storage';
 import { Tab, TabPanel, Tabs } from '../Tabs';
 
 export type SectionId = 'input' | 'illustration' | 'output';
@@ -55,27 +56,8 @@ function ResizeHandle({ direction }: { direction: 'columns' | 'rows' }) {
   );
 }
 
-/**
- * localStorage that never throws: reading `window.localStorage` itself throws a SecurityError when
- * storage is blocked (sandboxed iframe, strict privacy settings), and it is missing during SSR.
- * Sizes are then simply not remembered.
- */
-const safeStorage = {
-  getItem(key: string) {
-    try {
-      return globalThis.localStorage?.getItem(key) ?? null;
-    } catch {
-      return null;
-    }
-  },
-  setItem(key: string, value: string) {
-    try {
-      globalThis.localStorage?.setItem(key, value);
-    } catch {
-      // Blocked or full: layout persistence is a convenience, nothing breaks.
-    }
-  },
-};
+/** Storage adapter for react-resizable-panels; blocked storage means sizes are simply not remembered. */
+const safeStorage = { getItem: readStorage, setItem: writeStorage };
 
 /** Thin bar shown when a column pane is collapsed; click to expand it again. */
 function CollapsedRail({ label, onExpand }: { label: ReactNode; onExpand: () => void }) {

@@ -49,6 +49,10 @@ import {
   Spinner,
   Switch,
   VisualizationStage,
+  ViewControls,
+  ViewControlsGroup,
+  ResetViewButton,
+  DropOverlay,
   Tab,
   TabPanel,
   Tabs,
@@ -692,6 +696,35 @@ function ImageViewerFixture() {
   );
 }
 
+// ---------- Visualization controls ----------
+function VisualizationFixture() {
+  const [showBolts, setShowBolts] = useState(true);
+  const [resets, setResets] = useState<unknown[][]>([]);
+  const [dragging, setDragging] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setDragging((d) => !d)}>Toggle drop overlay</Button>
+      <section aria-label="Stage" style={{ position: 'relative', height: 320 }}>
+        <VisualizationStage
+          controls={
+            <ViewControls>
+              <ViewControlsGroup title="Display">
+                <Checkbox label="Show bolts" checked={showBolts} onChange={setShowBolts} />
+              </ViewControlsGroup>
+              <ResetViewButton onClick={(...args: unknown[]) => setResets((r) => [...r, args])} />
+              <ResetViewButton label="Recenter" onClick={() => {}} />
+            </ViewControls>
+          }
+        >
+          <span>Drawing</span>
+        </VisualizationStage>
+        {dragging && <DropOverlay>Drop file here</DropOverlay>}
+      </section>
+      <Out id="reset-calls" value={resets} />
+    </>
+  );
+}
+
 // ---------- SectionLayout ----------
 function LayoutFixture() {
   return (
@@ -1123,6 +1156,7 @@ export const fixtures: Record<string, ComponentType> = {
   display: DisplayFixture,
   'error-boundary': ErrorBoundaryFixture,
   'image-viewer': ImageViewerFixture,
+  visualization: VisualizationFixture,
   layout: LayoutFixture,
   'layout-flex': FlexibleLayoutFixture,
   'layout-sized': SizedLayoutFixture,

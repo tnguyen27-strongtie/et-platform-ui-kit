@@ -20,7 +20,7 @@ Dependencies point one way. A lower layer never imports a higher one.
                 │                        │
                 └──────────┬─────────────┘
                            ▼
-                        utils/            (cn, number, storage, useStableValue)
+                        utils/            (cn, focusOutline, number, storage, useStableValue)
                            │
                            ▼
                         tokens/tokens.ts  (every design value; imports nothing)
@@ -71,6 +71,7 @@ Search before writing (`grep -rn "<idea>" src/`). The kit already has:
 | localStorage / sessionStorage | `readStorage`, `writeStorage` from `utils/storage` |
 | Inline-object props in hook deps | `useStableValue` / `deepEqual` from `utils/useStableValue` |
 | Parse, format, round, clamp numbers | `utils/number` (`parseNumber`, `formatNumber`, `roundTo`, `clamp`…) |
+| Keyboard focus outline | `focusOutline` / `focusOutlineInset` from `utils/focusOutline` |
 | Transparent color | `color-mix(in srgb, ${colors.x} 15%, transparent)` |
 | Color contrast, mixing | `theme/colorMath` |
 | Form wiring (id, label, error, description) | `useFormField()` from `FormField` |
@@ -121,7 +122,6 @@ Existing code that does not meet these rules. Do not copy these patterns; fix th
 | Where | Debt | Direction |
 | --- | --- | --- |
 | `components/grid/GridView.tsx` (~960 lines) | Over the component budget | Move state/preset logic into `grid/` modules with unit tests; toolbar and filter row into sibling files |
-| `components/workspace/SectionLayout.tsx` (`safeStorage`) | Duplicates `utils/storage` | Use `readStorage` / `writeStorage` (keep the `storage` adapter shape `react-resizable-panels` needs) |
 | `components/grid/GridView.tsx` (`stateKey = JSON.stringify(...)`) | Serialized state as an effect key | Acceptable here (it reports a derived value), but new code uses `useStableValue` |
 
 Run `node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs --all` to see the current list. When you pay off an item, remove its row.

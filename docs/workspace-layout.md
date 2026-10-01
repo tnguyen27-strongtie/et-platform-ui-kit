@@ -144,8 +144,8 @@ const imageRef = useRef<ImageViewerHandle>(null);
 | --- | --- |
 | `VisualizationStage` | Hosts the viewer. Tablet/desktop: controls float top-right, `note` bottom-left. Mobile: controls and note flow below the viewer. Props: `children`, `controls`, `note`, `loading`, `loadingText`, `empty` (shown instead of the viewer when there is nothing to draw), `className` |
 | `ViewControls` | Semi-transparent white control panel |
-| `ViewControlsGroup` | Titled group of controls inside the panel |
-| `ResetViewButton` | Button with a target icon and a tooltip. Props: `onClick`, `label` (default `'Reset view'`) |
+| `ViewControlsGroup` | Titled group of controls inside the panel; the title is the group's accessible name |
+| `ResetViewButton` | Button with a target icon and a tooltip. Props: `onClick` (called with no arguments), `label` (default `'Reset view'`, also the accessible name) |
 | `DropOverlay` | Dashed overlay shown while a file is dragged over a section (e.g. dropping a saved input file) |
 
 The 3D viewer is app code (a web component, a Three.js canvas…). Put it in `VisualizationStage` as `children`.

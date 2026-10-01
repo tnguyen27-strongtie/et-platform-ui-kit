@@ -7,7 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import type { ReactNode } from 'react';
 
-import { colors } from '../tokens/tokens';
+import { focusOutline } from '../utils/focusOutline';
 
 /**
  * Table primitives: bordered container, 12px cells, bold 48px header.
@@ -30,7 +30,7 @@ export const DataTable = Object.assign(
     const scrollRegion = maxHeight ? { tabIndex: 0, role: 'region', 'aria-label': ariaLabel ?? 'Scrollable table' } : {};
     return (
       <TableContainer
-        sx={{ maxHeight, '&:focus-visible': { outline: `2px solid ${colors.brand}`, outlineOffset: '2px' } }}
+        sx={{ maxHeight, '&:focus-visible': focusOutline }}
         {...scrollRegion}
       >
         <Table stickyHeader={!!maxHeight} size="small" aria-label={ariaLabel}>

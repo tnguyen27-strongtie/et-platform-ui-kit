@@ -1,6 +1,6 @@
 import { expect, type Locator, test } from '@playwright/test';
 
-import { expectOut, openFixture } from '../helpers';
+import { expectOut, openFixture, tabKey } from '../helpers';
 
 test.describe('Alert, Card, DataTable, status indicators', () => {
   test.beforeEach(async ({ page }) => {
@@ -555,5 +555,40 @@ test.describe('App Tailwind classes follow the appearance', () => {
     await page.getByRole('radio', { name: 'Classic' }).check();
     await page.getByRole('radio', { name: 'Dark' }).check();
     await expect(el).toHaveCSS('box-shadow', /rgba\(0, 0, 0, 0\.55\)/);
+  });
+});
+
+test.describe('Visualization controls', () => {
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'visualization');
+  });
+
+  test('ViewControlsGroup is a group named by its title', async ({ page }) => {
+    const group = page.getByRole('group', { name: 'Display' });
+    await expect(group).toHaveAccessibleName('Display');
+    await expect(group.getByRole('checkbox', { name: 'Show bolts' })).toBeChecked();
+  });
+
+  test('ResetViewButton calls onClick without the click event, by mouse and keyboard', async ({ page, browserName }) => {
+    const reset = page.getByRole('button', { name: 'Reset view' });
+    await expect(reset).toHaveAccessibleName('Reset view');
+    await expect(page.getByRole('button', { name: 'Recenter' })).toHaveAccessibleName('Recenter');
+
+    await reset.click();
+    await expectOut(page, 'reset-calls', [[]]);
+
+    await page.getByRole('checkbox', { name: 'Show bolts' }).focus();
+    await page.keyboard.press(tabKey(browserName));
+    await expect(reset).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expectOut(page, 'reset-calls', [[], []]);
+  });
+
+  test('DropOverlay shows its message without blocking the controls under it', async ({ page }) => {
+    await page.getByRole('button', { name: 'Toggle drop overlay' }).click();
+    const stage = page.getByRole('region', { name: 'Stage' });
+    await expect(stage.getByText('Drop file here')).toBeVisible();
+    await stage.getByRole('button', { name: 'Reset view' }).click();
+    await expectOut(page, 'reset-calls', [[]]);
   });
 });

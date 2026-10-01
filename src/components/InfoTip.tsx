@@ -11,7 +11,8 @@ import {
   useState,
 } from 'react';
 
-import { colors } from '../tokens/tokens';
+import { colors, radius } from '../tokens/tokens';
+import { focusOutline } from '../utils/focusOutline';
 import { CloseButton, IconButton } from './Button';
 
 const HelpTrigger = styled('button')({
@@ -22,7 +23,7 @@ const HelpTrigger = styled('button')({
   height: '1rem',
   marginLeft: '0.25rem',
   verticalAlign: 'text-bottom',
-  borderRadius: '9999px',
+  borderRadius: radius.full,
   border: 0,
   padding: 0,
   cursor: 'pointer',
@@ -35,7 +36,7 @@ const HelpTrigger = styled('button')({
   transition: 'background-color 250ms',
   '&:hover': { backgroundColor: colors.brandHover },
   '&:active': { backgroundColor: colors.brandActive },
-  '&:focus-visible': { outline: `2px solid ${colors.brand}`, outlineOffset: '2px' },
+  '&:focus-visible': focusOutline,
 });
 
 export type InfoTipPlacement = 'top' | 'bottom' | 'left' | 'right';
@@ -145,7 +146,7 @@ export function InfoTip({ children, title, label = 'More information', trigger =
               '& p + p, & p + ul, & ul + p, & p + ol, & ol + p': { mt: 2 },
               '& ul, & ol': { m: 0, pl: 5 },
               '& a': { color: colors.link, textUnderlineOffset: '2px' },
-              '& a:focus-visible': { outline: `2px solid ${colors.brand}`, outlineOffset: '2px', borderRadius: '2px' },
+              '& a:focus-visible': { ...focusOutline, borderRadius: '2px' },
             },
           },
         }}

@@ -3,6 +3,7 @@ import { createTheme } from '@mui/material/styles';
 
 import type { ColorConfig, ColorScheme, Density } from '../tokens/tokens';
 import { colors, elevation, layout, material, radius, scales, shape, tokens, typography } from '../tokens/tokens';
+import { focusOutline, focusOutlineInset } from '../utils/focusOutline';
 import { type AppearanceName, type PlatformAppearance, resolveAppearance } from './appearance';
 import { resolveSchemeColors } from './colors';
 
@@ -44,13 +45,6 @@ const thinMenuScrollbar = {
     borderRadius: radius.sm,
   },
 } as const;
-
-/**
- * Keyboard focus indicator (WCAG 2.4.7). Ripples are disabled kit-wide, and MUI relies on
- * the focus ripple to show focus, so every focusable control gets this outline instead.
- */
-const focusOutline = { outline: `2px solid ${colors.brand}`, outlineOffset: '2px' } as const;
-const focusOutlineInset = { ...focusOutline, outlineOffset: '-2px' } as const;
 
 // Disabled brand buttons keep their hue and fade (root sets opacity), so they never look
 // more prominent than enabled ones.

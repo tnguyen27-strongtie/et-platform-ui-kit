@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 
 import { cn } from '../../utils/cn';
 import Tooltip from '@mui/material/Tooltip';
@@ -52,10 +52,14 @@ export function ViewControls({ children }: { children: ReactNode }) {
   return <div className="flex flex-col items-start gap-4">{children}</div>;
 }
 
+/** Titled block of related controls; the title is the group's accessible name. */
 export function ViewControlsGroup({ title, children }: { title: ReactNode; children: ReactNode }) {
+  const titleId = useId();
   return (
-    <div role="group" className="flex flex-col gap-1">
-      <p className="m-0 text-sm">{title}</p>
+    <div role="group" aria-labelledby={titleId} className="flex flex-col gap-1">
+      <p id={titleId} className="m-0 text-sm">
+        {title}
+      </p>
       <div className="flex flex-col gap-1 text-xs [&_.MuiFormControlLabel-label]:text-xs">{children}</div>
     </div>
   );
@@ -65,7 +69,7 @@ export function ViewControlsGroup({ title, children }: { title: ReactNode; child
 export function ResetViewButton({ onClick, label = 'Reset view' }: { onClick: () => void; label?: string }) {
   return (
     <Tooltip title={label}>
-      <Button onClick={onClick} aria-label={label} sx={{ px: 2 }}>
+      <Button onClick={() => onClick()} aria-label={label} sx={{ px: 2 }}>
         <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
           <path
             fill="currentColor"

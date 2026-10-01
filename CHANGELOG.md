@@ -12,7 +12,13 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 
 ### Changed
 
+- Internal: the focus outline lives in `utils/focusOutline` and is shared by the theme and components; pill shapes use `radius.full`; `SectionLayout` persists pane sizes through `utils/storage`. No visual change.
 - Tooling: the repository uses npm (11, pinned in `packageManager`) instead of pnpm. `package-lock.json` replaces `pnpm-lock.yaml` and keeps every direct dependency at the version pnpm had resolved; CI installs with `npm ci`. Script arguments now go after `--`, for example `npm run test:e2e -- --project desktop`. The tarball ships the same files; only `packageManager` and the script commands in its `package.json` differ.
+
+### Fixed
+
+- `ViewControlsGroup`: the group is named by its title (`aria-labelledby`), so screen readers announce it ("Object visibility, group") instead of an unnamed group.
+- `ResetViewButton`: `onClick` is called with no arguments, as its type says, instead of receiving the click event.
 
 ## [0.12.0] - 2026-10-01
 
