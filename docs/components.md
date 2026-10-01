@@ -293,7 +293,7 @@ Plus the `TextInput` props (`addonBefore`, `addonAfter`, `placeholder`, `disable
 
 | Situation | Behavior |
 | --- | --- |
-| Letters, `e`, spaces, thousands separators | Rejected as you type or paste |
+| Letters, `e`, spaces, thousands separators | Rejected as you type or paste; the field keeps its text. By design: `,` is a decimal separator, so `1,234` would be ambiguous, and guessing could change an engineering value silently |
 | `,` | Read as the decimal separator (`2,5` → `2.5`) |
 | `-` when `min >= 0`, more decimals than `precision` | Rejected |
 | Empty field | `onChange(null)`, never `0`, `NaN` or `''` |

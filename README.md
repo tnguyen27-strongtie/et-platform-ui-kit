@@ -116,7 +116,6 @@ npm run dev   # http://localhost:5173
 - App shell pieces: mobile drawer, help center, EULA, maintenance mode, full File/Template/Print menus. These belong in the app shell library.
 - Print styles, product carousel, 3D viewer (the 3D viewer stays app code; see [Workspace layout](docs/workspace-layout.md)).
 - Components no app needs yet: Pagination, Breadcrumb, Skeleton, Progress bar, Date picker, File input, Slider.
-- Dark mode. Tokens are CSS variables, so it can be added by passing a dark `colors` set.
 - Some default color pairs (`textMuted` on gray, brand orange on white) are below 4.5:1 contrast. Adjust them with `colors` if your product must meet WCAG AA. The axe `color-contrast` rule is disabled in the test suite for this reason.
 
 ## Contributing
@@ -125,7 +124,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, project struct
 
 ## AI agents
 
-[AGENTS.md](AGENTS.md) gives coding agents the context of this repository, and `.claude/skills/` holds step-by-step skills for changing the kit (`platform-ui-component`), keeping every change inside the kit's architecture (`platform-ui-architecture`), releasing it (`platform-ui-release`) and building app screens with it (`platform-ui-app`) and creating themes from a style idea (`platform-ui-theme`); [copy those two into app repositories](docs/getting-started.md#working-with-ai-agents).
+[AGENTS.md](AGENTS.md) gives coding agents the context of this repository, and `.claude/skills/` holds step-by-step skills for changing the kit (`platform-ui-component`), keeping every change inside the kit's architecture (`platform-ui-architecture`), releasing it (`platform-ui-release`) and building app screens with it (`platform-ui-app`) and creating themes from a style idea (`platform-ui-theme`); [copy `platform-ui-app` and `platform-ui-theme` into app repositories](docs/getting-started.md#working-with-ai-agents).
 
 ## Changelog
 

@@ -60,7 +60,7 @@ const columns: GridColumn<Fastener>[] = [
 | `selectedRowId` | `string \| null` | | Marks the current row (brand stripe, `aria-current`) |
 | `onRowClick` | `(row: T) => void` | | Makes rows clickable and keyboard activatable |
 | `initialState` | `Partial<GridViewState>` | | Starting sort, filters and layout. Later changes do not reset the grid |
-| `onStateChange` | `(state: GridViewState) => void` | | Called whenever the user changes sort, filters, search or layout |
+| `onStateChange` | `(state: GridViewState) => void` | | Called once on mount with the starting state, then whenever the user changes sort, filters, search or layout |
 | `maxHeight` | `number \| string` | | Scroll inside the grid with sticky headers |
 | `toolbar` | `ReactNode` | | Extra buttons at the right of the toolbar |
 | `emptyText` | `ReactNode` | `'No data'` | Shown when `rows` is empty |
@@ -123,7 +123,9 @@ const saved = loadSetting<GridViewState>('results-grid');
 <GridView … initialState={saved ?? undefined} onStateChange={(s) => saveSetting('results-grid', s)} />
 ```
 
-`onStateChange` fires only when the state actually changes, not on every render.
+`onStateChange` fires once when the grid mounts (with the state built from `initialState`), then only when the state actually changes, not on every render. Saving on mount is harmless: it writes back what was loaded. The callback may be an inline function; a new function identity does not trigger a report.
+
+**How it works**, for anyone changing it: the reported object is rebuilt on every render, so `GridView` compares its JSON text and reports in an effect keyed on that text (`src/components/grid/GridView.tsx`). Keying the effect on the object itself would report after every render, and an app that stores the state in React state would render again forever. The conversion between this shape and the table library's state is in `src/components/grid/gridState.ts`, unit tested in `tests/unit/gridState.test.ts`; `tests/e2e/components/grid.spec.ts` ("saving and restoring the layout") checks the round trip in a browser.
 
 ## Translation
 

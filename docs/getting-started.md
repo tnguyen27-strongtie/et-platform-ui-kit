@@ -86,12 +86,40 @@ See [Theming](theming.md).
 
 `PlatformThemeProvider`:
 
-1. Enables CSS cascade layers, so Tailwind utilities override MUI styles without `!important`. Layer order: `theme, base, mui, components, utilities`.
+1. Enables CSS cascade layers, so Tailwind utilities override MUI styles without `!important` (see [How app classes beat MUI styles](#how-app-classes-beat-mui-styles)).
 2. Provides the MUI theme and `CssBaseline`.
 3. Writes the color variables (`--color-*`) for the current `colors` / `config`.
 4. Adds `density-standard` or `density-expanded` to `<body>` (14px or 16px body text).
 5. Writes the appearance variables (`--radius-*`, `--elevation-*`, `--material-*`, `--font-sans`, `--workspace-gap`) and sets `<body data-appearance="…">`.
 6. Applies the color scheme: dark role colors and neutral scale, MUI `palette.mode`, `color-scheme`, and `<html data-color-scheme="light|dark">` (`'system'` follows the OS live).
+
+### What it writes outside React
+
+Items 3 to 6 change the whole page, not only the provider's children:
+
+| Where | What |
+| --- | --- |
+| `<style id="platform-ui-colors">` at the end of `<head>` | Every `--color-*`, appearance and dark-scheme variable on `:root`. Unlayered on purpose, so it beats the Tailwind `@theme` defaults |
+| `<body class>` | `density-standard` or `density-expanded` |
+| `<body data-appearance>` | The appearance name, for app CSS such as `[data-appearance='glass'] .my-panel { … }` |
+| `<html data-color-scheme>` | `light` or `dark`, for Tailwind's `dark:` variant |
+
+Nothing is removed when the provider unmounts.
+
+**Use one provider per page**, at the root. A second, nested provider shares the same `<style>` element and attributes: whichever provider's settings changed last wins for the whole page, and unmounting the inner one does not restore the outer one's values (the page keeps, for example, `data-appearance="glass"`). MUI's own `--mui-palette-*` variables on `:root` also keep the outer provider's values, so a dark provider nested in a light one shows dark-on-dark dialog text. The MUI theme itself is scoped to each provider's children, so a nested provider is safe only when its page-level settings (colors, appearance, density, color scheme) match the outer one. The test harness renders fixtures that bring their own provider without its outer one for this reason.
+
+### How app classes beat MUI styles
+
+An app can pass Tailwind classes to any kit or MUI component and they win over the MUI styles: `<Button className="p-0">` has no padding. This works through CSS cascade layers, where a later layer beats an earlier one regardless of selector specificity:
+
+- `PlatformThemeProvider` turns on MUI's CSS layer support, so every MUI style is inside `@layer mui`.
+- `theme.css` declares `@layer theme, base, mui, components, utilities;`, and Tailwind utilities are in `utilities`.
+- The browser orders layers by where each name first appears. In development, MUI's global styles are injected at the top of `<head>`, so `mui` comes first and is the lowest layer; in a built app, `theme.css` may load first and its order statement applies as written. In both cases `utilities` comes after `mui`, so utility classes win.
+- Unlayered CSS beats every layer, so an app's plain CSS file also beats MUI (and Tailwind utilities). Only `!important` inside a lower layer reverses this; the theme uses it in one place (Autocomplete options, see `createPlatformTheme.ts`).
+
+`tests/e2e/components/buttons.spec.ts` checks this rule. If it fails after an MUI or Tailwind upgrade, look at how MUI injects `@layer mui` (`StyledEngineProvider enableCssLayer` in `PlatformThemeProvider.tsx`) and at the order statement at the top of `src/theme/theme.css`.
+
+MUI buttons animate padding and colors over 0.15s, so a computed style read right after a class change shows the old value. Playwright's `toHaveCSS` retries until the transition ends.
 
 | Prop | Type | Description |
 | --- | --- | --- |

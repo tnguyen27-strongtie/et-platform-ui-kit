@@ -2,6 +2,22 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Tooling: `npm run check:architecture` runs the architecture check, and CI runs it on every pull request (against the base branch) and push (whole library). CONTRIBUTING documents it and the pre-1.0 version rule (a breaking change is a minor bump, marked **Breaking**).
+- Internal: removed two unused `@keyframes` from the theme's global styles (`LoadingIndicator` uses the ones in `theme.css`); `NumberInput` computes its invalid state once. No visual or behavior change.
+- Internal: `GridView` is split into `gridTypes.ts` (public types, default labels), `gridState.ts` (state conversion, presets, column moves; unit tested), `gridTable.ts` (TanStack setup) and `GridHeaderParts.tsx` (menus, filter inputs). Exports and behavior are unchanged.
+- Docs: [Getting started](docs/getting-started.md) explains what `PlatformThemeProvider` writes outside React, why there must be one provider per page (a nested provider in another color scheme shows dark-on-dark dialog text), and how CSS layer order makes app Tailwind classes beat MUI styles. CONTRIBUTING gains Pitfalls, Before merging and the full release steps.
+- Tests: an app class overriding MUI styles; dark Classic and dark Glass pass axe with `color-contrast` on; `NumberInput` comma decimals, minus sign, thousands separators, huge values and `clampBehavior`; `GridView` state restored through `initialState`; unit tests for the theme CSS and grid state. The fixture map is typed by `fixtureNames`, and fixtures with their own provider no longer render inside the harness provider.
+
+### Fixed
+
+- `NumberInput` / `formatNumber`: values of 1e21 and above show every digit instead of `1e+21`, which the field could not read back (typing into it did nothing).
+- Docs: `GridView` `onStateChange` is also called once on mount with the starting state; the docs said it fired only on user changes.
+- README no longer lists dark mode as missing (it shipped in 0.12.0).
+
 ## [0.12.1] - 2026-10-01
 
 Two accessibility and API fixes in the workspace view controls, plus internal cleanup. Upgrading needs no code changes.
@@ -22,7 +38,7 @@ Two accessibility and API fixes in the workspace view controls, plus internal cl
 - `ViewControlsGroup`: the group is named by its title (`aria-labelledby`), so screen readers announce it ("Object visibility, group") instead of an unnamed group.
 - `ResetViewButton`: `onClick` is called with no arguments, as its type says, instead of receiving the click event.
 
-No API changes.
+No type changes. Untyped code that read the click event from `ResetViewButton`'s `onClick` now gets `undefined`.
 
 ## [0.12.0] - 2026-10-01
 
