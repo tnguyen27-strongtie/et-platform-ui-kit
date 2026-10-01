@@ -49,6 +49,7 @@ Do not release on a failing or skipped check. If e2e cannot run (no browser avai
 ## 5. Pack and inspect
 
 ```bash
+mkdir -p <dir>                         # npm pack does not create it
 npm pack --pack-destination <dir>      # runs the build again through prepack
 scripts/verify-pack.sh <dir>/platform-ui-x.y.z.tgz   # required files present, nothing repo-only packed
 ```
