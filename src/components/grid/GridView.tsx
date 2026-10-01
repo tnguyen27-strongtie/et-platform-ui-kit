@@ -1,199 +1,34 @@
 import CloseIcon from '@mui/icons-material/Close';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import SearchIcon from '@mui/icons-material/Search';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import Chip from '@mui/material/Chip';
-import Divider from '@mui/material/Divider';
 import InputAdornment from '@mui/material/InputAdornment';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import {
-  type Column,
-  type ColumnDef,
-  columnFacetingFeature,
-  columnFilteringFeature,
-  columnOrderingFeature,
-  columnPinningFeature,
-  columnSizingFeature,
-  columnVisibilityFeature,
-  createFacetedRowModel,
-  createFacetedUniqueValues,
-  createFilteredRowModel,
-  createSortedRowModel,
-  type FilterFn,
-  type RowData,
-  rowSortingFeature,
-  sortFn_alphanumeric,
-  sortFn_basic,
-  tableFeatures,
-  useTable,
-} from '@tanstack/react-table';
+import { type Column, type RowData, useTable } from '@tanstack/react-table';
 import { type CSSProperties, type DragEvent, type KeyboardEvent, type MouseEvent, type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 
 import { cn } from '../../utils/cn';
-import { formatDisplayNumber } from '../../utils/number';
 import { useStableValue } from '../../utils/useStableValue';
 import { Button, IconButton } from '../Button';
-import { Checkbox } from '../Choice';
-import { NumberInput } from '../NumberInput';
-import { Select } from '../Select';
-import { TextInput } from '../TextInput';
 import { GridImageCell, GridLinkCell } from './GridCells';
+import { matchesSearch } from './gridFilters';
+import { ColumnFilter, ColumnMenu, ColumnsMenu, SortIcon } from './GridHeaderParts';
+import { displayText, moveId, presetMatches, toGridViewState, toTableInitialState } from './gridState';
+import { features, type Features, toColumnDefs } from './gridTable';
 import {
-  type GridFilterValue,
-  isEmptyFilter,
-  matchesNumberRange,
-  matchesSearch,
-  matchesSelect,
-  matchesText,
-  type NumberRange,
-} from './gridFilters';
+  defaultGridViewLabels,
+  type GridColumn,
+  type GridHighlight,
+  type GridPreset,
+  type GridViewLabels,
+  type GridViewState,
+} from './gridTypes';
 
-// ---------------------------------------------------------------------------------------------
-// Public types
-// ---------------------------------------------------------------------------------------------
-
-export type GridCellValue = string | number | boolean | null | undefined;
-export type GridHighlight = 'success' | 'warning' | 'danger' | 'info';
-export type GridFilterType = 'text' | 'number' | 'select';
-
-export interface GridColumn<T> {
-  /** Stable id: used in state (sort, filters, order, pinning) and presets. */
-  id: string;
-  header: string;
-  /** The cell's value: drives sorting, filtering, search and the default display. */
-  value: keyof T | ((row: T) => GridCellValue);
-  /**
-   * Default rendering and behaviour:
-   * - 'text' (default): left aligned, text filter
-   * - 'number': right aligned, tabular digits, range filter, thousands separators
-   * - 'image': thumbnail + text, needs `image`
-   * - 'link': link or in-app action, needs `link`
-   */
-  type?: 'text' | 'number' | 'image' | 'link';
-  /** Custom content. The column `value` still drives sort, filter and search. */
-  cell?: (row: T) => ReactNode;
-  /** Display text for the value (e.g. units). Also what the master search matches. */
-  format?: (value: GridCellValue, row: T) => string;
-  /** 'number' columns: fixed decimals in the default display. */
-  precision?: number;
-  image?: { src: (row: T) => string | undefined; alt?: (row: T) => string; subtext?: (row: T) => ReactNode };
-  link?: { href?: (row: T) => string | undefined; onClick?: (row: T) => void; external?: boolean };
-  /** Width in px. Default 160 (120 for numbers). Widths are fixed so frozen columns line up. */
-  width?: number;
-  align?: 'start' | 'center' | 'end';
-  /** Default true. */
-  sortable?: boolean;
-  /** Per-column filter. Default: 'number' for number columns, 'text' otherwise. false = none. */
-  filter?: GridFilterType | false;
-  /** Choices for a 'select' filter. Default: the distinct values in the data. */
-  filterOptions?: Array<{ value: string | number; label: string }>;
-  /** Included in the master search. Default true. */
-  searchable?: boolean;
-  /** User can hide this column from the Columns menu. Default true. */
-  hideable?: boolean;
-}
-
-/** A saved search: one click applies these column filters and search text. */
-export interface GridPreset {
-  id: string;
-  label: string;
-  filters?: Record<string, GridFilterValue>;
-  search?: string;
-}
-
-/** Everything the user can change, in a plain shape that is easy to persist. */
-export interface GridViewState {
-  sort: Array<{ id: string; desc: boolean }>;
-  filters: Record<string, GridFilterValue>;
-  search: string;
-  columnOrder: string[];
-  pinned: { start: string[]; end: string[] };
-  hidden: string[];
-  /** Whether the filter row is shown. Hidden filters stay applied. */
-  filtersVisible: boolean;
-}
-
-/** Every text GridView shows or announces. Override any subset through the `labels` prop. */
-export interface GridViewLabels {
-  searchPlaceholder: string;
-  /** Accessible name of the search box; receives the grid's aria-label. */
-  searchLabel: (gridLabel: string) => string;
-  clearSearch: string;
-  savedSearches: string;
-  /** Row count in the toolbar. `filtered` is true while a search or filter is active. */
-  rowCount: (shown: number, total: number, filtered: boolean) => string;
-  clearFilters: string;
-  filters: string;
-  /** Screen-reader text after the active filter count ("2 active"). */
-  activeFilters: string;
-  columns: string;
-  resetLayout: string;
-  noMatches: string;
-  /** Accessible text of an empty cell. */
-  emptyCell: string;
-  dragToMove: string;
-  sortHint: string;
-  frozen: string;
-  columnOptions: (header: string) => string;
-  sortAscending: string;
-  sortDescending: string;
-  clearSort: string;
-  freezeLeft: string;
-  freezeRight: string;
-  unfreeze: string;
-  moveLeft: string;
-  moveRight: string;
-  hideColumn: string;
-  filterColumn: (header: string) => string;
-  filterPlaceholder: string;
-  minimum: (header: string) => string;
-  maximum: (header: string) => string;
-  minPlaceholder: string;
-  maxPlaceholder: string;
-  /** Placeholder of a select filter with nothing chosen. */
-  all: string;
-}
-
-export const defaultGridViewLabels: GridViewLabels = {
-  searchPlaceholder: 'Search',
-  searchLabel: (grid) => `Search ${grid}`,
-  clearSearch: 'Clear search',
-  savedSearches: 'Saved searches',
-  rowCount: (shown, total, filtered) => (filtered ? `${shown} of ${total} rows` : `${total} rows`),
-  clearFilters: 'Clear filters',
-  filters: 'Filters',
-  activeFilters: 'active',
-  columns: 'Columns',
-  resetLayout: 'Reset layout',
-  noMatches: 'No rows match the current search and filters.',
-  emptyCell: 'empty',
-  dragToMove: 'Drag to move',
-  sortHint: 'Sort (Shift+click to add)',
-  frozen: 'Frozen',
-  columnOptions: (header) => `Column options: ${header}`,
-  sortAscending: 'Sort ascending',
-  sortDescending: 'Sort descending',
-  clearSort: 'Clear sort',
-  freezeLeft: 'Freeze left',
-  freezeRight: 'Freeze right',
-  unfreeze: 'Unfreeze',
-  moveLeft: 'Move left',
-  moveRight: 'Move right',
-  hideColumn: 'Hide column',
-  filterColumn: (header) => `Filter ${header}`,
-  filterPlaceholder: 'Filter',
-  minimum: (header) => `${header} minimum`,
-  maximum: (header) => `${header} maximum`,
-  minPlaceholder: 'Min',
-  maxPlaceholder: 'Max',
-  all: 'All',
-};
+// Types and helpers live in sibling files: gridTypes.ts (public types, default texts),
+// gridState.ts (React-free logic, unit tested), gridTable.ts (TanStack setup),
+// GridHeaderParts.tsx (menus and filter inputs).
 
 export interface GridViewProps<T extends RowData> {
   rows: T[];
@@ -218,7 +53,7 @@ export interface GridViewProps<T extends RowData> {
   onRowClick?: (row: T) => void;
   /** Starting sort/filters/layout. Changing it later does not reset the grid. */
   initialState?: Partial<GridViewState>;
-  /** Called whenever the user changes sort, filters, search or layout (for persistence). */
+  /** Called once on mount with the starting state, then whenever the user changes sort, filters, search or layout (for persistence). */
   onStateChange?: (state: GridViewState) => void;
   /** Scroll inside the grid with sticky headers. */
   maxHeight?: number | string;
@@ -232,62 +67,6 @@ export interface GridViewProps<T extends RowData> {
   locale?: string;
   className?: string;
 }
-
-// ---------------------------------------------------------------------------------------------
-// Table setup
-// ---------------------------------------------------------------------------------------------
-
-const features = tableFeatures({
-  columnFilteringFeature,
-  filteredRowModel: createFilteredRowModel(),
-  rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
-  sortFns: { alphanumeric: sortFn_alphanumeric, basic: sortFn_basic },
-  columnFacetingFeature,
-  facetedRowModel: createFacetedRowModel(),
-  facetedUniqueValues: createFacetedUniqueValues(),
-  columnOrderingFeature,
-  columnPinningFeature,
-  columnSizingFeature,
-  columnVisibilityFeature,
-});
-
-type Features = typeof features;
-
-const textFilter: FilterFn<Features, RowData> = Object.assign(
-  (row: { getValue: (id: string) => unknown }, id: string, value: string) => matchesText(row.getValue(id), value),
-  { autoRemove: isEmptyFilter },
-);
-const numberFilter: FilterFn<Features, RowData> = Object.assign(
-  (row: { getValue: (id: string) => unknown }, id: string, value: NumberRange) => matchesNumberRange(row.getValue(id), value),
-  { autoRemove: isEmptyFilter },
-);
-const selectFilter: FilterFn<Features, RowData> = Object.assign(
-  (row: { getValue: (id: string) => unknown }, id: string, value: unknown[]) => matchesSelect(row.getValue(id), value),
-  { autoRemove: isEmptyFilter },
-);
-
-const filterTypeOf = <T,>(c: GridColumn<T>): GridFilterType | false =>
-  c.filter ?? (c.type === 'number' ? 'number' : 'text');
-
-/** Raw value of a column; blank strings become undefined so they always sort last. */
-function readValue<T>(c: GridColumn<T>, row: T): GridCellValue {
-  const v = typeof c.value === 'function' ? c.value(row) : (row[c.value] as GridCellValue);
-  return v === null || v === '' || (typeof v === 'number' && Number.isNaN(v)) ? undefined : v;
-}
-
-/** Text of a cell as displayed (used by the default renderer and the master search). */
-function displayText<T>(c: GridColumn<T>, row: T, locale: string): string {
-  const v = readValue(c, row);
-  if (c.format) return c.format(v, row);
-  if (v === undefined) return '';
-  if (typeof v === 'number' && c.type === 'number') return formatDisplayNumber(v, { precision: c.precision, locale });
-  return String(v);
-}
-
-// ---------------------------------------------------------------------------------------------
-// GridView
-// ---------------------------------------------------------------------------------------------
 
 /**
  * Data grid for result tables: sort (Shift+click for multi-sort), per-column filters, master
@@ -337,25 +116,7 @@ export function GridView<T extends RowData>({
     [rows, searchColumns, query, locale],
   );
 
-  const columnDefs = useMemo<ColumnDef<Features, T, unknown>[]>(
-    () =>
-      columns.map((c) => {
-        const filterType = filterTypeOf(c);
-        return {
-          id: c.id,
-          header: c.header,
-          accessorFn: (row: T) => readValue(c, row),
-          size: c.width ?? (c.type === 'number' ? 120 : 160),
-          enableSorting: c.sortable !== false,
-          sortUndefined: 'last',
-          sortFn: c.type === 'number' ? 'basic' : 'alphanumeric',
-          enableColumnFilter: filterType !== false,
-          filterFn: filterType === 'number' ? numberFilter : filterType === 'select' ? selectFilter : textFilter,
-          enableHiding: c.hideable !== false,
-        } as ColumnDef<Features, T, unknown>;
-      }),
-    [columns],
-  );
+  const columnDefs = useMemo(() => toColumnDefs(columns), [columns]);
 
   const table = useTable({
     features,
@@ -366,31 +127,20 @@ export function GridView<T extends RowData>({
     enableMultiSort: true,
     // Every column sorts ascending on the first click (TanStack defaults numbers to descending).
     sortDescFirst: false,
-    initialState: {
-      sorting: initialState?.sort ?? [],
-      columnFilters: Object.entries(initialState?.filters ?? {}).map(([id, value]) => ({ id, value })),
-      columnOrder: initialState?.columnOrder?.length ? initialState.columnOrder : columns.map((c) => c.id),
-      columnPinning: initialState?.pinned ?? { start: [], end: [] },
-      columnVisibility: Object.fromEntries((initialState?.hidden ?? []).map((id) => [id, false])),
-    },
+    initialState: toTableInitialState(initialState, columns.map((c) => c.id)),
   });
 
   const state = table.state;
-  const currentState: GridViewState = {
-    sort: state.sorting.map(({ id, desc }) => ({ id, desc })),
-    filters: Object.fromEntries(state.columnFilters.map((f) => [f.id, f.value as GridFilterValue])),
-    search: query,
-    columnOrder: state.columnOrder,
-    pinned: { start: state.columnPinning.start ?? [], end: state.columnPinning.end ?? [] },
-    hidden: Object.entries(state.columnVisibility)
-      .filter(([, visible]) => visible === false)
-      .map(([id]) => id),
-    filtersVisible,
-  };
+  const currentState = toGridViewState(state, query, filtersVisible);
+  // currentState is a new object on every render, so it cannot be the effect dependency: the effect
+  // would call onStateChange after every render, and an app that stores the state (setState)
+  // would render again, forever. The JSON text changes only when the content does. The effect
+  // also runs once on mount, so the app receives the starting state.
+  // onStateChange is left out of the dependencies on purpose: an inline callback is a new function
+  // every render and must not trigger a report.
   const stateKey = JSON.stringify(currentState);
   useEffect(() => {
     onStateChange?.(JSON.parse(stateKey) as GridViewState);
-    // Report only real changes; onStateChange identity does not matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stateKey]);
 
@@ -417,13 +167,7 @@ export function GridView<T extends RowData>({
   const moveColumn = (id: string, targetId: string, after: boolean) => {
     const region = regionOf(id);
     if (id === targetId || region !== regionOf(targetId)) return;
-    const reorder = (list: string[]) => {
-      const next = list.filter((x) => x !== id);
-      const at = next.indexOf(targetId);
-      if (at < 0) return list;
-      next.splice(after ? at + 1 : at, 0, id);
-      return next;
-    };
+    const reorder = (list: string[]) => moveId(list, id, targetId, after);
     if (region === 'center') table.setColumnOrder(reorder(state.columnOrder));
     else table.setColumnPinning((p) => ({ ...p, [region]: reorder(p[region] ?? []) }));
   };
@@ -437,9 +181,7 @@ export function GridView<T extends RowData>({
     table.setColumnFilters(Object.entries(preset.filters ?? {}).map(([id, value]) => ({ id, value })));
     setQuery(preset.search ?? '');
   };
-  const presetActive = (preset: GridPreset) =>
-    JSON.stringify(Object.entries(preset.filters ?? {}).sort()) === JSON.stringify(Object.entries(currentState.filters).sort()) &&
-    (preset.search ?? '') === query;
+  const presetActive = (preset: GridPreset) => presetMatches(preset, currentState.filters, query);
 
   const clearFilters = () => {
     table.resetColumnFilters(true);
@@ -748,212 +490,5 @@ export function GridView<T extends RowData>({
         </table>
       </div>
     </div>
-  );
-}
-
-// ---------------------------------------------------------------------------------------------
-// Pieces
-// ---------------------------------------------------------------------------------------------
-
-function SortIcon({ direction }: { direction: false | 'asc' | 'desc' }) {
-  return (
-    <svg viewBox="0 0 10 14" width="8" height="12" aria-hidden="true" className="shrink-0">
-      <path d="M5 1 9 5.5H1Z" fill="currentColor" opacity={direction === 'asc' ? 1 : 0.25} />
-      <path d="M5 13 1 8.5h8Z" fill="currentColor" opacity={direction === 'desc' ? 1 : 0.25} />
-    </svg>
-  );
-}
-
-function ColumnFilter<T extends RowData>({
-  column,
-  config,
-  labels: L,
-}: {
-  column: Column<Features, T, unknown>;
-  config: GridColumn<T>;
-  labels: GridViewLabels;
-}) {
-  const type = filterTypeOf(config);
-  const label = L.filterColumn(config.header);
-  const value = column.getFilterValue();
-
-  if (type === 'number') {
-    const range = (value as NumberRange | undefined) ?? {};
-    const set = (patch: NumberRange) => column.setFilterValue({ ...range, ...patch });
-    return (
-      <div className="grid-filter flex gap-1">
-        <NumberInput aria-label={L.minimum(config.header)} placeholder={L.minPlaceholder} value={range.min ?? null} onChange={(min) => set({ min })} />
-        <NumberInput aria-label={L.maximum(config.header)} placeholder={L.maxPlaceholder} value={range.max ?? null} onChange={(max) => set({ max })} />
-      </div>
-    );
-  }
-
-  if (type === 'select') {
-    const options =
-      config.filterOptions ??
-      [...column.getFacetedUniqueValues().keys()]
-        .filter((v): v is string | number => typeof v === 'string' || typeof v === 'number')
-        .sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }))
-        .map((v) => ({ value: v, label: String(v) }));
-    return (
-      <div className="grid-filter">
-        <Select<string | number>
-          multiple
-          aria-label={label}
-          placeholder={L.all}
-          value={(value as Array<string | number> | undefined) ?? []}
-          onChange={(v) => column.setFilterValue(v)}
-          options={options}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid-filter">
-      <TextInput
-        inputProps={{ 'aria-label': label, type: 'search' }}
-        placeholder={L.filterPlaceholder}
-        value={(value as string | undefined) ?? ''}
-        onChange={(e) => column.setFilterValue(e.target.value)}
-      />
-    </div>
-  );
-}
-
-interface ColumnMenuProps<T extends RowData> {
-  column: Column<Features, T, unknown>;
-  header: string;
-  labels: GridViewLabels;
-  canMoveLeft: boolean;
-  canMoveRight: boolean;
-  onMove: (step: -1 | 1) => void;
-  canHide: boolean;
-}
-
-/** Per-column actions; also the keyboard alternative to drag-and-drop. */
-function ColumnMenu<T extends RowData>({ column, header, labels: L, canMoveLeft, canMoveRight, onMove, canHide }: ColumnMenuProps<T>) {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const menuId = useId();
-  const close = () => setAnchor(null);
-  const run = (fn: () => void) => () => {
-    fn();
-    close();
-  };
-  const sorted = column.getIsSorted();
-  const pinned = column.getIsPinned();
-
-  return (
-    <>
-      <IconButton
-        aria-label={L.columnOptions(header)}
-        aria-haspopup="menu"
-        aria-expanded={!!anchor}
-        aria-controls={anchor ? menuId : undefined}
-        size="small"
-        className="grid-col-menu shrink-0"
-        onClick={(e) => setAnchor(e.currentTarget)}
-      >
-        <MoreVertIcon sx={{ fontSize: '1rem' }} />
-      </IconButton>
-      <Menu id={menuId} anchorEl={anchor} open={!!anchor} onClose={close}>
-        {column.getCanSort() && [
-          <MenuItem key="asc" selected={sorted === 'asc'} onClick={run(() => column.toggleSorting(false))}>
-            {L.sortAscending}
-          </MenuItem>,
-          <MenuItem key="desc" selected={sorted === 'desc'} onClick={run(() => column.toggleSorting(true))}>
-            {L.sortDescending}
-          </MenuItem>,
-          sorted && (
-            <MenuItem key="clear" onClick={run(() => column.clearSorting())}>
-              {L.clearSort}
-            </MenuItem>
-          ),
-          <Divider key="d1" />,
-        ]}
-        {pinned !== 'start' && (
-          <MenuItem onClick={run(() => column.pin('start'))}>
-            <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
-              <PushPinIcon fontSize="small" />
-            </ListItemIcon>
-            {L.freezeLeft}
-          </MenuItem>
-        )}
-        {pinned !== 'end' && <MenuItem onClick={run(() => column.pin('end'))}>{L.freezeRight}</MenuItem>}
-        {pinned && <MenuItem onClick={run(() => column.pin(false))}>{L.unfreeze}</MenuItem>}
-        <Divider />
-        <MenuItem disabled={!canMoveLeft} onClick={run(() => onMove(-1))}>
-          {L.moveLeft}
-        </MenuItem>
-        <MenuItem disabled={!canMoveRight} onClick={run(() => onMove(1))}>
-          {L.moveRight}
-        </MenuItem>
-        {canHide && [
-          <Divider key="d3" />,
-          <MenuItem key="hide" onClick={run(() => column.toggleVisibility(false))}>
-            {L.hideColumn}
-          </MenuItem>,
-        ]}
-      </Menu>
-    </>
-  );
-}
-
-/** Toolbar menu: show/hide columns and reset the layout. */
-function ColumnsMenu<T extends RowData>({
-  columns: all,
-  byId,
-  labels: L,
-  onReset,
-}: {
-  columns: Column<Features, T, unknown>[];
-  byId: Map<string, GridColumn<T>>;
-  labels: GridViewLabels;
-  onReset: () => void;
-}) {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const menuId = useId();
-  const visibleCount = all.filter((c) => c.getIsVisible()).length;
-
-  return (
-    <>
-      <Button
-        size="small"
-        startIcon={<ViewColumnIcon />}
-        aria-haspopup="menu"
-        aria-expanded={!!anchor}
-        aria-controls={anchor ? menuId : undefined}
-        onClick={(e) => setAnchor(e.currentTarget)}
-      >
-        {L.columns}
-      </Button>
-      <Menu id={menuId} anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
-        {all.map((col) => {
-          const visible = col.getIsVisible();
-          const locked = !col.getCanHide() || (visible && visibleCount === 1);
-          return (
-            <MenuItem
-              key={col.id}
-              role="menuitemcheckbox"
-              aria-checked={visible}
-              disabled={locked}
-              onClick={() => col.toggleVisibility(!visible)}
-            >
-              <Checkbox checked={visible} tabIndex={-1} slotProps={{ input: { 'aria-hidden': true, tabIndex: -1 } }} />
-              {byId.get(col.id)?.header ?? col.id}
-            </MenuItem>
-          );
-        })}
-        <Divider />
-        <MenuItem
-          onClick={() => {
-            onReset();
-            setAnchor(null);
-          }}
-        >
-          {L.resetLayout}
-        </MenuItem>
-      </Menu>
-    </>
   );
 }

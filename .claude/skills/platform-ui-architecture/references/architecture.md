@@ -121,7 +121,7 @@ Existing code that does not meet these rules. Do not copy these patterns; fix th
 
 | Where | Debt | Direction |
 | --- | --- | --- |
-| `components/grid/GridView.tsx` (~960 lines) | Over the component budget | Move state/preset logic into `grid/` modules with unit tests; toolbar and filter row into sibling files |
+| `components/grid/GridView.tsx` (~495 lines) | Over the component budget. Types, state logic, table setup and header menus already moved to `gridTypes.ts`, `gridState.ts`, `gridTable.ts`, `GridHeaderParts.tsx` | Toolbar and the header/filter rows into sibling files |
 | `components/grid/GridView.tsx` (`stateKey = JSON.stringify(...)`) | Serialized state as an effect key | Acceptable here (it reports a derived value), but new code uses `useStableValue` |
 
 Run `node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs --all` to see the current list. When you pay off an item, remove its row.

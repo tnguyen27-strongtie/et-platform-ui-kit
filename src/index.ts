@@ -145,18 +145,17 @@ export {
   type GridFilterValue,
   type NumberRange,
 } from './components/grid/gridFilters';
+export { GridView, type GridViewProps } from './components/grid/GridView';
 export {
   defaultGridViewLabels,
-  GridView,
   type GridCellValue,
   type GridViewLabels,
   type GridColumn,
   type GridFilterType,
   type GridHighlight,
   type GridPreset,
-  type GridViewProps,
   type GridViewState,
-} from './components/grid/GridView';
+} from './components/grid/gridTypes';
 
 // Release notes ("What's new")
 export { compareVersions, formatReleaseDate, parseReleaseDate, sortReleases } from './components/release-notes/releaseNotesUtils';
