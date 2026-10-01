@@ -105,9 +105,9 @@ export function PlatformThemeProvider({
   );
   const css = useMemo(() => themeCss({ scheme, colors, darkColors, appearance }), [scheme, colors, darkColors, appearance]);
 
-  // Unlayered <style> on purpose: emotion (MUI) styles land in @layer mui at the top of <head>,
-  // which makes that layer the lowest priority, so variables set there would lose to the
-  // Tailwind @theme defaults. Unlayered rules beat every layer.
+  // Unlayered <style> on purpose: variables inside @layer mui could lose to the Tailwind @theme
+  // defaults (layer order depends on which stylesheet reaches <head> first), and unlayered rules
+  // beat every layer. Page-global: one provider per page (docs/getting-started.md).
   useInsertionEffect(() => {
     let el = document.getElementById(COLOR_STYLE_ID) as HTMLStyleElement | null;
     if (!el) {

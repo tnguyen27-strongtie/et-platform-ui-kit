@@ -28,7 +28,10 @@ lines.push('  /* Typography */');
 push('font-sans', tokens.typography.fontFamily.sans);
 push('font-serif', tokens.typography.fontFamily.serif);
 push('font-math', tokens.typography.fontFamily.math);
-push('text-xs', '0.75rem');
+// Only text-xs is redefined; the other text-* sizes keep Tailwind's defaults, which already match
+// typography.size. The 1rem line height is 16px, the same as Tailwind's default calc(1 / 0.75) at
+// this size, but as a fixed length it is inherited unchanged by children with another font size.
+push('text-xs', tokens.typography.size.xs);
 push('text-xs--line-height', '1rem');
 
 lines.push('  /* Radius */');

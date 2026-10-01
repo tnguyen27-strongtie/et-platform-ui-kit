@@ -113,6 +113,9 @@ export function themeCss({ scheme = 'light', colors, darkColors, appearance }: T
   let css = `:root{${declarations(vars)}}`;
   // A light canvas (drawings, product images) in the dark scheme: controls and notes on it use the
   // light colors so they stay readable. Elements opt in with data-surface="canvas".
+  // "Light" = contrast with black above 10, i.e. relative luminance above 0.45 (lighter than about
+  // #b3b3b3). contrast() only reads plain colors: a gradient or var() canvas returns null and is
+  // treated as dark, so such a theme gets no light-canvas override.
   const canvas = vars[materialVar('canvas')] ?? '';
   if (scheme === 'dark' && (contrast(canvas, '#000000') ?? 0) > 10) {
     const light = colorCssVars(resolveSchemeColors('light', { colors, darkColors, appearance }));

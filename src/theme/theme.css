@@ -4,6 +4,9 @@
  *
  * Layer order lets Tailwind utilities override MUI styles without !important
  * (MUI emits into @layer mui because PlatformThemeProvider enables CSS layers).
+ * Layers are ordered by first appearance: when MUI's styles reach <head> before this file
+ * (development), `mui` becomes the first, lowest layer; either way `utilities` comes after `mui`.
+ * Full explanation: docs/getting-started.md, "How app classes beat MUI styles".
  */
 @layer theme, base, mui, components, utilities;
 

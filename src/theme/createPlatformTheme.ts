@@ -160,14 +160,6 @@ export function createPlatformTheme({
               from: { transform: 'translate(0, -25%)' },
               to: { transform: 'translate(0, 0)' },
             },
-            '@keyframes platform-loading-border': {
-              '0%, 100%': { borderColor: colors.accent, borderWidth: '1px' },
-              '50%': { borderColor: 'transparent', borderWidth: '15px' },
-            },
-            '@keyframes platform-loading-pulse': {
-              '0%, 100%': { opacity: 1 },
-              '50%': { opacity: 0 },
-            },
           },
         },
 
@@ -421,6 +413,9 @@ export function createPlatformTheme({
             clearIndicator: { '& svg': { fontSize: '1rem' } },
             paper: { borderRadius: shape.overlay, boxShadow: elevation.popover, ...frosted(material.overlay) },
             listbox: { padding: 0, maxHeight: '24rem', ...thinMenuScrollbar },
+            // !important: MUI styles options from the listbox (`.MuiAutocomplete-listbox
+            // .MuiAutocomplete-option`, plus `.Mui-focused` and `[aria-selected]` states), selectors
+            // more specific than this override in the same @layer mui.
             option: {
               padding: '0.5rem !important',
               gap: '0.5rem',
