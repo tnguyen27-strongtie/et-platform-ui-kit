@@ -42,6 +42,7 @@ The repo also contains a **showcase** (`src/showcase/`, `pnpm dev`) that demos e
 - **Accessibility is tested.** Every fixture runs through axe; keyboard behavior has specs. Icon-only buttons need `aria-label`; form controls get their wiring from `FormField` via `useFormField()`.
 - **Public API changes** need: export in `src/index.ts`, a showcase demo plus `catalog.ts` entry, a fixture and spec, docs in `docs/`, a `CHANGELOG.md` entry.
 - **English everywhere** in code, comments and docs. Vietnamese appears only in translation examples.
+- **Layers point one way:** `tokens` ← `utils` ← `theme` / base `components` ← feature areas (`grid/`, `workspace/`, `release-notes/`) ← `index.ts`. Components never import `src/theme`; areas never import each other. Details: `.claude/skills/platform-ui-architecture/references/architecture.md`.
 - The kit is an independent platform. Do not describe components by reference to other products.
 
 ## Skills
@@ -50,6 +51,7 @@ Project skills in `.claude/skills/` hold the step-by-step workflows:
 
 | Skill | Use for |
 | --- | --- |
+| `platform-ui-architecture` | Deciding where a feature or fix belongs before coding, and the architecture review every change passes before it is done (layers, reuse, public surface, dependencies, size budgets) |
 | `platform-ui-component` | Adding or changing a component, prop, variant, token or theme style in this kit |
 | `platform-ui-app` | Building screens in an app that depends on `@platform/ui` |
 | `platform-ui-release` | Bumping the version, writing the changelog, verifying and packing a release |
@@ -59,7 +61,7 @@ Agents without skill support can read those `SKILL.md` files directly; they are 
 
 ## Definition of done
 
-1. `pnpm check` passes.
+1. `pnpm check` passes, and `node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs` reports no errors.
 2. `pnpm test:e2e` passes when components, the theme, CSS or the showcase changed.
 3. Docs and `CHANGELOG.md` updated when the public API or visible behavior changed.
 4. Report what you verified and what you did not.

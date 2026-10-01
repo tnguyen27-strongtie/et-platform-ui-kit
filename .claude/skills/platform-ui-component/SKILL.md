@@ -11,7 +11,7 @@ Read `AGENTS.md` first if you have not. For code templates of each step, see `re
 
 ## 1. Decide where the change belongs
 
-Look at how the nearest existing component does it before writing anything; the codebase is consistent and the fastest route is to copy its patterns.
+Look at how the nearest existing component does it before writing anything; the codebase is consistent and the fastest route is to copy its patterns. For anything beyond a small fix, answer the design gate of the `platform-ui-architecture` skill first (layer, reuse, public surface, growth, dependencies).
 
 | The change is about… | Put it in |
 | --- | --- |
@@ -78,10 +78,11 @@ Pure logic gets a `tests/unit/*.test.ts` (`node:test` + `node:assert/strict`, im
 
 ```bash
 pnpm check                                   # lint, typecheck, unit tests, build
+node .claude/skills/platform-ui-architecture/scripts/check-architecture.mjs   # layers, reuse, API completeness, budgets
 pnpm test:e2e                                # full suite in Chromium + WebKit, ~2 min; pass one spec file or --project desktop while iterating
 ```
 
-For visual changes, run `pnpm dev` and look at the demo and the fixture (`/tests/e2e/harness/index.html#<fixture>`); a Playwright screenshot before and after is the quickest honest check. Finish by reporting what passed, what you looked at, and anything you did not verify.
+For visual changes, run `pnpm dev` and look at the demo and the fixture (`/tests/e2e/harness/index.html#<fixture>`); a Playwright screenshot before and after is the quickest honest check. Then do the review gate of `platform-ui-architecture` (checklist and report). Finish by reporting what passed, what you looked at, and anything you did not verify.
 
 ## Token and theme changes
 

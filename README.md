@@ -125,7 +125,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, project struct
 
 ## AI agents
 
-[AGENTS.md](AGENTS.md) gives coding agents the context of this repository, and `.claude/skills/` holds step-by-step skills for changing the kit (`platform-ui-component`), releasing it (`platform-ui-release`) and building app screens with it (`platform-ui-app`) and creating themes from a style idea (`platform-ui-theme`); [copy those two into app repositories](docs/getting-started.md#working-with-ai-agents).
+[AGENTS.md](AGENTS.md) gives coding agents the context of this repository, and `.claude/skills/` holds step-by-step skills for changing the kit (`platform-ui-component`), keeping every change inside the kit's architecture (`platform-ui-architecture`), releasing it (`platform-ui-release`) and building app screens with it (`platform-ui-app`) and creating themes from a style idea (`platform-ui-theme`); [copy those two into app repositories](docs/getting-started.md#working-with-ai-agents).
 
 ## Changelog
 

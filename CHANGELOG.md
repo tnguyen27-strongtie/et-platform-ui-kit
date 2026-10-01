@@ -2,6 +2,14 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+**Agent skills** (repository `.claude/skills/`, for work on the kit itself)
+
+- `platform-ui-architecture`: a design gate before coding (which layer, what to reuse, public surface, size budget, dependencies) and a review gate before a change is done. `check-architecture.mjs` checks the branch against the kit's layers (`tokens` ← `utils` ← `theme` / components ← feature areas ← `index.ts`), import cycles, unknown or non-MUI UI packages, MUI barrel imports, duplicated helpers (Web Storage, `clsx`, `alpha(colors.x)`), file growth over budget, new exports without showcase / docs / changelog / fixture, removed exports and new dependencies. `references/architecture.md` documents the layers, placement rules, budgets and known debt.
+
 ## [0.12.0] - 2026-10-01
 
 Themes are no longer just a brand color. An app can switch the visual style of every component (**appearances**: Classic, Glass or its own), turn on **dark mode**, and have its own Tailwind classes follow both, without touching component code. The default light Classic look is unchanged (every kit fixture renders pixel-identical), apart from the two small details under Changed.
