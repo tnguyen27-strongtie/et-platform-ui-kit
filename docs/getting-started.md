@@ -14,7 +14,7 @@ The package is named `@platform/ui`. It is marked `"private": true` so it can ne
 
 | Method | In the kit | In the app | Use when |
 | --- | --- | --- | --- |
-| Tarball | `npm pack`, or download it from the GitHub Release (tagged versions) or the CI run's artifacts (any commit) | `npm install ./path/platform-ui-0.12.0.tgz` | The app lives in another repository and you want a pinned version |
+| Tarball | `npm pack`, or download it from the GitHub Release (tagged versions) or the CI run's artifacts (any commit) | `npm install ./path/platform-ui-0.12.1.tgz` | The app lives in another repository and you want a pinned version |
 | Local link | `npm run build` | `npm install ../et-platform-ui-kit` | You change the kit and the app at the same time |
 | Internal registry | Remove `private`, add `publishConfig.registry`, `npm publish` | `npm install @platform/ui` | Several teams share the kit |
 

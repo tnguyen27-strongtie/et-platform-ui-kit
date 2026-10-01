@@ -2,7 +2,9 @@
 
 All notable changes to `@platform/ui`. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.12.1] - 2026-10-01
+
+Two accessibility and API fixes in the workspace view controls, plus internal cleanup. Upgrading needs no code changes.
 
 ### Added
 
@@ -19,6 +21,8 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 
 - `ViewControlsGroup`: the group is named by its title (`aria-labelledby`), so screen readers announce it ("Object visibility, group") instead of an unnamed group.
 - `ResetViewButton`: `onClick` is called with no arguments, as its type says, instead of receiving the click event.
+
+No API changes.
 
 ## [0.12.0] - 2026-10-01
 
