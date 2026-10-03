@@ -195,7 +195,7 @@ A change is ready when a teammate could own it without asking its author (or an 
 5. Commits say what and why (Conventional Commits). Unrelated changes go in separate commits.
 6. The person merging can explain the riskiest part of the change in their own words.
 
-`.claude/agents/human.md` runs this checklist as an AI reviewer and writes owner questions for point 6. It is optional; the checklist is what matters.
+`.claude/agents/human.md` runs this checklist as an AI reviewer and writes owner questions for point 6. Its silent mode skips the questions and hands a fix list back to the AI author instead, so the code is made explainable (comments, tests, docs) before a person reviews it. It is optional; the checklist is what matters.
 
 ## Releasing
 
