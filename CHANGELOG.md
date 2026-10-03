@@ -6,7 +6,7 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 
 ### Added
 
-- `WorkspaceTabs`: several workspaces open at once (for example one per calculation), switched by browser-like tabs above the layout. Controlled (`tabs`, `value`, `onChange`), with optional `onAdd` and `onClose(value, next)` (`next` is the tab to select). It also has unsaved-changes dots (`dirty`), <kbd>Delete</kbd> to close the focused tab, `keepMounted` per tab, an `empty` slot and overridable `labels` (`defaultWorkspaceTabsLabels`). Tabs that do not fit the width go to an "N more" menu, and the selected tab always stays visible. Types: `WorkspaceTabsProps`, `WorkspaceTab`, `WorkspaceTabsLabels`. See [Workspace layout](docs/workspace-layout.md#workspacetabs).
+- `WorkspaceTabs`: several workspaces open at once (for example one per calculation), switched by browser-like tabs above the layout. Controlled (`tabs`, `value`, `onChange`), with optional `onAdd` and `onClose(value, next)` (`next` is the tab to select). It also has unsaved-changes dots (`dirty`), closing by ×, middle click, <kbd>Delete</kbd> on the focused tab or a "Close" menu entry (for touch and screen readers), `keepMounted` per tab, an `empty` slot and overridable `labels` (`defaultWorkspaceTabsLabels`). Tabs that do not fit the width go to an "N more" menu, and the selected tab always stays visible. Types: `WorkspaceTabsProps`, `WorkspaceTab`, `WorkspaceTabsLabels`. See [Workspace layout](docs/workspace-layout.md#workspacetabs).
 
 ### Changed
 

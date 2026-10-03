@@ -148,19 +148,24 @@ const [active, setActive] = useState('c1');
 ```
 
 - **Mounting.** Only the selected workspace is mounted, so hidden 3D views do not use memory. Keep each calculation's inputs in app state (keyed by tab value), or set `keepMounted` on a tab to keep its content alive. Give the content a `key` so React does not reuse one workspace's state for another.
-- **Closing.** The × on a tab closes it with the mouse (middle click works too). Keyboard users press <kbd>Delete</kbd> (or <kbd>Backspace</kbd>) on the focused tab, and the tab announces this through `aria-keyshortcuts`. Focus then moves to the newly selected tab. The × is not a separate button, because a button inside a tab is invalid. `onClose(value, next)` gets the tab to select: the closed tab's right neighbour, else its left one, `null` when none is left. If the closed tab was not selected, `next` is the current tab.
+- **Closing.** There are three ways to close a tab, one for each kind of user:
+  - **Mouse:** the × on the tab (a 24px target), or a middle click.
+  - **Keyboard:** <kbd>Delete</kbd> or <kbd>Backspace</kbd> on the focused tab; the tab announces this through `aria-keyshortcuts`. When the app removes the tab, focus moves to the newly selected tab. If the app keeps it (the user cancelled a confirmation), focus is left alone.
+  - **Touch and screen readers:** a "Close {name}" entry for the selected tab in the menu after the tabs. On touch screens that menu is always shown, labelled "Tabs" when every tab fits.
+
+  The × is not a real button, because a button inside a tab is invalid. It is hidden from screen readers, which use the menu entry instead. `onClose(value, next)` gets the tab to select: the closed tab's right neighbour, else its left one, `null` when none is left. If the closed tab was not selected, `next` is the current tab.
 - **Unsaved work.** `dirty: true` shows a dot after the name and adds "(Unsaved changes)" to the tab's accessible name. The kit never asks for confirmation itself; do that in `onClose`.
-- **Overflow.** The bar shows as many tabs as fit its width, at any screen size. The rest go to an "N more" menu after the tabs. The selected tab is always shown: if it would not fit, it takes the place of the last tab that does. Picking a workspace from the menu selects it and brings it into the bar. On a phone that usually means the selected tab, "N more" and "+".
+- **Overflow.** The bar shows as many tabs as fit its width, at any screen size. The rest go to an "N more" menu after the tabs. The selected tab is always shown: if it would not fit, it takes the place of as many of the last fitting tabs as it needs. A selected tab wider than the whole bar shortens its name with "…". Picking a workspace from the menu selects it and brings it into the bar. On a phone that usually means the selected tab, "N more" and "+". The bar measures again when its width changes or when tab widths change (for example when the web font finishes loading).
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `tabs` | `WorkspaceTab<V>[]` | | `{ value, label, dirty?, disabled?, closable?, keepMounted? }`. `label` is plain text (it also names the close action and the entry in the "more" menu) |
+| `tabs` | `WorkspaceTab<V>[]` | | `{ value, label, dirty?, disabled?, closable?, keepMounted? }`. `label` is plain text (it is also used in the menu and its "Close" entry) |
 | `value`, `onChange` | `V`, `(value: V) => void` | | Selected tab |
 | `onAdd` | `() => void` | | Shows a "+" button after the tabs. The app adds the tab and selects it |
-| `onClose` | `(value: V, next: V \| null) => void` | | Shows close buttons and enables <kbd>Delete</kbd>. `closable: false` on a tab hides its close button |
+| `onClose` | `(value: V, next: V \| null) => void` | | Makes tabs closable (×, <kbd>Delete</kbd>, menu entry). `closable: false` on a tab turns all three off for it |
 | `actions` | `ReactNode` | | Buttons at the right end of the bar |
 | `empty` | `ReactNode` | | Shown in place of the content when `tabs` is empty |
-| `labels` | `Partial<WorkspaceTabsLabels>` | `defaultWorkspaceTabsLabels` | `list` ("Open workspaces"), `more(count)` ("{count} more"), `add` ("New tab"), `close(label)` ("Close {label}"), `unsaved` ("Unsaved changes") |
+| `labels` | `Partial<WorkspaceTabsLabels>` | `defaultWorkspaceTabsLabels` | `list` ("Open workspaces"), `more(count)` ("{count} more"), `menu` ("Tabs", the menu button on touch screens when every tab fits), `add` ("New tab"), `close(label)` ("Close {label}", the menu entry and the ×'s tooltip), `unsaved` ("Unsaved changes") |
 | `className` | `string` | | Merged on the root |
 | `children` | `(value: V) => ReactNode` | | Renders a tab's content. Called for the selected tab and for `keepMounted` tabs |
 

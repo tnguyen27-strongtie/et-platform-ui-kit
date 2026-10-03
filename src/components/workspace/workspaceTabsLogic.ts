@@ -18,14 +18,15 @@ export function nextTabAfterClose<V>(tabs: readonly TabRef<V>[], closed: V, curr
   const left = tabs
     .slice(0, Math.max(index, 0))
     .reverse()
-    .find((t) => !t.disabled && t.value !== closed);
+    .find((t) => !t.disabled);
   return left?.value ?? null;
 }
 
 /**
  * Which tabs fit in `available` pixels, as indices in order. The rest go to a "more" menu that
- * takes `overflowWidth`. The selected tab is always kept: when it would overflow, it replaces the
- * last tabs that fit (so the user always sees which workspace is open). `gap` is the space between items.
+ * takes `overflowWidth`. The selected tab is always kept: when it would overflow, it takes the
+ * place of as many of the last fitting tabs as it needs (so the user always sees which workspace
+ * is open). `gap` is the space between items.
  */
 export function fitTabs(widths: readonly number[], available: number, selected: number, overflowWidth: number, gap = 0): number[] {
   const all = widths.map((_, i) => i);
@@ -42,6 +43,7 @@ export function fitTabs(widths: readonly number[], available: number, selected: 
     used += cost(i);
   }
   if (selected < 0 || selected >= widths.length || visible.includes(selected)) return visible;
+  // `visible` is a prefix (0..k-1) and `selected` lies after it, so appending keeps tab order.
   while (visible.length > 0 && used + cost(selected) > room) used -= cost(visible.pop()!);
   return [...visible, selected];
 }

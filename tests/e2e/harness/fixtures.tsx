@@ -827,7 +827,20 @@ function WorkspaceTabsFixture() {
   ]);
   const [current, setCurrent] = useState('beam');
   const [closed, setClosed] = useState<[string, string | null] | null>(null);
+  // Tabs edited in this fixture ask before closing (the documented confirm pattern).
+  const [edited, setEdited] = useState<string[]>([]);
+  const [pending, setPending] = useState<[string, string | null] | null>(null);
   const added = useRef(0);
+  const remove = (value: string, next: string | null) => {
+    setClosed([value, next]);
+    setTabs((list) => list.filter((t) => t.value !== value));
+    if (next !== null) setCurrent(next);
+  };
+  // Every keystroke hands WorkspaceTabs a new tabs array, as an app tracking dirty state does.
+  const markEdited = (value: string) => {
+    setEdited((list) => (list.includes(value) ? list : [...list, value]));
+    setTabs((list) => list.map((t) => (t.value === value ? { ...t, dirty: true } : t)));
+  };
   return (
     <>
       <div style={{ height: 400, width: '100%' }}>
@@ -841,24 +854,33 @@ function WorkspaceTabsFixture() {
             setTabs((list) => [...list, { value: id, label: `New ${added.current}` }]);
             setCurrent(id);
           }}
-          onClose={(value, next) => {
-            setClosed([value, next]);
-            setTabs((list) => list.filter((t) => t.value !== value));
-            if (next !== null) setCurrent(next);
-          }}
+          onClose={(value, next) => (edited.includes(value) ? setPending([value, next]) : remove(value, next))}
           labels={{ add: 'New calculation' }}
           empty={<p>No workspace open</p>}
         >
           {(id) => (
             <Section title="Input">
               <FormField label={`${id} input`} htmlFor={`ws-${id}`}>
-                <TextInput />
+                <TextInput onChange={() => markEdited(id)} />
               </FormField>
             </Section>
           )}
         </WorkspaceTabs>
       </div>
+      <ConfirmDialog
+        open={pending !== null}
+        title="Close without saving?"
+        confirmLabel="Discard"
+        onConfirm={() => {
+          if (pending) remove(...pending);
+          setPending(null);
+        }}
+        onCancel={() => setPending(null)}
+      />
       <Button onClick={() => setTabs([])}>Clear all</Button>
+      <Button onClick={() => setTabs((list) => list.map((t) => (t.value === current ? { ...t, label: 'Connection design for the north wall, level 2' } : t)))}>
+        Long name
+      </Button>
       <Out id="current" value={current} />
       <Out id="closed" value={closed} />
     </>

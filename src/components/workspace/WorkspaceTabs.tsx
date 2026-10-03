@@ -1,23 +1,24 @@
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { type KeyboardEvent, type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 
 import { cn } from '../../utils/cn';
 import { deepEqual } from '../../utils/useStableValue';
 import { Button, IconButton } from '../Button';
-import { DropdownMenu } from '../DropdownMenu';
-import { Tab, TabPanel, Tabs } from '../Tabs';
+import { DropdownMenu, type DropdownMenuItem } from '../DropdownMenu';
+import { Tab, TabPanel, tabId, Tabs } from '../Tabs';
 import { fitTabs, nextTabAfterClose } from './workspaceTabsLogic';
 
 export interface WorkspaceTab<V extends string> {
   value: V;
-  /** Tab name. Plain text: it also names the close action and the entry in the "more" menu. */
+  /** Tab name. Plain text: it is also used in the "more" menu and its "Close …" entry. */
   label: string;
   /** Shows an "unsaved changes" dot after the name (also announced to screen readers). */
   dirty?: boolean;
   disabled?: boolean;
-  /** Set false to hide the close button of this tab. Default: closable when `onClose` is given. */
+  /** Set false to make this tab not closable (no ×, no Delete, no menu entry). Default: closable when `onClose` is given. */
   closable?: boolean;
   /** Keep the tab's content mounted while another tab is shown (preserves state, keeps queries running). */
   keepMounted?: boolean;
@@ -28,9 +29,11 @@ export interface WorkspaceTabsLabels {
   list: string;
   /** Text of the menu button that holds the tabs that do not fit. */
   more: (count: number) => string;
+  /** Text of that menu button on touch screens when every tab fits (the menu still offers "Close"). */
+  menu: string;
   /** Name of the add button. */
   add: string;
-  /** Name of a tab's close action. */
+  /** Text of the menu entry that closes a tab (also the tooltip of the ×). */
   close: (label: string) => string;
   /** Screen reader text for the unsaved-changes dot. */
   unsaved: string;
@@ -39,6 +42,7 @@ export interface WorkspaceTabsLabels {
 export const defaultWorkspaceTabsLabels: WorkspaceTabsLabels = {
   list: 'Open workspaces',
   more: (count) => `${count} more`,
+  menu: 'Tabs',
   add: 'New tab',
   close: (label) => `Close ${label}`,
   unsaved: 'Unsaved changes',
@@ -52,7 +56,8 @@ export interface WorkspaceTabsProps<V extends string> {
   /** Shows a "+" button after the tabs. The app creates the tab and selects it. */
   onAdd?: () => void;
   /**
-   * Shows a close button on each tab (Delete or Backspace closes the focused tab).
+   * Makes tabs closable: an × on each tab (mouse), Delete or Backspace on the focused tab (keyboard)
+   * and a "Close" entry in the menu (touch and screen readers).
    * `next` is the tab to select when the closed one was selected: its right neighbour, else
    * its left one, `null` when none is left. Ask for confirmation here if the tab has unsaved work.
    */
@@ -72,24 +77,33 @@ export interface WorkspaceTabsProps<V extends string> {
  * background or underline, rounded-top tabs, and the selected tab is a raised surface with a
  * brand stripe on top (section tabs use a gray bar and a brand underline).
  */
+/**
+ * Space between tabs and between the bar's items, in px. The overflow maths adds it once per
+ * item, so the CSS gaps below are built from it; never write the number twice.
+ */
+const GAP = 2;
+
 const barSx = {
   minWidth: 0,
   padding: 0,
   border: 0,
   backgroundColor: 'transparent',
-  '& .MuiTabs-list': { gap: '2px' },
+  '& .MuiTabs-list': { gap: `${GAP}px` },
   '& .MuiTabs-indicator': { display: 'none' },
 } as const;
 
+/*
+ * These classes override the theme's MuiTab colors and min-width; they win because the kit puts
+ * Tailwind after MUI in the CSS layer order (docs/getting-started.md).
+ * min-w-0 + shrink let the selected tab shrink and ellipsize its name when it alone is wider than
+ * the bar (the theme's min-width: fit-content and MUI's flex-shrink: 0 would clip it instead).
+ */
 const tabClass = cn(
   // Large appearance radii (Glass) would turn a tab into a dome, so cap the rounding.
-  'max-w-60 rounded-t-[min(var(--radius-control),0.5rem)] px-3 text-text-muted',
+  'min-w-0 max-w-60 shrink rounded-t-[min(var(--radius-control),0.5rem)] px-3 text-text-muted',
   'hover:bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] hover:text-text',
   '[&.Mui-selected]:material-panel [&.Mui-selected]:text-text [&.Mui-selected]:shadow-[inset_0_3px_0_var(--color-brand),0_0_0_1px_var(--color-border-strong)]',
 );
-
-/** Space between tabs, in px (matches the MuiTabs-list gap above). */
-const GAP = 2;
 
 const isCloseKey = (e: KeyboardEvent) => e.key === 'Delete' || e.key === 'Backspace';
 
@@ -97,7 +111,7 @@ const isCloseKey = (e: KeyboardEvent) => e.key === 'Delete' || e.key === 'Backsp
 function TabName({ label, dirty, unsaved }: { label: string; dirty?: boolean; unsaved: string }) {
   return (
     <>
-      <span className="truncate">{label}</span>
+      <span className="min-w-0 truncate">{label}</span>
       {dirty && <span className="size-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" data-testid="unsaved-dot" />}
       {dirty && <span className="sr-only">{`(${unsaved})`}</span>}
     </>
@@ -123,18 +137,28 @@ export function WorkspaceTabs<V extends string>({
 }: WorkspaceTabsProps<V>) {
   const labels = { ...defaultWorkspaceTabsLabels, ...labelOverrides };
   const tabsId = useId();
-  const barRef = useRef<HTMLDivElement>(null);
+  // Touch screens have no hover or Delete key, and touch screen readers cannot reach the ×.
+  const isTouch = useMediaQuery('(pointer: coarse)');
   const areaRef = useRef<HTMLDivElement>(null);
   const addRef = useRef<HTMLButtonElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLButtonElement>(null);
-  const focusSelected = useRef(false);
+  /** Value of a tab the user closed with the keyboard, until the app has answered onClose. */
+  const closedByKey = useRef<V | null>(null);
   const [fit, setFit] = useState<{ widths: number[]; more: number; available: number } | null>(null);
 
   const canClose = (tab: WorkspaceTab<V>) => onClose !== undefined && tab.closable !== false && !tab.disabled;
   const close = (tab: WorkspaceTab<V>) => onClose?.(tab.value, nextTabAfterClose(tabs, tab.value, value));
 
-  // Every tab is rendered once more in a hidden row, so its width is known even while it sits in the menu.
+  /*
+   * Overflow. Every tab is rendered once more in a hidden row (below), so its width is known even
+   * while it sits in the menu; measuring the visible tabs would not tell what a hidden one needs.
+   * The rule fitTabs applies, in DOM terms:
+   *   sum(tab widths) + GAP per tab [+ "more" button + GAP] + "+" button + GAP <= width of the bar area
+   * measure() reads those widths; it runs after every render and when the area or the hidden row
+   * resizes (window, panel, or web fonts arriving). setFit keeps the old object when nothing
+   * changed, so measuring after a render does not cause another render.
+   */
   const measure = () => {
     const area = areaRef.current;
     const row = measureRef.current;
@@ -145,27 +169,61 @@ export function WorkspaceTabs<V extends string>({
     const next = { widths: items, more, available: area.clientWidth - add };
     setFit((prev) => (prev && deepEqual(prev, next) ? prev : next));
   };
-  // Names, dots or close buttons may have changed: measure after every render (setFit bails out when equal).
+  // Names, dots or close buttons may have changed. Reading a few widths per render is cheap
+  // next to the content below, which also re-renders.
   useLayoutEffect(measure);
+  // [] deps: measure only reads refs and calls setFit, which never change.
   useLayoutEffect(() => {
-    const area = areaRef.current;
-    if (!area || typeof ResizeObserver === 'undefined') return;
+    if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(() => measure());
-    observer.observe(area);
+    if (areaRef.current) observer.observe(areaRef.current);
+    if (measureRef.current) observer.observe(measureRef.current);
     return () => observer.disconnect();
   }, []);
 
-  // A tab closed from the keyboard is gone with its focus; move focus to the newly selected tab.
+  /*
+   * A tab closed from the keyboard takes the focus with it when it disappears; give focus to the
+   * newly selected tab. The app may also keep the tab (the user cancelled a confirmation): then
+   * forget it, so a later change of `tabs` (e.g. a dirty flag while typing) never moves focus.
+   */
   useEffect(() => {
-    if (!focusSelected.current) return;
-    focusSelected.current = false;
-    barRef.current?.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();
-  }, [tabs]);
+    const closed = closedByKey.current;
+    if (closed === null) return;
+    closedByKey.current = null;
+    if (tabs.some((t) => t.value === closed)) return;
+    document.getElementById(tabId(tabsId, value))?.focus();
+  }, [tabs, tabsId, value]);
 
   const selectedIndex = tabs.findIndex((t) => t.value === value);
-  const shown = new Set(fit && fit.widths.length === tabs.length ? fitTabs(fit.widths, fit.available, selectedIndex, fit.more, GAP) : tabs.keys());
+  const current = tabs[selectedIndex];
+  const currentClosable = current !== undefined && canClose(current);
+  // On touch screens the menu is always there when the selected tab can close, so reserve its room.
+  const menuAlways = isTouch && currentClosable;
+  // Before the first measurement, or for one render after tabs were added or removed, the widths
+  // do not match the tabs: show them all, the next measurement corrects it.
+  const measured = fit !== null && fit.widths.length === tabs.length;
+  const shown = new Set(
+    measured
+      ? fitTabs(fit.widths, fit.available - (menuAlways ? fit.more : 0), selectedIndex, menuAlways ? 0 : fit.more, GAP)
+      : tabs.keys(),
+  );
   const visible = tabs.filter((_, i) => shown.has(i));
   const overflow = tabs.filter((_, i) => !shown.has(i));
+
+  const menuItems: DropdownMenuItem[] = overflow.map((tab) => ({
+    id: tab.value,
+    label: (
+      <span className="flex min-w-0 items-center gap-1.5">
+        <TabName label={tab.label} dirty={tab.dirty} unsaved={labels.unsaved} />
+      </span>
+    ),
+    disabled: tab.disabled,
+    onSelect: () => onChange(tab.value),
+  }));
+  if (currentClosable && (overflow.length > 0 || isTouch)) {
+    if (menuItems.length > 0) menuItems.push({ id: '__divider', divider: true });
+    menuItems.push({ id: '__close', label: labels.close(current.label), icon: <CloseIcon fontSize="small" />, onSelect: () => close(current) });
+  }
 
   const renderTab = (tab: WorkspaceTab<V>) => {
     const closable = canClose(tab);
@@ -181,7 +239,7 @@ export function WorkspaceTabs<V extends string>({
             ? (e) => {
                 if (!isCloseKey(e)) return;
                 e.preventDefault();
-                focusSelected.current = true;
+                closedByKey.current = tab.value;
                 close(tab);
               }
             : undefined
@@ -189,21 +247,23 @@ export function WorkspaceTabs<V extends string>({
         // Middle click closes, as in browsers.
         onAuxClick={closable ? (e) => e.button === 1 && close(tab) : undefined}
         label={
-          <span className="flex min-w-0 items-center gap-1.5">
+          // max-w-full: MUI lays a Tab out as a column, so the row must be capped for the name to shrink.
+          <span className="flex min-w-0 max-w-full items-center gap-1.5">
             <TabName label={tab.label} dirty={tab.dirty} unsaved={labels.unsaved} />
             {closable && (
-              // Not a button: a button inside a tab is invalid. Mouse users click it; keyboard users press Delete.
+              // Not a button: a button inside a tab is invalid. Mouse users click it (24px target),
+              // keyboard users press Delete, touch and screen reader users use the menu's Close entry.
               <span
                 aria-hidden="true"
                 title={labels.close(tab.label)}
                 data-testid="tab-close"
-                className="-mr-1 flex rounded-control p-0.5 text-text-muted hover:bg-(--material-splitter) hover:text-text"
+                className="-mr-1.5 flex size-6 shrink-0 items-center justify-center rounded-control text-text-muted hover:bg-(--material-splitter) hover:text-text"
                 onClick={(e) => {
                   e.stopPropagation();
                   close(tab);
                 }}
               >
-                <CloseIcon sx={{ fontSize: 14 }} />
+                <CloseIcon sx={{ fontSize: 16 }} />
               </span>
             )}
           </span>
@@ -214,30 +274,16 @@ export function WorkspaceTabs<V extends string>({
 
   return (
     <div className={cn('flex size-full flex-col gap-(--workspace-gap)', className)}>
-      <div ref={barRef} className="flex shrink-0 items-end gap-1 pt-1">
-        <div ref={areaRef} className="relative flex min-w-0 flex-1 items-end gap-[2px]">
+      <div className="flex shrink-0 items-end gap-1 pt-1">
+        <div ref={areaRef} className="relative flex min-w-0 flex-1 items-end" style={{ gap: GAP }}>
           {visible.length > 0 && (
             <Tabs<V> id={tabsId} aria-label={labels.list} value={value} onChange={onChange} sx={barSx}>
               {visible.map((tab) => renderTab(tab))}
             </Tabs>
           )}
-          {overflow.length > 0 && (
+          {menuItems.length > 0 && (
             <div className="shrink-0 self-center">
-              <DropdownMenu
-                label={labels.more(overflow.length)}
-                variant="text"
-                size="small"
-                items={overflow.map((tab) => ({
-                  id: tab.value,
-                  label: (
-                    <span className="flex min-w-0 items-center gap-1.5">
-                      <TabName label={tab.label} dirty={tab.dirty} unsaved={labels.unsaved} />
-                    </span>
-                  ),
-                  disabled: tab.disabled,
-                  onSelect: () => onChange(tab.value),
-                }))}
-              />
+              <DropdownMenu label={overflow.length > 0 ? labels.more(overflow.length) : labels.menu} variant="text" size="small" items={menuItems} />
             </div>
           )}
           {onAdd && (
@@ -248,8 +294,9 @@ export function WorkspaceTabs<V extends string>({
           {/* Measuring row: same tabs and menu button, invisible and out of the accessibility tree. */}
           <div className="pointer-events-none absolute size-0 overflow-hidden" aria-hidden="true" inert>
             <div ref={measureRef} className="invisible flex w-max">
-              {/* MUI tabs need a Tabs parent; this one has its own id so no id is duplicated. */}
-              <Tabs<V> id={`${tabsId}-measure`} value={value} onChange={() => {}} sx={barSx}>
+              {/* MUI tabs need a Tabs parent. No id: it then makes its own, so ids stay unique and the
+                  hidden tabs do not point aria-controls at panels. */}
+              <Tabs<V> value={value} onChange={() => {}} sx={barSx}>
                 {tabs.map((tab) => renderTab(tab))}
               </Tabs>
               <Button ref={moreRef} variant="text" size="small" endIcon={<KeyboardArrowDownIcon />}>

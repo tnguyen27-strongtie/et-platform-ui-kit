@@ -5,7 +5,8 @@ import { createContext, type ReactNode, useContext, useId } from 'react';
 import { cn } from '../utils/cn';
 
 const slug = (value: unknown) => String(value).replace(/\s+/g, '-');
-const tabId = (base: string, value: unknown) => `${base}-tab-${slug(value)}`;
+/** DOM id of a Tab inside `<Tabs id={base}>`; lets a component focus a tab by value. */
+export const tabId = (base: string, value: unknown) => `${base}-tab-${slug(value)}`;
 const panelId = (base: string, value: unknown) => `${base}-panel-${slug(value)}`;
 
 /** base id + whether panels were linked (only then may tabs point at them with aria-controls). */
