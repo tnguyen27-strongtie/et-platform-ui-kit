@@ -42,7 +42,7 @@ Everything takes several minutes (one clean install per app). A failure prints `
 | `src/features/` | One file per screen part: `InputForm`, `IllustrationPanel`, `OutputPanel`, `CalculationWorkspace`, dialogs, `AppNav` |
 | `src/lib/` | Made-up calculation, data, settings stored in `localStorage` |
 | `e2e/poc.spec.ts` | User journeys, run against the production build (`vite preview`), with axe and a console-error check |
-| `scripts/coverage.mjs` | Lists runtime exports of the installed kit that no PoC file imports. `IGNORED` holds the few that apps do not call (theme-builder helpers), each with a reason |
+| `scripts/coverage.mjs` | Lists runtime exports of the installed kit that no PoC file imports. `IGNORED` lists the exports apps should not import (theme-builder helpers, raw and default token values, CSS variable-name helpers, the grouped `tokens` object), each with a reason |
 
 It installs `@platform/ui` from `vendor/platform-ui.tgz`, which `check-poc.sh` copies there. `vendor/` and `package-lock.json` are not committed: every check installs the peer dependencies fresh within the kit's ranges, like a new app, so a peer release that breaks the kit shows up here first.
 
