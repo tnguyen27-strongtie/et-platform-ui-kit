@@ -49,6 +49,8 @@ import {
   Spinner,
   Switch,
   VisualizationStage,
+  type WorkspaceTab,
+  WorkspaceTabs,
   ViewControls,
   ViewControlsGroup,
   ResetViewButton,
@@ -815,6 +817,54 @@ function SizedLayoutFixture() {
   );
 }
 
+// ---------- WorkspaceTabs ----------
+function WorkspaceTabsFixture() {
+  const [tabs, setTabs] = useState<WorkspaceTab<string>[]>([
+    { value: 'beam', label: 'Beam' },
+    { value: 'column', label: 'Column', dirty: true, keepMounted: true },
+    { value: 'footing', label: 'Footing' },
+    { value: 'wall', label: 'Wall', closable: false },
+  ]);
+  const [current, setCurrent] = useState('beam');
+  const [closed, setClosed] = useState<[string, string | null] | null>(null);
+  const added = useRef(0);
+  return (
+    <>
+      <div style={{ height: 400, width: '100%' }}>
+        <WorkspaceTabs
+          tabs={tabs}
+          value={current}
+          onChange={setCurrent}
+          onAdd={() => {
+            added.current += 1;
+            const id = `new-${added.current}`;
+            setTabs((list) => [...list, { value: id, label: `New ${added.current}` }]);
+            setCurrent(id);
+          }}
+          onClose={(value, next) => {
+            setClosed([value, next]);
+            setTabs((list) => list.filter((t) => t.value !== value));
+            if (next !== null) setCurrent(next);
+          }}
+          labels={{ add: 'New calculation' }}
+          empty={<p>No workspace open</p>}
+        >
+          {(id) => (
+            <Section title="Input">
+              <FormField label={`${id} input`} htmlFor={`ws-${id}`}>
+                <TextInput />
+              </FormField>
+            </Section>
+          )}
+        </WorkspaceTabs>
+      </div>
+      <Button onClick={() => setTabs([])}>Clear all</Button>
+      <Out id="current" value={current} />
+      <Out id="closed" value={closed} />
+    </>
+  );
+}
+
 // ---------- Density ----------
 function DensityFixture() {
   const [density, setDensity] = useState<Density>('standard');
@@ -1213,4 +1263,5 @@ export const fixtures: Record<FixtureName, ComponentType> = {
   'error-alert': ErrorAlertFixture,
   agreement: AgreementFixture,
   'section-footer': SectionFooterFixture,
+  'workspace-tabs': WorkspaceTabsFixture,
 };

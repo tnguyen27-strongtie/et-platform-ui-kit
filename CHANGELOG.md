@@ -4,6 +4,10 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 
 ## [Unreleased]
 
+### Added
+
+- `WorkspaceTabs`: several workspaces open at once (for example one per calculation), switched by browser-like tabs above the layout. Controlled (`tabs`, `value`, `onChange`), with optional `onAdd` and `onClose(value, next)` (`next` is the tab to select). It also has unsaved-changes dots (`dirty`), <kbd>Delete</kbd> to close the focused tab, `keepMounted` per tab, an `empty` slot and overridable `labels` (`defaultWorkspaceTabsLabels`). Tabs that do not fit the width go to an "N more" menu, and the selected tab always stays visible. Types: `WorkspaceTabsProps`, `WorkspaceTab`, `WorkspaceTabsLabels`. See [Workspace layout](docs/workspace-layout.md#workspacetabs).
+
 ### Changed
 
 - Tooling: `npm run check:architecture` runs the architecture check, and CI runs it on every pull request (against the base branch) and push (whole library). CONTRIBUTING documents it and the pre-1.0 version rule (a breaking change is a minor bump, marked **Breaking**).

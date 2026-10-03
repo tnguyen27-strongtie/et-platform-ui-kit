@@ -2,18 +2,19 @@ import { createContext, type ReactNode, useContext, useEffect, useState } from '
 
 import { Card, type ColorConfig, type PlatformThemeConfig } from '../index';
 
-// ---------- Routing: #/<page>/<section>; #workspace and #workspace-columns open full-screen layouts ----------
+// ---------- Routing: #/<page>/<section>; #workspace, #workspace-columns and #workspace-tabs open full-screen layouts ----------
 
 export interface Route {
   page: string;
   section?: string;
-  /** Legacy full-screen workspace demos: #workspace (stacked) and #workspace-columns. */
-  fullScreen?: 'rows' | 'columns';
+  /** Full-screen workspace demos: #workspace (stacked), #workspace-columns and #workspace-tabs. */
+  fullScreen?: 'rows' | 'columns' | 'tabs';
 }
 
 export function parseHash(hash: string): Route {
   if (hash === '#workspace') return { page: 'workspace', fullScreen: 'rows' };
   if (hash === '#workspace-columns') return { page: 'workspace', fullScreen: 'columns' };
+  if (hash === '#workspace-tabs') return { page: 'workspace', fullScreen: 'tabs' };
   const clean = hash.replace(/^#\/?/, '');
   const [page = 'overview', section] = clean.split('/');
   return { page: page || 'overview', section };

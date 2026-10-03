@@ -32,6 +32,7 @@ export const fixtureNames = [
   'error-alert',
   'agreement',
   'section-footer',
+  'workspace-tabs',
 ] as const;
 
 export type FixtureName = (typeof fixtureNames)[number];

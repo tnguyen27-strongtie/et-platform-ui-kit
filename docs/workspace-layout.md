@@ -7,6 +7,7 @@ The standard layout of a calculator app: **Input** on the left, **Illustration**
 - [Responsive behavior](#responsive-behavior)
 - [SectionLayout](#sectionlayout)
 - [Section](#section)
+- [WorkspaceTabs](#workspacetabs)
 - [Illustration pane](#illustration-pane)
 - [ImageViewer](#imageviewer)
 
@@ -118,6 +119,52 @@ A panel with a gray tab bar on top and a scrollable body. A single-title section
 The footer sits outside the scroll area, so it never covers the last field or the focused control, and no extra padding is needed.
 
 A tab's `className` can draw attention to it, e.g. `"animate-jump"` when a new result arrives.
+
+## WorkspaceTabs
+
+Several workspaces open at once, for example one per calculation, switched by a tab bar above them like browser tabs. The component is controlled: the app owns the list of tabs and every calculation's data, and the kit renders the bar and the selected workspace.
+
+```tsx
+const [calcs, setCalcs] = useState<WorkspaceTab<string>[]>([{ value: 'c1', label: 'Calculation 1' }]);
+const [active, setActive] = useState('c1');
+
+<Workspace>
+  <WorkspaceTabs
+    tabs={calcs}
+    value={active}
+    onChange={setActive}
+    onAdd={() => { const id = createId(); setCalcs((l) => [...l, { value: id, label: 'New calculation' }]); setActive(id); }}
+    onClose={(id, next) => {
+      // Ask first when the calculation has unsaved work (ConfirmDialog), then:
+      setCalcs((l) => l.filter((c) => c.value !== id));
+      if (next !== null) setActive(next);
+    }}
+    labels={{ add: 'New calculation' }}
+    empty={<EmptyState title="No calculation open" />}
+  >
+    {(id) => <SectionLayout key={id} layoutId="calc" input={<InputFor id={id} />} output={<OutputFor id={id} />} />}
+  </WorkspaceTabs>
+</Workspace>
+```
+
+- **Mounting.** Only the selected workspace is mounted, so hidden 3D views do not use memory. Keep each calculation's inputs in app state (keyed by tab value), or set `keepMounted` on a tab to keep its content alive. Give the content a `key` so React does not reuse one workspace's state for another.
+- **Closing.** The × on a tab closes it with the mouse (middle click works too). Keyboard users press <kbd>Delete</kbd> (or <kbd>Backspace</kbd>) on the focused tab, and the tab announces this through `aria-keyshortcuts`. Focus then moves to the newly selected tab. The × is not a separate button, because a button inside a tab is invalid. `onClose(value, next)` gets the tab to select: the closed tab's right neighbour, else its left one, `null` when none is left. If the closed tab was not selected, `next` is the current tab.
+- **Unsaved work.** `dirty: true` shows a dot after the name and adds "(Unsaved changes)" to the tab's accessible name. The kit never asks for confirmation itself; do that in `onClose`.
+- **Overflow.** The bar shows as many tabs as fit its width, at any screen size. The rest go to an "N more" menu after the tabs. The selected tab is always shown: if it would not fit, it takes the place of the last tab that does. Picking a workspace from the menu selects it and brings it into the bar. On a phone that usually means the selected tab, "N more" and "+".
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `tabs` | `WorkspaceTab<V>[]` | | `{ value, label, dirty?, disabled?, closable?, keepMounted? }`. `label` is plain text (it also names the close action and the entry in the "more" menu) |
+| `value`, `onChange` | `V`, `(value: V) => void` | | Selected tab |
+| `onAdd` | `() => void` | | Shows a "+" button after the tabs. The app adds the tab and selects it |
+| `onClose` | `(value: V, next: V \| null) => void` | | Shows close buttons and enables <kbd>Delete</kbd>. `closable: false` on a tab hides its close button |
+| `actions` | `ReactNode` | | Buttons at the right end of the bar |
+| `empty` | `ReactNode` | | Shown in place of the content when `tabs` is empty |
+| `labels` | `Partial<WorkspaceTabsLabels>` | `defaultWorkspaceTabsLabels` | `list` ("Open workspaces"), `more(count)` ("{count} more"), `add` ("New tab"), `close(label)` ("Close {label}"), `unsaved` ("Unsaved changes") |
+| `className` | `string` | | Merged on the root |
+| `children` | `(value: V) => ReactNode` | | Renders a tab's content. Called for the selected tab and for `keepMounted` tabs |
+
+Types: `WorkspaceTabsProps<V>`, `WorkspaceTab<V>`, `WorkspaceTabsLabels`.
 
 ## Illustration pane
 

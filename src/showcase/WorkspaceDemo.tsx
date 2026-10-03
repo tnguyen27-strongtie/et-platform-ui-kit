@@ -5,6 +5,7 @@ import {
   type AccordionGroup,
   Alert,
   Checkbox,
+  ConfirmDialog,
   DataTable,
   ExpandCollapseAllButton,
   FormField,
@@ -21,6 +22,8 @@ import {
   ViewControlsGroup,
   VisualizationStage,
   Workspace,
+  type WorkspaceTab,
+  WorkspaceTabs,
 } from '../index';
 import { sampleDrawing } from './data';
 
@@ -208,25 +211,85 @@ function OutputSection() {
   );
 }
 
-export function WorkspaceDemo({ split }: { split: 'rows' | 'columns' }) {
+function CalculatorLayout({ split }: { split: 'rows' | 'columns' }) {
   return (
-    <Workspace>
-      <SectionLayout
-        layoutId="showcase"
-        secondarySplit={split}
-        labels={{ input: 'Input', illustration: '3D', output: 'Output' }}
-        input={<InputSection />}
-        illustration={<IllustrationSection />}
-        output={<OutputSection />}
-        // Mobile: one flat tab bar, section bodies without their own headers.
-        mobileTabs={[
-          { value: 'input', label: 'Input', content: <div className="h-full overflow-auto"><InputBody /></div>, keepMounted: true },
-          { value: '3d', label: '3D', content: <ThreeDBody /> },
-          { value: '2d', label: '2D', content: <DrawingBody /> },
-          { value: 'output', label: 'Output', content: <div className="h-full overflow-auto"><OutputBody /></div>, keepMounted: true },
-          { value: 'result', label: 'Result', content: <ResultBody /> },
-        ]}
-      />
-    </Workspace>
+    <SectionLayout
+      layoutId="showcase"
+      secondarySplit={split}
+      labels={{ input: 'Input', illustration: '3D', output: 'Output' }}
+      input={<InputSection />}
+      illustration={<IllustrationSection />}
+      output={<OutputSection />}
+      // Mobile: one flat tab bar, section bodies without their own headers.
+      mobileTabs={[
+        { value: 'input', label: 'Input', content: <div className="h-full overflow-auto"><InputBody /></div>, keepMounted: true },
+        { value: '3d', label: '3D', content: <ThreeDBody /> },
+        { value: '2d', label: '2D', content: <DrawingBody /> },
+        { value: 'output', label: 'Output', content: <div className="h-full overflow-auto"><OutputBody /></div>, keepMounted: true },
+        { value: 'result', label: 'Result', content: <ResultBody /> },
+      ]}
+    />
   );
+}
+
+/** Several calculations open at once. The app owns the list; closing an unsaved one asks first. */
+function TabbedWorkspace() {
+  const [tabs, setTabs] = useState<WorkspaceTab<string>[]>([
+    { value: 'c1', label: 'Calculation 1' },
+    { value: 'c2', label: 'Calculation 2', dirty: true },
+    { value: 'c3', label: 'Roof beam, level 2' },
+    { value: 'c4', label: 'Shear wall SW-4' },
+    { value: 'c5', label: 'Hold-down HD-1', dirty: true },
+    { value: 'c6', label: 'Ledger connection' },
+  ]);
+  const [active, setActive] = useState('c1');
+  const [pending, setPending] = useState<{ value: string; next: string | null } | null>(null);
+  const counter = useRef(7);
+
+  const remove = (value: string, next: string | null) => {
+    setTabs((list) => list.filter((t) => t.value !== value));
+    if (next !== null) setActive(next);
+  };
+  const add = () => {
+    const n = counter.current++;
+    setTabs((list) => [...list, { value: `c${n}`, label: `Calculation ${n}` }]);
+    setActive(`c${n}`);
+  };
+
+  return (
+    <>
+      <WorkspaceTabs
+        tabs={tabs}
+        value={active}
+        onChange={setActive}
+        onAdd={add}
+        onClose={(value, next) => (tabs.find((t) => t.value === value)?.dirty ? setPending({ value, next }) : remove(value, next))}
+        labels={{ add: 'New calculation' }}
+        empty={
+          <div className="flex h-full items-center justify-center rounded-section material-panel text-sm text-text-muted">
+            No calculation open. Use + to start one.
+          </div>
+        }
+      >
+        {(id) => <CalculatorLayout key={id} split="rows" />}
+      </WorkspaceTabs>
+      <ConfirmDialog
+        open={pending !== null}
+        title="Close without saving?"
+        confirmLabel="Close"
+        destructive
+        onConfirm={() => {
+          if (pending) remove(pending.value, pending.next);
+          setPending(null);
+        }}
+        onCancel={() => setPending(null)}
+      >
+        This calculation has changes that are not saved.
+      </ConfirmDialog>
+    </>
+  );
+}
+
+export function WorkspaceDemo({ split }: { split: 'rows' | 'columns' | 'tabs' }) {
+  return <Workspace>{split === 'tabs' ? <TabbedWorkspace /> : <CalculatorLayout split={split} />}</Workspace>;
 }

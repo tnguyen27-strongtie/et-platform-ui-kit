@@ -125,6 +125,7 @@ export const catalog: CatalogPage[] = [
     sections: [
       { id: 'section-layout', title: 'SectionLayout', exports: ['Workspace', 'SectionLayout'] },
       { id: 'section', title: 'Section', exports: ['Section'] },
+      { id: 'workspace-tabs', title: 'WorkspaceTabs', exports: ['WorkspaceTabs', 'defaultWorkspaceTabsLabels'] },
       { id: 'visualization', title: 'VisualizationStage and ImageViewer', exports: ['VisualizationStage', 'ViewControls', 'ViewControlsGroup', 'ResetViewButton', 'ImageViewer'] },
       { id: 'drop-overlay', title: 'DropOverlay', exports: ['DropOverlay'] },
     ],

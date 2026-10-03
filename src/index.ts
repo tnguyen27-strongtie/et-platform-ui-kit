@@ -180,6 +180,13 @@ export { ImageViewer, type ImageViewerHandle, type ImageViewerProps } from './co
 export { Section, type SectionProps, type SectionTab } from './components/workspace/Section';
 export { SectionLayout, Workspace, type SectionId, type SectionLayoutProps } from './components/workspace/SectionLayout';
 export {
+  defaultWorkspaceTabsLabels,
+  WorkspaceTabs,
+  type WorkspaceTab,
+  type WorkspaceTabsLabels,
+  type WorkspaceTabsProps,
+} from './components/workspace/WorkspaceTabs';
+export {
   DropOverlay,
   ResetViewButton,
   ViewControls,

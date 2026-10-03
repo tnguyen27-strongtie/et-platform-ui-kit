@@ -18,6 +18,8 @@ import {
   ViewControls,
   ViewControlsGroup,
   VisualizationStage,
+  type WorkspaceTab,
+  WorkspaceTabs,
 } from '../../index';
 import { sampleDrawing } from '../data';
 import { DemoGrid, DemoPage, DemoSection, Variants } from '../layout';
@@ -30,6 +32,16 @@ export function WorkspacePage() {
   const [dragging, setDragging] = useState(false);
   const [files, setFiles] = useState<string[]>([]);
   const viewer = useRef<ImageViewerHandle>(null);
+  const [calcs, setCalcs] = useState<WorkspaceTab<string>[]>([
+    { value: 'beam', label: 'Beam B1' },
+    { value: 'column', label: 'Column C2', dirty: true },
+    { value: 'footing', label: 'Footing F1' },
+    { value: 'wall', label: 'Shear wall SW-4' },
+    { value: 'ledger', label: 'Ledger connection', dirty: true },
+    { value: 'roof', label: 'Roof beam, level 2' },
+  ]);
+  const [activeCalc, setActiveCalc] = useState('beam');
+  const nextCalc = useRef(1);
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
@@ -145,6 +157,60 @@ export function WorkspacePage() {
             </Section>
           </div>
         </DemoGrid>
+      </DemoSection>
+
+      <DemoSection
+        id="workspace-tabs"
+        title="WorkspaceTabs"
+        description="Several workspaces open at once (one per calculation), like browser tabs above the layout. Controlled: the app owns the tabs. onClose gets the tab to select next; ask before closing unsaved work. The × closes with the mouse (middle click too); Delete closes the focused tab. Tabs that do not fit the width go to the N-more menu; the selected tab always stays visible."
+        code={`<Workspace>
+  <WorkspaceTabs tabs={calcs} value={active} onChange={setActive}
+    onAdd={addCalc}
+    onClose={(id, next) => { removeCalc(id); if (next) setActive(next); }}
+    labels={{ add: 'New calculation' }}>
+    {(id) => <SectionLayout key={id} input={…} output={…} />}
+  </WorkspaceTabs>
+</Workspace>`}
+      >
+        <Variants>
+          <Button variant="primary" href="#workspace-tabs">
+            Open full screen
+          </Button>
+        </Variants>
+        <div className="h-[24rem] overflow-hidden rounded-sm border border-border p-2 material-app">
+          <WorkspaceTabs
+            tabs={calcs}
+            value={activeCalc}
+            onChange={setActiveCalc}
+            onAdd={() => {
+              const id = `calc-${nextCalc.current++}`;
+              setCalcs((list) => [...list, { value: id, label: `New calculation ${nextCalc.current - 1}` }]);
+              setActiveCalc(id);
+            }}
+            onClose={(id, next) => {
+              setCalcs((list) => list.filter((t) => t.value !== id));
+              if (next) setActiveCalc(next);
+            }}
+            labels={{ add: 'New calculation' }}
+            empty={<EmptyState title="No calculation open">Use + to start one.</EmptyState>}
+          >
+            {(id) => (
+              <SectionLayout
+                key={id}
+                input={
+                  <Section title="Input">
+                    <p className="m-0 p-3 text-sm">{`Inputs of ${calcs.find((t) => t.value === id)?.label}`}</p>
+                  </Section>
+                }
+                output={
+                  <Section title="Output">
+                    <p className="m-0 p-3 text-sm">Results</p>
+                  </Section>
+                }
+              />
+            )}
+          </WorkspaceTabs>
+        </div>
       </DemoSection>
 
       <DemoSection

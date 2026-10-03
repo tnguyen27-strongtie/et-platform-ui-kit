@@ -620,3 +620,97 @@ test.describe('Visualization controls', () => {
     await expectOut(page, 'reset-calls', [[]]);
   });
 });
+
+test.describe('WorkspaceTabs (desktop)', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test.beforeEach(async ({ page }) => {
+    await openFixture(page, 'workspace-tabs');
+  });
+
+  test('switches workspaces and keeps a keepMounted tab\'s state', async ({ page }) => {
+    const bar = page.getByRole('tablist', { name: 'Open workspaces' });
+    await expect(bar.getByRole('tab')).toHaveCount(4);
+    await bar.getByRole('tab', { name: /Column/ }).click();
+    await expectOut(page, 'current', 'column');
+    await page.getByRole('textbox', { name: 'column input' }).fill('7');
+    await bar.getByRole('tab', { name: /Beam/ }).click();
+    await expect(page.getByRole('textbox', { name: 'beam input' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'column input' })).toBeHidden();
+    await bar.getByRole('tab', { name: /Column/ }).click();
+    await expect(page.getByRole('textbox', { name: 'column input' })).toHaveValue('7');
+  });
+
+  test('announces unsaved changes and the Delete shortcut', async ({ page }) => {
+    const column = page.getByRole('tab', { name: /Column/ });
+    await expect(column).toHaveAccessibleName('Column (Unsaved changes)');
+    await expect(column).toHaveAttribute('aria-keyshortcuts', 'Delete');
+    await expect(page.getByRole('tab', { name: 'Wall' })).not.toHaveAttribute('aria-keyshortcuts');
+  });
+
+  test('the × closes a tab without selecting it; closing the selected tab moves right', async ({ page }) => {
+    await page.getByRole('tab', { name: /Footing/ }).getByTestId('tab-close').click();
+    await expectOut(page, 'closed', ['footing', 'beam']);
+    await expectOut(page, 'current', 'beam');
+    await page.getByRole('tab', { name: /Beam/ }).getByTestId('tab-close').click();
+    await expectOut(page, 'closed', ['beam', 'column']);
+    await expect(page.getByRole('tab', { name: /Column/ })).toHaveAttribute('aria-selected', 'true');
+    // Not closable: no close icon.
+    await expect(page.getByRole('tab', { name: 'Wall' }).getByTestId('tab-close')).toHaveCount(0);
+  });
+
+  test('Delete closes the focused tab and focus moves to the next one', async ({ page }) => {
+    const beam = page.getByRole('tab', { name: /Beam/ });
+    await beam.focus();
+    await page.keyboard.press('Delete');
+    await expectOut(page, 'closed', ['beam', 'column']);
+    await expect(page.getByRole('tab', { name: /Column/ })).toBeFocused();
+    // Arrow keys still move between tabs.
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByRole('tab', { name: /Footing/ })).toBeFocused();
+  });
+
+  test('the add button creates and selects a tab', async ({ page }) => {
+    await page.getByRole('button', { name: 'New calculation' }).click();
+    await expectOut(page, 'current', 'new-1');
+    await expect(page.getByRole('tab', { name: 'New 1' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('a tab with closable: false stays; with no tabs the empty content shows', async ({ page }) => {
+    const bar = page.getByRole('tablist', { name: 'Open workspaces' });
+    for (const name of [/Beam/, /Column/, /Footing/]) await bar.getByRole('tab', { name }).getByTestId('tab-close').click();
+    await expectOut(page, 'current', 'wall');
+    await expect(bar.getByRole('tab')).toHaveText(['Wall']);
+    await page.getByRole('button', { name: 'Clear all' }).click();
+    await expect(page.getByText('No workspace open')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'New calculation' })).toBeVisible();
+  });
+});
+
+test.describe('WorkspaceTabs (narrow) @mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('tabs that do not fit go to a "more" menu; the picked one becomes visible and selected', async ({ page }) => {
+    await openFixture(page, 'workspace-tabs');
+    await page.getByRole('button', { name: 'New calculation' }).click();
+    await page.getByRole('button', { name: 'New calculation' }).click();
+    const bar = page.getByRole('tablist', { name: 'Open workspaces' });
+    // The newest tab is selected, so it is shown even though it is last.
+    await expect(bar.getByRole('tab', { name: 'New 2' })).toHaveAttribute('aria-selected', 'true');
+    const shown = await bar.getByRole('tab').count();
+    expect(shown).toBeLessThan(6);
+
+    const more = page.getByRole('button', { name: `${6 - shown} more` });
+    await more.click();
+    await expect(page.getByRole('menuitem')).toHaveCount(6 - shown);
+    // The first hidden tab (the visible ones come first in order).
+    const hidden = ['Beam', 'Column', 'Footing', 'Wall'][shown - 1]!;
+    await page.getByRole('menuitem', { name: new RegExp(`^${hidden}`) }).click();
+    await expectOut(page, 'current', hidden.toLowerCase());
+    await expect(bar.getByRole('tab', { name: new RegExp(`^${hidden}`) })).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('textbox', { name: `${hidden.toLowerCase()} input` })).toBeVisible();
+    // The bar never overflows the screen.
+    const box = (await bar.boundingBox())!;
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+  });
+});
