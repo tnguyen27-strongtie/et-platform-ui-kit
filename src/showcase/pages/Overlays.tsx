@@ -71,12 +71,13 @@ export function Overlays() {
       <DemoSection
         id="infotip"
         title="InfoTip (click, long)"
-        description="Explanations with structure or links. Opens on click as a small dialog; focus moves inside; Escape, click outside or X closes. HelpPopover (and FormField help) is the same with the ? trigger."
+        description="Explanations with structure or links. Opens on click as a small dialog; focus moves inside; Escape, click outside or X closes. HelpPopover (used by FormField help) is an older wrapper with the ? trigger: content in a content prop, no title, opens above."
         code={`<InfoTip title="How capacity is calculated">
   <p>…</p><ul><li>…</li></ul>
 </InfoTip>
 <InfoTip trigger="info" label="About C_D">…</InfoTip>
-<InfoTip trigger={<Button variant="text">Why?</Button>}>…</InfoTip>`}
+<InfoTip trigger={<Button variant="text">Why?</Button>}>…</InfoTip>
+<HelpPopover label="About wet service" content="…" />`}
       >
         <Variants>
           <Labeled label="trigger 'help' + title">
@@ -104,7 +105,7 @@ export function Overlays() {
               <p>The side member is thinner than the minimum penetration for this screw.</p>
             </InfoTip>
           </Labeled>
-          <Labeled label="HelpPopover (alias)">
+          <Labeled label="HelpPopover (older wrapper)">
             <span className="text-sm">
               Wet service
               <HelpPopover content="Use when the moisture content will exceed 19% in service." />

@@ -20,6 +20,7 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 
 - `NumberInput` / `formatNumber`: values of 1e21 and above show every digit instead of `1e+21`, which the field could not read back (typing into it did nothing).
 - Docs: `GridView` `onStateChange` is also called once on mount with the starting state; the docs said it fired only on user changes.
+- Docs: `HelpPopover` is documented with its real props (`content`, `placement` default `'top'`, `label` default `'More information'`). The docs called it an alias of `InfoTip`, which suggested `children` and `title`; those are a type error. The showcase description and code sample match too.
 - README no longer lists dark mode as missing (it shipped in 0.12.0).
 
 ## [0.12.1] - 2026-10-01

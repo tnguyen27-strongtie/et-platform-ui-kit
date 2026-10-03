@@ -198,7 +198,21 @@ MUI `Tooltip` with platform defaults: opens after 300ms (100ms when moving betwe
 | `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | |
 | `maxWidth` | `number` | `360` | Long content scrolls after 384px |
 
-Closes on Escape, outside click or the X button, and returns focus to the trigger. `HelpPopover` is an alias of `InfoTip` with the default trigger, kept for existing code and used by `FormField help`.
+Closes on Escape, outside click or the X button, and returns focus to the trigger.
+
+#### HelpPopover
+
+`HelpPopover` is a smaller wrapper around `InfoTip` with the "?" trigger, kept for existing code and used by `FormField help`. It has its own props: the content goes in `content` (not `children`), there is no `title`, and it opens above the trigger by default. New code should use `InfoTip`.
+
+```tsx
+<HelpPopover label="About wet service" content="Use when the moisture content will exceed 19% in service." />
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `content` | `ReactNode` | | Content (required) |
+| `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | |
+| `label` | `string` | `'More information'` | Accessible name of the trigger |
 
 ### Toasts
 
