@@ -783,7 +783,9 @@ test.describe('WorkspaceTabs (narrow) @mobile', () => {
     await page.getByRole('button', { name: /more$/ }).click();
     await page.getByRole('menuitem', { name: `Close ${picked}` }).click();
     await expect(bar.getByRole('tab', { name: new RegExp(`^${picked}`) })).toHaveCount(0);
-    // Focus follows to the newly selected tab, as with Delete.
+    // Focus follows to the newly selected tab, as with Delete. Wait for the menu to finish closing
+    // first: its focus return to the menu button must not win afterwards.
+    await expect(page.getByRole('menu')).toHaveCount(0);
     await expect(bar.getByRole('tab', { selected: true })).toBeFocused();
     const box = (await bar.boundingBox())!;
     expect(box.x + box.width).toBeLessThanOrEqual(390);
@@ -824,6 +826,7 @@ test.describe('WorkspaceTabs touch menu @mobile', () => {
     await expect(page.getByRole('menuitem')).toHaveText(['Close Beam']);
     await page.getByRole('menuitem', { name: 'Close Beam' }).click();
     await expectOut(page, 'closed', ['beam', 'column']);
+    await expect(page.getByRole('menu')).toHaveCount(0); // closed, so its focus return is done
     await expect(workspaceBar(page).getByRole('tab', { name: /Column/ })).toBeFocused();
   });
 });

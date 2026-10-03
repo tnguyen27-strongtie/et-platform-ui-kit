@@ -163,6 +163,7 @@ export function WorkspaceTabs<V extends string>({
    *   all fit:  sum(n tab widths) + n*GAP + "+" button <= width of the bar area
    *   overflow: sum(k tab widths) + (k+2)*GAP + menu button + "+" button <= width of the bar area
    * (the overflow case keeps one GAP of slack: fitTabs charges a gap after the last shown tab too).
+   * Without onAdd there is no "+" button, and its width and GAP drop out of both lines.
    * measure() reads those widths; it runs after every render and when the area or the hidden row
    * resizes (window, panel, or web fonts arriving). setFit keeps the old object when nothing
    * changed, so measuring after a render does not cause another render.
@@ -320,8 +321,9 @@ export function WorkspaceTabs<V extends string>({
               </Tabs>
               {/* Both labels the menu button can show; a translation may make either one longer. */}
               <div ref={menuButtonsRef} className="flex">
-                {[labels.more(tabs.length), labels.menu].map((text) => (
-                  <Button key={text} variant="text" size="small" endIcon={<KeyboardArrowDownIcon />}>
+                {/* Fixed keys: a translation may make the two texts equal. */}
+                {[labels.more(tabs.length), labels.menu].map((text, i) => (
+                  <Button key={i === 0 ? 'more' : 'menu'} variant="text" size="small" endIcon={<KeyboardArrowDownIcon />}>
                     {text}
                   </Button>
                 ))}
