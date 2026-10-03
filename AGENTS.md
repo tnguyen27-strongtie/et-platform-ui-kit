@@ -61,7 +61,7 @@ Project skills in `.claude/skills/` hold the step-by-step workflows:
 
 Agents without skill support can read those `SKILL.md` files directly; they are plain Markdown.
 
-`.claude/agents/repo-maintainer.md` defines a Claude Code subagent that runs those skills end to end for a feature, a bug fix or repo upkeep, and returns an architecture review. Other agents can read it as a checklist. `.claude/agents/human.md` is the human-ownership guard: a read-only reviewer that checks a change really works, that a person can understand it, and that the repo stays maintainable without AI. Run it before merging AI-written work. In silent mode it skips the owner questions and returns a fix list for the AI author, so an agent can fix and re-review in a loop until the change is clean.
+`.claude/agents/repo-maintainer.md` defines a Claude Code subagent that runs those skills end to end for a feature, a bug fix or repo upkeep, and returns an architecture review. Other agents can read it as a checklist. `.claude/agents/integration-engineer.md` checks releases only: it runs the integration check, keeps the PoC app covering every new export, and returns SHIP / SHIP WITH MIGRATION NOTES / DO NOT SHIP with evidence. `.claude/agents/human.md` is the human-ownership guard: a read-only reviewer that checks a change really works, that a person can understand it, and that the repo stays maintainable without AI. Run it before merging AI-written work. In silent mode it skips the owner questions and returns a fix list for the AI author, so an agent can fix and re-review in a loop until the change is clean.
 
 ## Definition of done
 
