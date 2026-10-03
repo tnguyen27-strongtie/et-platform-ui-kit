@@ -4,7 +4,9 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'dist-showcase', 'node_modules', 'test-results', 'playwright-report'] },
+  // integration/ is a separate app with its own node_modules and tsconfig, installed from a release
+  // tarball; check-poc.sh type-checks it at release time (integration/README.md, "When it is checked").
+  { ignores: ['dist', 'dist-showcase', 'node_modules', 'test-results', 'playwright-report', 'pack', 'integration'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

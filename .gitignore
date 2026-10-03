@@ -6,6 +6,9 @@ dist/
 # Old licensed Helvetica files (kit <= 0.4) may still sit here locally: never commit them
 public/fonts/
 
+# npm pack output (CI and integration/check-release.sh)
+pack/
+
 # Playwright
 test-results/
 playwright-report/

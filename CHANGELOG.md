@@ -10,6 +10,7 @@ All notable changes to `@platform/ui`. The format follows [Keep a Changelog](htt
 
 ### Changed
 
+- Tooling: `integration/check-release.sh` checks a release tarball inside apps before it is tagged: a PoC calculator app (`integration/poc-app`) that uses almost every export is installed from the tarball, type-checked, built and driven with Playwright (Chromium and WebKit, axe, console errors), then copies of the real apps listed in `integration/apps.txt` run their own type checks, lint, tests and build. Not part of the package.
 - Tooling: `npm run check:architecture` runs the architecture check, and CI runs it on every pull request (against the base branch) and push (whole library). CONTRIBUTING documents it and the pre-1.0 version rule (a breaking change is a minor bump, marked **Breaking**).
 - Internal: removed two unused `@keyframes` from the theme's global styles (`LoadingIndicator` uses the ones in `theme.css`); `NumberInput` computes its invalid state once. No visual or behavior change.
 - Internal: `GridView` is split into `gridTypes.ts` (public types, default labels), `gridState.ts` (state conversion, presets, column moves; unit tested), `gridTable.ts` (TanStack setup) and `GridHeaderParts.tsx` (menus, filter inputs). Exports and behavior are unchanged.

@@ -17,6 +17,7 @@ The repo also contains a **showcase** (`src/showcase/`, `npm run dev`) that demo
 | Fast checks (run before saying you are done) | `npm run check` = lint + typecheck + unit tests + library build |
 | E2E (Playwright, starts its own server) | `npm run test:e2e` (Chromium and WebKit, about 2 minutes); one file: `npm run test:e2e -- tests/e2e/components/forms.spec.ts`; one browser: `npm run test:e2e -- --project desktop` (or `safari`) |
 | Regenerate token CSS after editing `tokens.ts` | `npm run tokens` |
+| Release integration check | `integration/check-release.sh [tgz]`: the tarball in the PoC app and in copies of the real apps (several minutes) |
 | Package | `npm pack`, then `scripts/verify-pack.sh <tgz>`. CI keeps a tarball per commit; tags `vX.Y.Z` create a GitHub Release |
 
 ## Map
@@ -32,6 +33,7 @@ The repo also contains a **showcase** (`src/showcase/`, `npm run dev`) that demo
 | `tests/e2e/harness/fixtures.tsx` | One fixture per component; e2e specs drive fixtures, not the showcase |
 | `tests/unit/` | `node --test` for pure logic |
 | `docs/` | Library docs (English), shipped inside the package |
+| `integration/` | Release integration check: the PoC app (`poc-app/`, uses almost every export) and scripts that try a tarball in it and in copies of the real apps. Not packed. See `integration/README.md` |
 
 ## Rules that matter
 

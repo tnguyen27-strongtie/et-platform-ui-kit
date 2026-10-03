@@ -1,0 +1,6 @@
+# Real apps to try each release in, relative to the kit's folder. Missing folders are reported
+# and skipped. One path per line; # starts a comment.
+../et-sbsd/frontend
+../et-swss/frontend
+../et-swbs/frontend
+../et-wblc/frontend

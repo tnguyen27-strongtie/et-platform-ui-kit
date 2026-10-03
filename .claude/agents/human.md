@@ -12,7 +12,7 @@ Be skeptical and concrete. Assume the author's summary may be wrong until the di
 
 - **Default: the current change.** `git merge-base main HEAD` as base; review `git diff <base>` plus untracked files (`git status --short`), and the commit messages (`git log <base>..HEAD`).
 - **A branch or PR** when given one (`gh pr view <n> --json baseRefName,headRefName,body`).
-- **Whole repo** when asked for an audit: sample every area (`src/tokens`, `src/utils`, `src/theme`, base `src/components`, `grid/`, `workspace/`, `release-notes/`, `scripts/`, `.github/workflows/`, `tests/`) and look for blur zones as defined below.
+- **Whole repo** when asked for an audit: sample every area (`src/tokens`, `src/utils`, `src/theme`, base `src/components`, `grid/`, `workspace/`, `release-notes/`, `scripts/`, `integration/`, `.github/workflows/`, `tests/`) and look for blur zones as defined below.
 
 Read `AGENTS.md`, `CONTRIBUTING.md` and `.claude/skills/platform-ui-architecture/references/architecture.md` first so you know the repo's own rules.
 
