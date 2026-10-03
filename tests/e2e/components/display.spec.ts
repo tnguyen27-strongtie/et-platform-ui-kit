@@ -783,6 +783,8 @@ test.describe('WorkspaceTabs (narrow) @mobile', () => {
     await page.getByRole('button', { name: /more$/ }).click();
     await page.getByRole('menuitem', { name: `Close ${picked}` }).click();
     await expect(bar.getByRole('tab', { name: new RegExp(`^${picked}`) })).toHaveCount(0);
+    // Focus follows to the newly selected tab, as with Delete.
+    await expect(bar.getByRole('tab', { selected: true })).toBeFocused();
     const box = (await bar.boundingBox())!;
     expect(box.x + box.width).toBeLessThanOrEqual(390);
   });
@@ -799,12 +801,29 @@ test.describe('WorkspaceTabs (narrow) @mobile', () => {
     const ellipsized = await tab.locator('.truncate').evaluate((el) => el.scrollWidth > el.clientWidth);
     expect(ellipsized).toBe(true);
   });
+});
 
-  test('on touch screens the menu offers Close even when every tab fits', async ({ page, hasTouch }) => {
-    test.skip(!hasTouch, 'touch screens only');
+test.describe('WorkspaceTabs touch menu @mobile', () => {
+  // Wide enough that the four fixture tabs, the menu and + all fit: the menu shows only because of touch.
+  test.use({ viewport: { width: 1024, height: 700 } });
+
+  test('on touch screens a "Tabs" menu offers Close even when every tab fits; without touch there is no menu', async ({
+    page,
+    hasTouch,
+  }) => {
     await openFixture(page, 'workspace-tabs');
-    await page.getByRole('button', { name: /^(Tabs|\d+ more)$/ }).click();
+    await expect(workspaceBar(page).getByRole('tab')).toHaveCount(4);
+    await expect(page.getByRole('button', { name: /more$/ })).toHaveCount(0);
+    const menu = page.getByRole('button', { name: 'Tabs', exact: true });
+    if (!hasTouch) {
+      await expect(menu).toHaveCount(0);
+      return;
+    }
+    expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches)).toBe(true);
+    await menu.click();
+    await expect(page.getByRole('menuitem')).toHaveText(['Close Beam']);
     await page.getByRole('menuitem', { name: 'Close Beam' }).click();
     await expectOut(page, 'closed', ['beam', 'column']);
+    await expect(workspaceBar(page).getByRole('tab', { name: /Column/ })).toBeFocused();
   });
 });

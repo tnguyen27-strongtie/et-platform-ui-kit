@@ -72,17 +72,17 @@ export interface WorkspaceTabsProps<V extends string> {
   children: (value: V) => ReactNode;
 }
 
-/*
- * Browser-like look, so the workspace level does not read as another section header: no bar
- * background or underline, rounded-top tabs, and the selected tab is a raised surface with a
- * brand stripe on top (section tabs use a gray bar and a brand underline).
- */
 /**
  * Space between tabs and between the bar's items, in px. The overflow maths adds it once per
  * item, so the CSS gaps below are built from it; never write the number twice.
  */
 const GAP = 2;
 
+/*
+ * Browser-like look, so the workspace level does not read as another section header: no bar
+ * background or underline, rounded-top tabs, and the selected tab is a raised surface with a
+ * brand stripe on top (section tabs use a gray bar and a brand underline).
+ */
 const barSx = {
   minWidth: 0,
   padding: 0,
@@ -142,19 +142,27 @@ export function WorkspaceTabs<V extends string>({
   const areaRef = useRef<HTMLDivElement>(null);
   const addRef = useRef<HTMLButtonElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
-  const moreRef = useRef<HTMLButtonElement>(null);
-  /** Value of a tab the user closed with the keyboard, until the app has answered onClose. */
+  /** The hidden menu buttons: one per possible label, the widest is reserved. */
+  const menuButtonsRef = useRef<HTMLDivElement>(null);
+  /** Value of a tab closed with the keyboard or the menu, until the app has answered onClose. */
   const closedByKey = useRef<V | null>(null);
   const [fit, setFit] = useState<{ widths: number[]; more: number; available: number } | null>(null);
 
   const canClose = (tab: WorkspaceTab<V>) => onClose !== undefined && tab.closable !== false && !tab.disabled;
   const close = (tab: WorkspaceTab<V>) => onClose?.(tab.value, nextTabAfterClose(tabs, tab.value, value));
+  /** Close from the keyboard or the menu: focus follows to the next tab (see the effect below). */
+  function closeAndRefocus(tab: WorkspaceTab<V>) {
+    closedByKey.current = tab.value;
+    close(tab);
+  }
 
   /*
    * Overflow. Every tab is rendered once more in a hidden row (below), so its width is known even
    * while it sits in the menu; measuring the visible tabs would not tell what a hidden one needs.
-   * The rule fitTabs applies, in DOM terms:
-   *   sum(tab widths) + GAP per tab [+ "more" button + GAP] + "+" button + GAP <= width of the bar area
+   * The rule fitTabs applies, in DOM terms (n tabs, k of them shown when some overflow):
+   *   all fit:  sum(n tab widths) + n*GAP + "+" button <= width of the bar area
+   *   overflow: sum(k tab widths) + (k+2)*GAP + menu button + "+" button <= width of the bar area
+   * (the overflow case keeps one GAP of slack: fitTabs charges a gap after the last shown tab too).
    * measure() reads those widths; it runs after every render and when the area or the hidden row
    * resizes (window, panel, or web fonts arriving). setFit keeps the old object when nothing
    * changed, so measuring after a render does not cause another render.
@@ -164,7 +172,8 @@ export function WorkspaceTabs<V extends string>({
     const row = measureRef.current;
     if (!area || !row) return;
     const items = [...row.querySelectorAll('[role="tab"]')].map((el) => el.getBoundingClientRect().width);
-    const more = (moreRef.current?.getBoundingClientRect().width ?? 0) + GAP;
+    const menuWidths = [...(menuButtonsRef.current?.children ?? [])].map((el) => el.getBoundingClientRect().width);
+    const more = Math.max(0, ...menuWidths) + GAP;
     const add = addRef.current ? addRef.current.getBoundingClientRect().width + GAP : 0;
     const next = { widths: items, more, available: area.clientWidth - add };
     setFit((prev) => (prev && deepEqual(prev, next) ? prev : next));
@@ -185,6 +194,8 @@ export function WorkspaceTabs<V extends string>({
    * A tab closed from the keyboard takes the focus with it when it disappears; give focus to the
    * newly selected tab. The app may also keep the tab (the user cancelled a confirmation): then
    * forget it, so a later change of `tabs` (e.g. a dirty flag while typing) never moves focus.
+   * Runs on `tabs` changes only, so an app may select `next` before it removes the tab; `value`
+   * still comes from this render, so focus goes to the tab selected by then.
    */
   useEffect(() => {
     const closed = closedByKey.current;
@@ -192,7 +203,7 @@ export function WorkspaceTabs<V extends string>({
     closedByKey.current = null;
     if (tabs.some((t) => t.value === closed)) return;
     document.getElementById(tabId(tabsId, value))?.focus();
-  }, [tabs, tabsId, value]);
+  }, [tabs]); // eslint-disable-line react-hooks/exhaustive-deps -- see above: not on value changes
 
   const selectedIndex = tabs.findIndex((t) => t.value === value);
   const current = tabs[selectedIndex];
@@ -210,8 +221,9 @@ export function WorkspaceTabs<V extends string>({
   const visible = tabs.filter((_, i) => shown.has(i));
   const overflow = tabs.filter((_, i) => !shown.has(i));
 
+  // Item ids are prefixed so a tab value can never clash with the menu's own entries.
   const menuItems: DropdownMenuItem[] = overflow.map((tab) => ({
-    id: tab.value,
+    id: `tab:${tab.value}`,
     label: (
       <span className="flex min-w-0 items-center gap-1.5">
         <TabName label={tab.label} dirty={tab.dirty} unsaved={labels.unsaved} />
@@ -221,8 +233,16 @@ export function WorkspaceTabs<V extends string>({
     onSelect: () => onChange(tab.value),
   }));
   if (currentClosable && (overflow.length > 0 || isTouch)) {
-    if (menuItems.length > 0) menuItems.push({ id: '__divider', divider: true });
-    menuItems.push({ id: '__close', label: labels.close(current.label), icon: <CloseIcon fontSize="small" />, onSelect: () => close(current) });
+    if (menuItems.length > 0) menuItems.push({ id: 'action:divider', divider: true });
+    // False positive: onSelect writes the ref when the entry is chosen, never during render.
+    // eslint-disable-next-line react-hooks/refs
+    menuItems.push({
+      id: 'action:close',
+      label: labels.close(current.label),
+      icon: <CloseIcon fontSize="small" />,
+      // Same focus handoff as Delete: the menu button may disappear with the overflow.
+      onSelect: () => closeAndRefocus(current),
+    });
   }
 
   const renderTab = (tab: WorkspaceTab<V>) => {
@@ -239,8 +259,7 @@ export function WorkspaceTabs<V extends string>({
             ? (e) => {
                 if (!isCloseKey(e)) return;
                 e.preventDefault();
-                closedByKey.current = tab.value;
-                close(tab);
+                closeAndRefocus(tab);
               }
             : undefined
         }
@@ -299,9 +318,14 @@ export function WorkspaceTabs<V extends string>({
               <Tabs<V> value={value} onChange={() => {}} sx={barSx}>
                 {tabs.map((tab) => renderTab(tab))}
               </Tabs>
-              <Button ref={moreRef} variant="text" size="small" endIcon={<KeyboardArrowDownIcon />}>
-                {labels.more(tabs.length)}
-              </Button>
+              {/* Both labels the menu button can show; a translation may make either one longer. */}
+              <div ref={menuButtonsRef} className="flex">
+                {[labels.more(tabs.length), labels.menu].map((text) => (
+                  <Button key={text} variant="text" size="small" endIcon={<KeyboardArrowDownIcon />}>
+                    {text}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
