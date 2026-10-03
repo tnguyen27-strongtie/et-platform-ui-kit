@@ -1,0 +1,8 @@
+node_modules/
+dist/
+vendor/
+test-results/
+playwright-report/
+# Not committed on purpose: each check installs peers fresh within the ranges the kit
+# declares, the way a new app would, so a peer release that breaks the kit shows up here.
+package-lock.json
